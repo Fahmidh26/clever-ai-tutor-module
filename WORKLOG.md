@@ -219,3 +219,19 @@ Notes:
 - Wired seed file into Postgres container init:
   - Mounted `./backend/db/seed.sql` -> `/docker-entrypoint-initdb.d/02-seed.sql`
 - Validated compose configuration after seed wiring
+
+## 2026-03-10 - Next task completed (`1.1.14`)
+
+- Added root `Makefile` with targets:
+  - `dev`, `test`, `migrate`, `seed`, `lint`, `format`
+- Added Windows-friendly automation scripts in `scripts/`:
+  - `dev.ps1` (docker compose up --build)
+  - `test.ps1` (backend compile + frontend production build)
+  - `migrate.ps1` (apply `01-init.sql` to running DB)
+  - `seed.ps1` (apply `02-seed.sql` to running DB)
+  - `lint.ps1` (frontend TypeScript check + backend compile)
+  - `format.ps1` (placeholder messaging until formatter stack is added)
+- Updated frontend `lint` script in `package.json` to `tsc --noEmit` (compatible with Next.js 16 CLI changes)
+- Validated:
+  - `scripts/lint.ps1` runs successfully
+  - `scripts/test.ps1` runs successfully

@@ -34,7 +34,7 @@
 - [x] `1.1.11` Docker Compose with core services
 - [x] `1.1.12` PostgreSQL init.sql with full schema + indexes
 - [x] `1.1.13` Seed data SQL (personas, subjects, topics, standards)
-- [ ] `1.1.14` Makefile/scripts (dev, test, migrate, seed, lint, format)
+- [x] `1.1.14` Makefile/scripts (dev, test, migrate, seed, lint, format)
 - [ ] `1.1.15` CI pipeline skeleton (lint, type-check, test)
 
 ---
@@ -138,5 +138,6 @@
 - 2026-03-10: Completed `1.1.11` by expanding Docker Compose to include API/frontend/DB/Redis/Celery/sandbox services with health checks and dependencies.
 - 2026-03-10: Completed `1.1.12` by adding idempotent `backend/db/init.sql` (core+RAG+class+analytics tables with indexes) and wiring it into Postgres container init.
 - 2026-03-10: Completed `1.1.13` by adding idempotent `backend/db/seed.sql` for default personas, baseline standards (CCSS/NGSS), and starter subject/topic concept nodes.
+- 2026-03-10: Completed `1.1.14` by adding root `Makefile` and PowerShell automation scripts for dev/test/migrate/seed/lint/format flows.
 
 > Update this file daily by checking completed tasks and adjusting percentage estimates.
