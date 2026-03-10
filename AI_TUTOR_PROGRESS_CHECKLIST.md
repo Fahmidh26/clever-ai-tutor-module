@@ -7,7 +7,7 @@
 
 ## Overall Progress Snapshot (Estimated)
 
-- Foundation setup: **65%**
+- Foundation setup: **72%**
 - Main-site auth/API integration: **75%**
 - Core tutoring engine: **20%**
 - RAG + teacher knowledge base: **5%**
@@ -23,8 +23,8 @@
 
 - [ ] `1.1.1` Initialize Python project (`pyproject.toml`, Poetry/uv, Python 3.13)
 - [x] `1.1.2` FastAPI app skeleton with router structure
-- [ ] `1.1.3` Pydantic v2 settings management (`config.py` env validation)
-- [ ] `1.1.4` Structured logging (structlog + OpenTelemetry)
+- [x] `1.1.3` Pydantic v2 settings management (`config.py` env validation)
+- [x] `1.1.4` Structured logging (structlog + OpenTelemetry baseline)
 - [ ] `1.1.5` asyncpg connection pool setup with health checks
 - [ ] `1.1.6` Next.js 16 project with App Router + TypeScript strict mode
 - [ ] `1.1.7` Tailwind 4 + shadcn/ui 4 setup and theming
@@ -128,5 +128,6 @@
 
 - 2026-03-10: Initial checklist created from `WORKLOG.md` + roadmap mapping.
 - 2026-03-10: Updated Phase 1.1 and 1.2 to exact roadmap IDs (`1.1.x`, `1.2.x`) from `AI_TUTOR_MODULE (1).md`.
+- 2026-03-10: Started Phase 1 implementation in code (backend modularization, validated settings, request logging middleware).
 
 > Update this file daily by checking completed tasks and adjusting percentage estimates.

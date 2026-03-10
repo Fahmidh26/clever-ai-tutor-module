@@ -79,3 +79,16 @@ Notes:
 - Main-site proxy wiring completed
 - Frontend wired to login, session check, experts fetch, and demo expert chat
 - Dockerized with one-command startup via `docker compose up --build`
+
+## 2026-03-10 - Phase 1 execution started
+
+- Backend refactored from single-file app into modular structure:
+  - `app/config.py` for validated settings
+  - `app/logging_config.py` for structured logging setup
+  - `app/middleware/request_logging.py` for request ID + latency logs
+  - `app/routers/auth.py`, `app/routers/proxy.py`, `app/routers/health.py`
+- Existing auth and main-site proxy behavior preserved through routers
+- Added new backend dependencies:
+  - `pydantic-settings`
+  - `structlog`
+- Backend syntax validation passed (`python -m compileall app`)
