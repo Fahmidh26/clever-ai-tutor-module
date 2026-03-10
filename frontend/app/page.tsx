@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
 
 type SessionPayload = {
   user: Record<string, unknown> | null;
@@ -152,9 +153,9 @@ export default function HomePage() {
         </div>
         <div className="actions">
           {session ? (
-            <button onClick={logout}>Logout</button>
+            <Button onClick={logout}>Logout</Button>
           ) : (
-            <button onClick={startLogin}>Login with Main Site</button>
+            <Button onClick={startLogin}>Login with Main Site</Button>
           )}
         </div>
       </header>
@@ -192,9 +193,9 @@ export default function HomePage() {
           placeholder="Ask a question..."
           disabled={!session || chatLoading}
         />
-        <button onClick={sendDemoChat} disabled={!session || chatLoading || !chatPrompt.trim()}>
+        <Button onClick={sendDemoChat} disabled={!session || chatLoading || !chatPrompt.trim()}>
           {chatLoading ? "Sending..." : "Send Prompt"}
-        </button>
+        </Button>
         {chatError ? <p className="error">Error: {chatError}</p> : null}
         {chatResult ? <pre>{chatResult}</pre> : null}
       </section>

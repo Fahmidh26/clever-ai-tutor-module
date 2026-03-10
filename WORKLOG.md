@@ -124,3 +124,17 @@ Notes:
   - `frontend/Dockerfile` now builds and serves Next.js app
   - `docker-compose.yml` build arg updated to `NEXT_PUBLIC_API_BASE_URL`
 - Verified build success with `npm run build`
+
+## 2026-03-10 - Next task completed (`1.1.7`)
+
+- Added Tailwind CSS v4 setup for Next.js:
+  - Installed `tailwindcss`, `@tailwindcss/postcss`, `postcss`
+  - Added `postcss.config.mjs`
+  - Enabled Tailwind import in `app/globals.css`
+- Added shadcn-compatible foundation:
+  - `components.json`
+  - `lib/utils.ts` (`cn()` helper)
+  - `components/ui/button.tsx` reusable button component
+- Added light/dark OKLCH theme tokens in `app/globals.css`
+- Updated `app/page.tsx` to use the reusable shadcn-style `Button`
+- Verified production build still passes after UI stack changes
