@@ -8,7 +8,7 @@
 ## Overall Progress Snapshot (Estimated)
 
 - Foundation setup: **100%**
-- Main-site auth/API integration: **75%**
+- Main-site auth/API integration: **80%**
 - Core tutoring engine: **20%**
 - RAG + teacher knowledge base: **5%**
 - UX polish + adaptive UI: **20%**
@@ -41,7 +41,7 @@
 
 ## 2) Authentication + Root-Site Integration (Phase 1.2)
 
-- [ ] `1.2.1` RootSiteClient service (OAuth/JWT/user/credits/catalog/plan checks)
+- [x] `1.2.1` RootSiteClient service (OAuth/JWT/user/credits/catalog/plan checks)
 - [x] `1.2.2` Auth middleware (JWT/session extraction and user context)
 - [ ] `1.2.3` Internal `X-Auth-Hex` header for service-to-service calls
 - [ ] `1.2.4` Token service (estimate/reserve/reconcile)
@@ -140,5 +140,6 @@
 - 2026-03-10: Completed `1.1.13` by adding idempotent `backend/db/seed.sql` for default personas, baseline standards (CCSS/NGSS), and starter subject/topic concept nodes.
 - 2026-03-10: Completed `1.1.14` by adding root `Makefile` and PowerShell automation scripts for dev/test/migrate/seed/lint/format flows.
 - 2026-03-10: Completed `1.1.15` by adding GitHub Actions CI workflow with lint/type-check and build/test jobs.
+- 2026-03-10: Completed `1.2.1` by introducing `RootSiteClient` (OAuth code exchange, JWKS-cached RS256 JWT verification, user profile/credits/catalog/plan APIs) and wiring auth callback to use the service.
 
 > Update this file daily by checking completed tasks and adjusting percentage estimates.

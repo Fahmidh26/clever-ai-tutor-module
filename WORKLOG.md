@@ -252,3 +252,27 @@ Notes:
   - frontend lint/type-check
   - frontend build
   - compose config validation
+
+## 2026-03-10 - Next task completed (`1.2.1`)
+
+- Added root site integration service layer:
+  - `backend/app/services/root_site_client.py`
+  - `backend/app/services/__init__.py`
+- Implemented `RootSiteClient` capabilities:
+  - OAuth authorization-code token exchange (`POST /api/oauth/token`)
+  - JWT verification for RS256 tokens with JWKS endpoint caching
+  - User profile fetch with compatibility fallback (`/api/user/details` -> `/api/user`)
+  - Credits APIs (`GET /api/user/credits`, `POST /api/user/credits/deduct`)
+  - Model catalog fetch with ETag caching (`GET /api/catalog`)
+  - Plan/subscription access check helper
+- Refactored auth callback to use `RootSiteClient` for token exchange and profile fetch.
+- Added root-site JWT/JWKS config fields:
+  - `ROOT_SITE_JWKS_URL`
+  - `ROOT_SITE_JWKS_PATH`
+  - `ROOT_SITE_JWT_ISSUER`
+  - `ROOT_SITE_JWT_AUDIENCE`
+  - `ROOT_SITE_JWKS_CACHE_TTL_SECONDS`
+- Added backend dependency: `PyJWT[crypto]`
+- Validation run:
+  - `python -m compileall backend/app`
+  - `powershell -ExecutionPolicy Bypass -File scripts/lint.ps1`

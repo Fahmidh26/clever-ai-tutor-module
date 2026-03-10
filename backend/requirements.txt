@@ -7,3 +7,4 @@ pydantic-settings
 structlog
 asyncpg
 celery[redis]
+PyJWT[crypto]

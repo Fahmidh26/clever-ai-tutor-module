@@ -3,11 +3,12 @@ from __future__ import annotations
 import secrets
 from urllib.parse import urlencode
 
-import httpx
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse, RedirectResponse
 
 from app.config import settings
+from app.services import root_site_client
+from app.services.root_site_client import RootSiteClientError
 
 router = APIRouter(tags=["auth"])
 
@@ -45,44 +46,17 @@ async def oauth_callback(request: Request, code: str | None = None, state: str |
     if not code:
         return JSONResponse(status_code=400, content={"error": "Missing authorization code"})
 
-    token_url = f"{settings.aisite_oauth_internal_url}/api/oauth/token"
-    user_url = f"{settings.aisite_oauth_internal_url}/api/user"
-
-    async with httpx.AsyncClient(timeout=15) as client:
-        token_response = await client.post(
-            token_url,
-            data={
-                "grant_type": "authorization_code",
-                "client_id": settings.aisite_oauth_client_id,
-                "client_secret": settings.aisite_oauth_client_secret,
-                "redirect_uri": settings.aisite_oauth_redirect_uri,
-                "code": code,
-            },
-        )
-
-        if token_response.status_code >= 400:
-            return JSONResponse(
-                status_code=token_response.status_code,
-                content={"error": "Token exchange failed", "details": token_response.text},
-            )
-
-        token_data = token_response.json()
+    try:
+        token_data = await root_site_client.exchange_authorization_code(code)
         access_token = token_data.get("access_token")
         if not access_token:
             return JSONResponse(status_code=500, content={"error": "No access_token in token response"})
-
-        user_response = await client.get(
-            user_url,
-            headers={"Authorization": f"Bearer {access_token}", "Accept": "application/json"},
+        provider_user = await root_site_client.fetch_user_profile(access_token)
+    except RootSiteClientError as exc:
+        return JSONResponse(
+            status_code=exc.status_code,
+            content={"error": exc.message, "details": exc.details},
         )
-
-        if user_response.status_code >= 400:
-            return JSONResponse(
-                status_code=user_response.status_code,
-                content={"error": "Failed to fetch user profile", "details": user_response.text},
-            )
-
-        provider_user = user_response.json()
 
     request.session["access_token"] = access_token
     request.session["user"] = provider_user

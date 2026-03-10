@@ -25,6 +25,11 @@ class Settings(BaseSettings):
     db_pool_min_size: int = 1
     db_pool_max_size: int = 10
     redis_url: str = "redis://localhost:6379/0"
+    root_site_jwks_url: str | None = None
+    root_site_jwks_path: str = "/.well-known/jwks.json"
+    root_site_jwt_issuer: str | None = None
+    root_site_jwt_audience: str | None = None
+    root_site_jwks_cache_ttl_seconds: int = 300
 
     @field_validator(
         "aisite_oauth_base_url",
@@ -45,6 +50,18 @@ class Settings(BaseSettings):
         if self.frontend_post_login_path.startswith("/"):
             return self.frontend_post_login_path
         return f"/{self.frontend_post_login_path}"
+
+    @property
+    def resolved_root_site_jwks_url(self) -> str:
+        if self.root_site_jwks_url:
+            return self.root_site_jwks_url
+        return f"{self.aisite_oauth_internal_url}{self.root_site_jwks_path}"
+
+    @property
+    def resolved_root_site_jwt_issuer(self) -> str:
+        if self.root_site_jwt_issuer:
+            return self.root_site_jwt_issuer
+        return self.aisite_oauth_base_url
 
 
 settings = Settings()
