@@ -7,7 +7,7 @@
 
 ## Overall Progress Snapshot (Estimated)
 
-- Foundation setup: **88%**
+- Foundation setup: **92%**
 - Main-site auth/API integration: **75%**
 - Core tutoring engine: **20%**
 - RAG + teacher knowledge base: **5%**
@@ -29,7 +29,7 @@
 - [x] `1.1.6` Next.js 16 project with App Router + TypeScript strict mode
 - [x] `1.1.7` Tailwind 4 + shadcn/ui 4 setup and theming
 - [x] `1.1.8` Zustand 5 store skeleton (auth/session/ui/chat)
-- [ ] `1.1.9` API client layer with interceptors/retry/error handling
+- [x] `1.1.9` API client layer with interceptors/retry/error handling
 - [ ] `1.1.10` Layout shell (sidebar/header/main)
 - [x] `1.1.11` Docker Compose with core services
 - [ ] `1.1.12` PostgreSQL init.sql with full schema + indexes
@@ -133,5 +133,6 @@
 - 2026-03-10: Completed `1.1.6` by migrating frontend to Next.js App Router + TypeScript strict and validating production build.
 - 2026-03-10: Completed `1.1.7` with Tailwind 4 + shadcn setup, OKLCH light/dark tokens, and first reusable UI component.
 - 2026-03-10: Completed `1.1.8` by adding Zustand stores (`auth`, `session`, `ui`, `chat`) and integrating them into the main page flow.
+- 2026-03-10: Completed `1.1.9` with centralized API client (retry/backoff, normalized API errors, unauthorized hook) and migrated page calls to it.
 
 > Update this file daily by checking completed tasks and adjusting percentage estimates.

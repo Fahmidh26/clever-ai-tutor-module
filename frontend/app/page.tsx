@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { ApiError, createApiClient } from "@/lib/api-client";
 import { useAuthStore } from "@/stores/auth-store";
 import { useChatStore } from "@/stores/chat-store";
 import { useSessionStore } from "@/stores/session-store";
@@ -19,7 +20,6 @@ type Expert = {
 };
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8003";
-
 export default function HomePage() {
   const [session, setSession] = useState<SessionPayload | null>(null);
   const [experts, setExperts] = useState<Expert[]>([]);
@@ -48,29 +48,33 @@ export default function HomePage() {
   const theme = useUIStore((state) => state.theme);
   const toggleTheme = useUIStore((state) => state.toggleTheme);
 
+  const apiClient = useMemo(
+    () =>
+      createApiClient({
+        baseUrl: apiBaseUrl,
+        onUnauthorized: () => {
+          setSession(null);
+          clearAuth();
+          clearSessionStore();
+        },
+      }),
+    [clearAuth, clearSessionStore]
+  );
+
   const loadSession = async () => {
     try {
       setSessionError("");
-      const response = await fetch(`${apiBaseUrl}/api/me`, {
-        credentials: "include",
-      });
-
-      if (response.status === 401) {
+      const data = await apiClient.get<SessionPayload>("/api/me");
+      setSession(data);
+      setAuthenticated(data.access_token);
+      setSessionUser(data.user);
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 401) {
         setSession(null);
         clearAuth();
         clearSessionStore();
         return;
       }
-
-      if (!response.ok) {
-        throw new Error(`Session check failed (${response.status})`);
-      }
-
-      const data = (await response.json()) as SessionPayload;
-      setSession(data);
-      setAuthenticated(data.access_token);
-      setSessionUser(data.user);
-    } catch (err) {
       setSessionError(err instanceof Error ? err.message : "Unexpected error while loading session");
     } finally {
       setSessionLoading(false);
@@ -80,15 +84,9 @@ export default function HomePage() {
   const loadExperts = async () => {
     try {
       setExpertsError("");
-      const response = await fetch(`${apiBaseUrl}/api/main-site/api/experts?domain=expert-chat`, {
-        credentials: "include",
-      });
-
-      if (!response.ok) {
-        throw new Error(`Experts request failed (${response.status})`);
-      }
-
-      const data = (await response.json()) as { experts?: Expert[] } | Expert[];
+      const data = await apiClient.get<{ experts?: Expert[] } | Expert[]>(
+        "/api/main-site/api/experts?domain=expert-chat"
+      );
       const list = Array.isArray((data as { experts?: Expert[] }).experts)
         ? (data as { experts: Expert[] }).experts
         : Array.isArray(data)
@@ -125,10 +123,7 @@ export default function HomePage() {
   };
 
   const logout = async () => {
-    await fetch(`${apiBaseUrl}/api/logout`, {
-      method: "POST",
-      credentials: "include",
-    });
+    await apiClient.post<{ ok: boolean }>("/api/logout");
     setSession(null);
     clearAuth();
     clearSessionStore();
@@ -145,28 +140,16 @@ export default function HomePage() {
 
     try {
       const expertId = experts[0]?.id ?? null;
-      const response = await fetch(`${apiBaseUrl}/api/main-site/api/expert-chat`, {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify({
-          message: chatPrompt.trim(),
-          expert_id: expertId,
-          domain: "expert-chat",
-          conversation: [],
-        }),
-      });
-      const data = (await response.json()) as {
+      const data = await apiClient.post<{
         message?: string;
         error?: string;
         response?: string;
-      };
-      if (!response.ok) {
-        throw new Error(data.message || data.error || `Chat request failed (${response.status})`);
-      }
+      }>("/api/main-site/api/expert-chat", {
+        message: chatPrompt.trim(),
+        expert_id: expertId,
+        domain: "expert-chat",
+        conversation: [],
+      });
       setChatResult(data.response || data.message || JSON.stringify(data));
     } catch (err) {
       setChatError(err instanceof Error ? err.message : "Chat request failed");

@@ -152,3 +152,17 @@ Notes:
   - chat prompt/result/error/loading state via store
   - UI theme mode store with dark/light toggle
 - Verified frontend build after store integration
+
+## 2026-03-10 - Next task completed (`1.1.9`)
+
+- Added centralized API client module: `lib/api-client.ts`
+  - Standardized GET/POST/PUT/PATCH/DELETE methods
+  - Retry with exponential backoff for transient failures (408/429/5xx)
+  - Normalized error handling via `ApiError` (status + payload)
+  - Unauthorized hook support for auth/session clearing
+- Refactored `app/page.tsx` to use API client for:
+  - `/api/me`
+  - `/api/main-site/api/experts`
+  - `/api/logout`
+  - `/api/main-site/api/expert-chat`
+- Verified frontend production build and lint diagnostics after refactor
