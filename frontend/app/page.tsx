@@ -2,6 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { useAuthStore } from "@/stores/auth-store";
+import { useChatStore } from "@/stores/chat-store";
+import { useSessionStore } from "@/stores/session-store";
+import { useUIStore } from "@/stores/ui-store";
 
 type SessionPayload = {
   user: Record<string, unknown> | null;
@@ -18,24 +22,43 @@ const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:800
 
 export default function HomePage() {
   const [session, setSession] = useState<SessionPayload | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const [experts, setExperts] = useState<Expert[]>([]);
   const [expertsError, setExpertsError] = useState("");
-  const [chatPrompt, setChatPrompt] = useState("Explain Newton second law with a real-world example.");
-  const [chatResult, setChatResult] = useState("");
-  const [chatError, setChatError] = useState("");
-  const [chatLoading, setChatLoading] = useState(false);
+
+  const loading = useSessionStore((state) => state.loading);
+  const error = useSessionStore((state) => state.error);
+  const setSessionUser = useSessionStore((state) => state.setSession);
+  const setSessionLoading = useSessionStore((state) => state.setLoading);
+  const setSessionError = useSessionStore((state) => state.setError);
+  const clearSessionStore = useSessionStore((state) => state.clearSession);
+
+  const setAuthenticated = useAuthStore((state) => state.setAuthenticated);
+  const clearAuth = useAuthStore((state) => state.clearAuth);
+
+  const chatPrompt = useChatStore((state) => state.prompt);
+  const chatResult = useChatStore((state) => state.result);
+  const chatError = useChatStore((state) => state.error);
+  const chatLoading = useChatStore((state) => state.loading);
+  const setChatPrompt = useChatStore((state) => state.setPrompt);
+  const setChatResult = useChatStore((state) => state.setResult);
+  const setChatError = useChatStore((state) => state.setError);
+  const setChatLoading = useChatStore((state) => state.setLoading);
+  const resetChat = useChatStore((state) => state.resetChat);
+
+  const theme = useUIStore((state) => state.theme);
+  const toggleTheme = useUIStore((state) => state.toggleTheme);
 
   const loadSession = async () => {
     try {
-      setError("");
+      setSessionError("");
       const response = await fetch(`${apiBaseUrl}/api/me`, {
         credentials: "include",
       });
 
       if (response.status === 401) {
         setSession(null);
+        clearAuth();
+        clearSessionStore();
         return;
       }
 
@@ -45,10 +68,12 @@ export default function HomePage() {
 
       const data = (await response.json()) as SessionPayload;
       setSession(data);
+      setAuthenticated(data.access_token);
+      setSessionUser(data.user);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unexpected error while loading session");
+      setSessionError(err instanceof Error ? err.message : "Unexpected error while loading session");
     } finally {
-      setLoading(false);
+      setSessionLoading(false);
     }
   };
 
@@ -89,6 +114,12 @@ export default function HomePage() {
     }
   }, [session]);
 
+  useEffect(() => {
+    if (typeof document !== "undefined") {
+      document.documentElement.classList.toggle("dark", theme === "dark");
+    }
+  }, [theme]);
+
   const startLogin = () => {
     window.location.href = `${apiBaseUrl}/oauth/login`;
   };
@@ -99,9 +130,10 @@ export default function HomePage() {
       credentials: "include",
     });
     setSession(null);
+    clearAuth();
+    clearSessionStore();
     setExperts([]);
-    setChatResult("");
-    setChatError("");
+    resetChat();
   };
 
   const sendDemoChat = async () => {
@@ -151,7 +183,10 @@ export default function HomePage() {
           <h1>Clever AI Tutor</h1>
           <p>Next.js + FastAPI with shared main-site authentication.</p>
         </div>
-        <div className="actions">
+        <div className="actions" style={{ display: "flex", gap: "8px" }}>
+          <Button variant="secondary" onClick={toggleTheme}>
+            {theme === "dark" ? "Light mode" : "Dark mode"}
+          </Button>
           {session ? (
             <Button onClick={logout}>Logout</Button>
           ) : (

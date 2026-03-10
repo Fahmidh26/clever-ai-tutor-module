@@ -138,3 +138,17 @@ Notes:
 - Added light/dark OKLCH theme tokens in `app/globals.css`
 - Updated `app/page.tsx` to use the reusable shadcn-style `Button`
 - Verified production build still passes after UI stack changes
+
+## 2026-03-10 - Next task completed (`1.1.8`)
+
+- Added Zustand state skeleton with separate stores:
+  - `stores/auth-store.ts`
+  - `stores/session-store.ts`
+  - `stores/ui-store.ts`
+  - `stores/chat-store.ts`
+- Installed Zustand dependency
+- Integrated stores into `app/page.tsx`:
+  - session/auth state updates on login/session load/logout
+  - chat prompt/result/error/loading state via store
+  - UI theme mode store with dark/light toggle
+- Verified frontend build after store integration

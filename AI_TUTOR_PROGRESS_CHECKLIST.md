@@ -7,7 +7,7 @@
 
 ## Overall Progress Snapshot (Estimated)
 
-- Foundation setup: **84%**
+- Foundation setup: **88%**
 - Main-site auth/API integration: **75%**
 - Core tutoring engine: **20%**
 - RAG + teacher knowledge base: **5%**
@@ -28,7 +28,7 @@
 - [x] `1.1.5` asyncpg connection pool setup with health checks
 - [x] `1.1.6` Next.js 16 project with App Router + TypeScript strict mode
 - [x] `1.1.7` Tailwind 4 + shadcn/ui 4 setup and theming
-- [ ] `1.1.8` Zustand 5 store skeleton (auth/session/ui/chat)
+- [x] `1.1.8` Zustand 5 store skeleton (auth/session/ui/chat)
 - [ ] `1.1.9` API client layer with interceptors/retry/error handling
 - [ ] `1.1.10` Layout shell (sidebar/header/main)
 - [x] `1.1.11` Docker Compose with core services
@@ -132,5 +132,6 @@
 - 2026-03-10: Completed `1.1.5` (asyncpg pool lifecycle + DB healthcheck status in `/health`).
 - 2026-03-10: Completed `1.1.6` by migrating frontend to Next.js App Router + TypeScript strict and validating production build.
 - 2026-03-10: Completed `1.1.7` with Tailwind 4 + shadcn setup, OKLCH light/dark tokens, and first reusable UI component.
+- 2026-03-10: Completed `1.1.8` by adding Zustand stores (`auth`, `session`, `ui`, `chat`) and integrating them into the main page flow.
 
 > Update this file daily by checking completed tasks and adjusting percentage estimates.
