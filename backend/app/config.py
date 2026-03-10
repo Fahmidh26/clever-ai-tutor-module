@@ -21,6 +21,9 @@ class Settings(BaseSettings):
     frontend_url: str = "http://localhost:5174"
     frontend_post_login_path: str = "/auth/callback"
     allow_origins: str = "http://localhost:5174"
+    database_url: str | None = None
+    db_pool_min_size: int = 1
+    db_pool_max_size: int = 10
 
     @field_validator(
         "aisite_oauth_base_url",

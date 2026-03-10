@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from starlette.middleware.sessions import SessionMiddleware
 
 from app.config import settings
+from app.db.pool import close_db_pool, init_db_pool
 from app.logging_config import configure_logging
 from app.middleware.request_logging import request_logging_middleware
 from app.routers.auth import router as auth_router
@@ -14,7 +17,17 @@ from app.routers.proxy import router as proxy_router
 
 configure_logging()
 
-app = FastAPI(title=settings.app_name)
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await init_db_pool(app)
+    try:
+        yield
+    finally:
+        await close_db_pool(app)
+
+
+app = FastAPI(title=settings.app_name, lifespan=lifespan)
 
 app.add_middleware(
     SessionMiddleware,

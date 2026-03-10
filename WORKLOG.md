@@ -92,3 +92,17 @@ Notes:
   - `pydantic-settings`
   - `structlog`
 - Backend syntax validation passed (`python -m compileall app`)
+
+## 2026-03-10 - Next task completed (`1.1.5`)
+
+- Added DB pool lifecycle management using `asyncpg`:
+  - Startup initializes pool when `DATABASE_URL` is configured
+  - Shutdown closes pool cleanly
+- Added DB health check integration:
+  - `/health` and `/api/health` now return DB status (`ok`, `error`, or `not_configured`)
+- Added DB env settings to `backend/.env.example`:
+  - `DATABASE_URL`
+  - `DB_POOL_MIN_SIZE`
+  - `DB_POOL_MAX_SIZE`
+- Added `asyncpg` to backend requirements
+- Re-validated backend syntax after changes
