@@ -208,3 +208,14 @@ Notes:
 - Wired schema init into Docker DB startup:
   - Mounted `./backend/db/init.sql` -> `/docker-entrypoint-initdb.d/01-init.sql`
 - Validated compose configuration after SQL init wiring
+
+## 2026-03-10 - Next task completed (`1.1.13`)
+
+- Added `backend/db/seed.sql` with idempotent seed data for:
+  - 6 default tutor personas (Sofia, Marcus, Aiko, Reza, Dr. Chen, Alex)
+  - standards frameworks (Common Core + NGSS)
+  - starter standards records (Math, ELA, Science)
+  - starter subject/topic concept nodes (Math, Science, ELA, Coding)
+- Wired seed file into Postgres container init:
+  - Mounted `./backend/db/seed.sql` -> `/docker-entrypoint-initdb.d/02-seed.sql`
+- Validated compose configuration after seed wiring
