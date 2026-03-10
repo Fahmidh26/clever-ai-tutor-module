@@ -8,7 +8,7 @@
 ## Overall Progress Snapshot (Estimated)
 
 - Foundation setup: **100%**
-- Main-site auth/API integration: **85%**
+- Main-site auth/API integration: **90%**
 - Core tutoring engine: **20%**
 - RAG + teacher knowledge base: **5%**
 - UX polish + adaptive UI: **20%**
@@ -44,7 +44,7 @@
 - [x] `1.2.1` RootSiteClient service (OAuth/JWT/user/credits/catalog/plan checks)
 - [x] `1.2.2` Auth middleware (JWT/session extraction and user context)
 - [x] `1.2.3` Internal `X-Auth-Hex` header for service-to-service calls
-- [ ] `1.2.4` Token service (estimate/reserve/reconcile)
+- [x] `1.2.4` Token service (estimate/reserve/reconcile)
 - [x] `1.2.5` Frontend OAuth redirect flow + session management
 - [ ] `1.2.6` Frontend protected routes + auth context provider
 - [x] `1.2.7` Frontend login/logout flow (+ root-site redirect path)
@@ -142,5 +142,6 @@
 - 2026-03-10: Completed `1.1.15` by adding GitHub Actions CI workflow with lint/type-check and build/test jobs.
 - 2026-03-10: Completed `1.2.1` by introducing `RootSiteClient` (OAuth code exchange, JWKS-cached RS256 JWT verification, user profile/credits/catalog/plan APIs) and wiring auth callback to use the service.
 - 2026-03-10: Completed `1.2.3` by adding optional internal `X-Auth-Hex` header injection for backend-to-root-site calls (both `RootSiteClient` and main-site proxy) via `ROOT_SITE_X_AUTH_HEX`.
+- 2026-03-10: Completed `1.2.4` by adding `TokenService` for token estimation, credit reservation, and reconciliation flows integrated with `RootSiteClient` credit deduction API.
 
 > Update this file daily by checking completed tasks and adjusting percentage estimates.

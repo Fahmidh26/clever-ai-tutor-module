@@ -291,3 +291,22 @@ Notes:
 - Validation run:
   - `python -m compileall backend/app`
   - `powershell -ExecutionPolicy Bypass -File scripts/lint.ps1`
+
+## 2026-03-10 - Next task completed (`1.2.4`)
+
+- Added token metering service:
+  - `backend/app/services/token_service.py`
+- Implemented token service flows:
+  - Estimate tokens before model execution (`estimate_tokens`)
+  - Reserve credits via root site (`reserve_credits`, action=`reserve`)
+  - Reconcile actual usage after model execution (`reconcile_credits`, action=`reconcile`)
+  - Convenience flow to estimate + reserve in one step (`estimate_and_reserve`)
+- Added typed result structures for estimates/reservations (`TokenEstimate`, `CreditReservation`)
+- Wired token service singleton in `backend/app/services/__init__.py` using configured defaults
+- Added tunable token settings in backend config/env:
+  - `TOKEN_ESTIMATE_CHARS_PER_TOKEN`
+  - `TOKEN_RESERVE_BUFFER_RATIO`
+  - `TOKEN_DEFAULT_OUTPUT_TOKENS`
+- Validation run:
+  - `python -m compileall backend/app`
+  - `powershell -ExecutionPolicy Bypass -File scripts/lint.ps1`

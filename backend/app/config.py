@@ -31,6 +31,9 @@ class Settings(BaseSettings):
     root_site_jwt_audience: str | None = None
     root_site_jwks_cache_ttl_seconds: int = 300
     root_site_x_auth_hex: str | None = None
+    token_estimate_chars_per_token: int = 4
+    token_reserve_buffer_ratio: float = 1.15
+    token_default_output_tokens: int = 512
 
     @field_validator(
         "aisite_oauth_base_url",
