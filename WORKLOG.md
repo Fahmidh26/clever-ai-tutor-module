@@ -176,3 +176,21 @@ Notes:
 - Updated `app/globals.css` with shell layout and responsive behavior
 - Updated `app/page.tsx` to render existing session/expert/chat cards inside the new shell
 - Verified frontend production build and lint diagnostics after layout changes
+
+## 2026-03-10 - Next task completed (`1.1.11`)
+
+- Expanded `docker-compose.yml` to include full Sprint 1.1 service set:
+  - `tutor-api` (FastAPI)
+  - `tutor-frontend` (Next.js)
+  - `tutor-db` (PostgreSQL + pgvector image)
+  - `tutor-redis` (Redis 8)
+  - `tutor-celery` (Celery worker)
+  - `tutor-sandbox` (Docker-in-Docker sandbox)
+- Added service health checks and startup dependencies (`depends_on` with health conditions)
+- Added named volumes for DB/Redis/sandbox persistence
+- Added minimal Celery bootstrap in backend:
+  - `app/tasks/celery_app.py`
+  - `app/tasks/__init__.py`
+- Added `celery[redis]` dependency and `REDIS_URL` config support
+- Validated compose file with `docker compose config`
+- Re-validated backend syntax after Celery/config changes

@@ -24,6 +24,7 @@ class Settings(BaseSettings):
     database_url: str | None = None
     db_pool_min_size: int = 1
     db_pool_max_size: int = 10
+    redis_url: str = "redis://localhost:6379/0"
 
     @field_validator(
         "aisite_oauth_base_url",

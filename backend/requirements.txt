@@ -6,3 +6,4 @@ itsdangerous
 pydantic-settings
 structlog
 asyncpg
+celery[redis]

@@ -7,7 +7,7 @@
 
 ## Overall Progress Snapshot (Estimated)
 
-- Foundation setup: **96%**
+- Foundation setup: **97%**
 - Main-site auth/API integration: **75%**
 - Core tutoring engine: **20%**
 - RAG + teacher knowledge base: **5%**
@@ -135,5 +135,6 @@
 - 2026-03-10: Completed `1.1.8` by adding Zustand stores (`auth`, `session`, `ui`, `chat`) and integrating them into the main page flow.
 - 2026-03-10: Completed `1.1.9` with centralized API client (retry/backoff, normalized API errors, unauthorized hook) and migrated page calls to it.
 - 2026-03-10: Completed `1.1.10` by implementing application shell layout (sidebar + topbar + main content container).
+- 2026-03-10: Completed `1.1.11` by expanding Docker Compose to include API/frontend/DB/Redis/Celery/sandbox services with health checks and dependencies.
 
 > Update this file daily by checking completed tasks and adjusting percentage estimates.

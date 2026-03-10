@@ -1,22 +1,101 @@
 services:
-  backend:
+  tutor-db:
+    image: pgvector/pgvector:pg17
+    environment:
+      POSTGRES_DB: clever_ai_tutor
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - tutor-db-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d clever_ai_tutor"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  tutor-redis:
+    image: redis:8-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - tutor-redis-data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  tutor-api:
     build:
       context: ./backend
     env_file:
       - ./backend/.env
     environment:
       AISITE_OAUTH_INTERNAL_URL: http://host.docker.internal:8000/
+      DATABASE_URL: postgresql://postgres:postgres@tutor-db:5432/clever_ai_tutor
+      REDIS_URL: redis://tutor-redis:6379/0
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    depends_on:
+      tutor-db:
+        condition: service_healthy
+      tutor-redis:
+        condition: service_healthy
     ports:
       - "8003:8003"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8003/health')",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 10
 
-  frontend:
+  tutor-celery:
+    build:
+      context: ./backend
+    env_file:
+      - ./backend/.env
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@tutor-db:5432/clever_ai_tutor
+      REDIS_URL: redis://tutor-redis:6379/0
+    depends_on:
+      tutor-db:
+        condition: service_healthy
+      tutor-redis:
+        condition: service_healthy
+    command: ["celery", "-A", "app.tasks.celery_app.celery_app", "worker", "--loglevel=INFO"]
+
+  tutor-sandbox:
+    image: docker:27-dind
+    privileged: true
+    environment:
+      DOCKER_TLS_CERTDIR: ""
+    volumes:
+      - tutor-sandbox-data:/var/lib/docker
+    ports:
+      - "2375:2375"
+    command: ["dockerd", "--host=tcp://0.0.0.0:2375", "--host=unix:///var/run/docker.sock"]
+
+  tutor-frontend:
     build:
       context: ./frontend
       args:
         NEXT_PUBLIC_API_BASE_URL: http://localhost:8003
     depends_on:
-      - backend
+      tutor-api:
+        condition: service_healthy
     ports:
       - "5174:80"
+
+volumes:
+  tutor-db-data:
+  tutor-redis-data:
+  tutor-sandbox-data:
