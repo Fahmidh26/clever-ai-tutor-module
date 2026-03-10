@@ -7,7 +7,7 @@
 
 ## Overall Progress Snapshot (Estimated)
 
-- Foundation setup: **99%**
+- Foundation setup: **100%**
 - Main-site auth/API integration: **75%**
 - Core tutoring engine: **20%**
 - RAG + teacher knowledge base: **5%**
@@ -35,7 +35,7 @@
 - [x] `1.1.12` PostgreSQL init.sql with full schema + indexes
 - [x] `1.1.13` Seed data SQL (personas, subjects, topics, standards)
 - [x] `1.1.14` Makefile/scripts (dev, test, migrate, seed, lint, format)
-- [ ] `1.1.15` CI pipeline skeleton (lint, type-check, test)
+- [x] `1.1.15` CI pipeline skeleton (lint, type-check, test)
 
 ---
 
@@ -139,5 +139,6 @@
 - 2026-03-10: Completed `1.1.12` by adding idempotent `backend/db/init.sql` (core+RAG+class+analytics tables with indexes) and wiring it into Postgres container init.
 - 2026-03-10: Completed `1.1.13` by adding idempotent `backend/db/seed.sql` for default personas, baseline standards (CCSS/NGSS), and starter subject/topic concept nodes.
 - 2026-03-10: Completed `1.1.14` by adding root `Makefile` and PowerShell automation scripts for dev/test/migrate/seed/lint/format flows.
+- 2026-03-10: Completed `1.1.15` by adding GitHub Actions CI workflow with lint/type-check and build/test jobs.
 
 > Update this file daily by checking completed tasks and adjusting percentage estimates.

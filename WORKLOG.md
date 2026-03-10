@@ -235,3 +235,20 @@ Notes:
 - Validated:
   - `scripts/lint.ps1` runs successfully
   - `scripts/test.ps1` runs successfully
+
+## 2026-03-10 - Next task completed (`1.1.15`)
+
+- Added CI workflow: `.github/workflows/ci.yml`
+  - Job 1: `lint-typecheck`
+    - install backend/frontend dependencies
+    - backend syntax check (`python -m compileall backend/app`)
+    - frontend type-check (`npm run lint` -> `tsc --noEmit`)
+  - Job 2: `test-build`
+    - backend sanity check
+    - frontend production build
+    - docker compose config validation
+- Locally validated CI-equivalent command sequence:
+  - backend compile
+  - frontend lint/type-check
+  - frontend build
+  - compose config validation
