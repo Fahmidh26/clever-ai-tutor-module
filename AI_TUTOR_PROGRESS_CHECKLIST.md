@@ -21,29 +21,36 @@
 
 ## 1) Foundation & DevOps (Phase 1.1)
 
-- [x] Frontend scaffold created
-- [x] Backend scaffold created
-- [x] Environment files prepared
-- [x] Docker-based run flow available
-- [ ] Structured logging and tracing finalized
-- [ ] DB migration system finalized
-- [ ] Production-grade health checks
-- [ ] CI pipeline for lint/test/build
-- [ ] Seed scripts for personas/subjects/standards
+- [ ] `1.1.1` Initialize Python project (`pyproject.toml`, Poetry/uv, Python 3.13)
+- [x] `1.1.2` FastAPI app skeleton with router structure
+- [ ] `1.1.3` Pydantic v2 settings management (`config.py` env validation)
+- [ ] `1.1.4` Structured logging (structlog + OpenTelemetry)
+- [ ] `1.1.5` asyncpg connection pool setup with health checks
+- [ ] `1.1.6` Next.js 16 project with App Router + TypeScript strict mode
+- [ ] `1.1.7` Tailwind 4 + shadcn/ui 4 setup and theming
+- [ ] `1.1.8` Zustand 5 store skeleton (auth/session/ui/chat)
+- [ ] `1.1.9` API client layer with interceptors/retry/error handling
+- [ ] `1.1.10` Layout shell (sidebar/header/main)
+- [x] `1.1.11` Docker Compose with core services
+- [ ] `1.1.12` PostgreSQL init.sql with full schema + indexes
+- [ ] `1.1.13` Seed data SQL (personas, subjects, topics, standards)
+- [ ] `1.1.14` Makefile/scripts (dev, test, migrate, seed, lint, format)
+- [ ] `1.1.15` CI pipeline skeleton (lint, type-check, test)
 
 ---
 
 ## 2) Authentication + Root-Site Integration (Phase 1.2)
 
-- [x] OAuth login endpoint
-- [x] OAuth callback endpoint
-- [x] Session/me endpoint
-- [x] Logout endpoint
-- [x] Backend proxy to main site APIs (`/api/main-site/{path}`)
-- [x] Session token forwarding to root site
-- [ ] Comprehensive role-based authorization
-- [ ] Redis-backed rate limiting
-- [ ] Auth integration tests against live `:8000`
+- [ ] `1.2.1` RootSiteClient service (OAuth/JWT/user/credits/catalog/plan checks)
+- [x] `1.2.2` Auth middleware (JWT/session extraction and user context)
+- [ ] `1.2.3` Internal `X-Auth-Hex` header for service-to-service calls
+- [ ] `1.2.4` Token service (estimate/reserve/reconcile)
+- [x] `1.2.5` Frontend OAuth redirect flow + session management
+- [ ] `1.2.6` Frontend protected routes + auth context provider
+- [x] `1.2.7` Frontend login/logout flow (+ root-site redirect path)
+- [ ] `1.2.8` Tutor user sync on first login
+- [ ] `1.2.9` Role-based access control (student/teacher/parent/admin)
+- [ ] `1.2.10` Redis-backed per-user/per-endpoint rate limiting
 
 ---
 
@@ -120,5 +127,6 @@
 ## Update Log
 
 - 2026-03-10: Initial checklist created from `WORKLOG.md` + roadmap mapping.
+- 2026-03-10: Updated Phase 1.1 and 1.2 to exact roadmap IDs (`1.1.x`, `1.2.x`) from `AI_TUTOR_MODULE (1).md`.
 
 > Update this file daily by checking completed tasks and adjusting percentage estimates.
