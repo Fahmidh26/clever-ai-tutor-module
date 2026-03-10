@@ -7,7 +7,7 @@
 
 ## Overall Progress Snapshot (Estimated)
 
-- Foundation setup: **92%**
+- Foundation setup: **96%**
 - Main-site auth/API integration: **75%**
 - Core tutoring engine: **20%**
 - RAG + teacher knowledge base: **5%**
@@ -30,7 +30,7 @@
 - [x] `1.1.7` Tailwind 4 + shadcn/ui 4 setup and theming
 - [x] `1.1.8` Zustand 5 store skeleton (auth/session/ui/chat)
 - [x] `1.1.9` API client layer with interceptors/retry/error handling
-- [ ] `1.1.10` Layout shell (sidebar/header/main)
+- [x] `1.1.10` Layout shell (sidebar/header/main)
 - [x] `1.1.11` Docker Compose with core services
 - [ ] `1.1.12` PostgreSQL init.sql with full schema + indexes
 - [ ] `1.1.13` Seed data SQL (personas, subjects, topics, standards)
@@ -134,5 +134,6 @@
 - 2026-03-10: Completed `1.1.7` with Tailwind 4 + shadcn setup, OKLCH light/dark tokens, and first reusable UI component.
 - 2026-03-10: Completed `1.1.8` by adding Zustand stores (`auth`, `session`, `ui`, `chat`) and integrating them into the main page flow.
 - 2026-03-10: Completed `1.1.9` with centralized API client (retry/backoff, normalized API errors, unauthorized hook) and migrated page calls to it.
+- 2026-03-10: Completed `1.1.10` by implementing application shell layout (sidebar + topbar + main content container).
 
 > Update this file daily by checking completed tasks and adjusting percentage estimates.
