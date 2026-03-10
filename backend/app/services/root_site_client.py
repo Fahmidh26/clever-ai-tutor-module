@@ -142,6 +142,12 @@ class RootSiteClient:
     def _auth_headers(self, access_token: str) -> dict[str, str]:
         return {"Authorization": f"Bearer {access_token}", "Accept": "application/json"}
 
+    def _add_internal_auth_header(self, headers: dict[str, str] | None) -> dict[str, str]:
+        merged_headers = dict(headers or {})
+        if self._settings.root_site_x_auth_hex:
+            merged_headers["X-Auth-Hex"] = self._settings.root_site_x_auth_hex
+        return merged_headers
+
     async def _get_jwks(self, force_refresh: bool = False) -> dict[str, Any]:
         now = time.monotonic()
         if not force_refresh and self._jwks_cache and now < self._jwks_cache_expires_at:
@@ -187,9 +193,16 @@ class RootSiteClient:
         absolute_url: bool = False,
     ) -> httpx.Response:
         target_url = path if absolute_url else urljoin(f"{self._settings.aisite_oauth_internal_url}/", path.lstrip("/"))
+        request_headers = self._add_internal_auth_header(headers)
         async with httpx.AsyncClient(timeout=self._timeout_seconds) as client:
             try:
-                return await client.request(method=method, url=target_url, headers=headers, data=data, json=json)
+                return await client.request(
+                    method=method,
+                    url=target_url,
+                    headers=request_headers,
+                    data=data,
+                    json=json,
+                )
             except httpx.HTTPError as exc:
                 raise RootSiteClientError(
                     message=f"Failed request to root site: {target_url}",

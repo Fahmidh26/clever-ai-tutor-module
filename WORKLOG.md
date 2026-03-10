@@ -276,3 +276,18 @@ Notes:
 - Validation run:
   - `python -m compileall backend/app`
   - `powershell -ExecutionPolicy Bypass -File scripts/lint.ps1`
+
+## 2026-03-10 - Next task completed (`1.2.3`)
+
+- Implemented internal service-to-service auth header support (`X-Auth-Hex`) for root-site calls.
+- Added backend config/env key:
+  - `ROOT_SITE_X_AUTH_HEX`
+- Wired header injection into:
+  - `RootSiteClient` outbound requests in `backend/app/services/root_site_client.py`
+  - Main-site proxy outbound requests in `backend/app/routers/proxy.py`
+- Behavior:
+  - If `ROOT_SITE_X_AUTH_HEX` is set, backend includes `X-Auth-Hex: <value>` for root-site calls.
+  - If unset, behavior remains backward-compatible (no header added).
+- Validation run:
+  - `python -m compileall backend/app`
+  - `powershell -ExecutionPolicy Bypass -File scripts/lint.ps1`

@@ -32,13 +32,17 @@ async def call_main_site(path: str, request: Request):
             data_body = dict(await request.form())
 
     async with httpx.AsyncClient(timeout=30) as client:
+        headers = {"Authorization": f"Bearer {token}", "Accept": "application/json"}
+        if settings.root_site_x_auth_hex:
+            headers["X-Auth-Hex"] = settings.root_site_x_auth_hex
+
         proxy_response = await client.request(
             method=request.method,
             url=target_url,
             params=query_params,
             json=json_body,
             data=data_body,
-            headers={"Authorization": f"Bearer {token}", "Accept": "application/json"},
+            headers=headers,
         )
 
     response_content_type = proxy_response.headers.get("content-type", "").lower()
