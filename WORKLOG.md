@@ -106,3 +106,21 @@ Notes:
   - `DB_POOL_MAX_SIZE`
 - Added `asyncpg` to backend requirements
 - Re-validated backend syntax after changes
+
+## 2026-03-10 - Next task completed (`1.1.6`)
+
+- Migrated frontend from Vite SPA to Next.js 16 (App Router) with TypeScript strict mode
+- Added core Next.js files:
+  - `app/layout.tsx`
+  - `app/page.tsx` (ported existing login/session/experts/demo-chat behavior)
+  - `app/globals.css`
+  - `next.config.ts`
+  - `tsconfig.json`
+  - `next-env.d.ts`
+  - `.eslintrc.json` (Next.js config)
+- Updated frontend env key:
+  - `VITE_API_BASE_URL` -> `NEXT_PUBLIC_API_BASE_URL`
+- Updated Docker setup for Next.js runtime:
+  - `frontend/Dockerfile` now builds and serves Next.js app
+  - `docker-compose.yml` build arg updated to `NEXT_PUBLIC_API_BASE_URL`
+- Verified build success with `npm run build`

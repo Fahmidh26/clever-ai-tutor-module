@@ -15,7 +15,7 @@ services:
     build:
       context: ./frontend
       args:
-        VITE_API_BASE_URL: http://localhost:8003
+        NEXT_PUBLIC_API_BASE_URL: http://localhost:8003
     depends_on:
       - backend
     ports:
