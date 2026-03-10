@@ -7,6 +7,7 @@ services:
       POSTGRES_PASSWORD: postgres
     volumes:
       - tutor-db-data:/var/lib/postgresql/data
+      - ./backend/db/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
     ports:
       - "5432:5432"
     healthcheck:

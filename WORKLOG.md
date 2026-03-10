@@ -194,3 +194,17 @@ Notes:
 - Added `celery[redis]` dependency and `REDIS_URL` config support
 - Validated compose file with `docker compose config`
 - Re-validated backend syntax after Celery/config changes
+
+## 2026-03-10 - Next task completed (`1.1.12`)
+
+- Added `backend/db/init.sql` with idempotent PostgreSQL schema setup:
+  - Core tutoring tables (`tutor_users`, `tutor_sessions`, `tutor_messages`, personas)
+  - RAG tables (`knowledge_bases`, `kb_documents`, `kb_chunks`, assignments)
+  - Class/enrollment/parent link tables
+  - Learning intelligence, assessments, gamification, flashcards, standards
+  - Portfolio/analytics/notifications/restrictions/learning-path tables
+  - pgvector extension + HNSW vector index for chunk embeddings
+  - Supporting indexes for high-frequency foreign key and query paths
+- Wired schema init into Docker DB startup:
+  - Mounted `./backend/db/init.sql` -> `/docker-entrypoint-initdb.d/01-init.sql`
+- Validated compose configuration after SQL init wiring
