@@ -367,3 +367,26 @@ Notes:
 - Validation run:
   - `python -m compileall backend/app`
   - `powershell -ExecutionPolicy Bypass -File scripts/lint.ps1`
+
+## 2026-03-11 - Next task completed (`1.2.10`)
+
+- Added Redis-backed rate limiter service:
+  - `backend/app/services/rate_limiter.py`
+  - Per-user + per-endpoint counters using Redis `INCR` + `EXPIRE` in time windows
+  - Endpoint key normalization and structured 429 response payload (`limit`, `remaining`, `reset_after_seconds`)
+  - Fail-open behavior if user identity is missing or Redis client is unavailable
+- Wired rate limiter lifecycle into FastAPI app startup/shutdown:
+  - `backend/app/main.py` now initializes and closes Redis rate-limiter client in lifespan
+- Enforced rate limits on authenticated API routes:
+  - `backend/app/routers/auth.py` for `/api/me` and `/api/logout`
+  - `backend/app/routers/proxy.py` for `/api/main-site/{path:path}`
+- Added tunable settings:
+  - `backend/app/config.py`:
+    - `rate_limit_requests_per_window` (default `120`)
+    - `rate_limit_window_seconds` (default `60`)
+  - `backend/.env.example`:
+    - `RATE_LIMIT_REQUESTS_PER_WINDOW=120`
+    - `RATE_LIMIT_WINDOW_SECONDS=60`
+- Validation run:
+  - `python -m compileall backend/app`
+  - `powershell -ExecutionPolicy Bypass -File scripts/lint.ps1`

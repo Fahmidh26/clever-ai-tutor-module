@@ -8,6 +8,7 @@ from fastapi.responses import JSONResponse, RedirectResponse
 
 from app.config import settings
 from app.services import root_site_client, sync_tutor_user_on_login
+from app.services.rate_limiter import enforce_user_rate_limit
 from app.services.rbac import resolve_user_role
 from app.services.root_site_client import RootSiteClientError
 from app.services.tutor_user_sync import TutorUserSyncError
@@ -77,6 +78,13 @@ async def oauth_callback(request: Request, code: str | None = None, state: str |
 
 @router.get("/api/me")
 async def me(request: Request):
+    rate_limit_response = await enforce_user_rate_limit(
+        request,
+        endpoint_key=f"{request.method}:{request.url.path}",
+    )
+    if rate_limit_response is not None:
+        return rate_limit_response
+
     user = request.session.get("user")
     token = request.session.get("access_token")
     if not token:
@@ -88,5 +96,12 @@ async def me(request: Request):
 @router.post("/api/logout")
 @router.get("/api/logout")
 async def logout(request: Request):
+    rate_limit_response = await enforce_user_rate_limit(
+        request,
+        endpoint_key=f"{request.method}:{request.url.path}",
+    )
+    if rate_limit_response is not None:
+        return rate_limit_response
+
     request.session.clear()
     return {"ok": True}

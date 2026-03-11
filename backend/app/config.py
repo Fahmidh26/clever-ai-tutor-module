@@ -34,6 +34,8 @@ class Settings(BaseSettings):
     token_estimate_chars_per_token: int = 4
     token_reserve_buffer_ratio: float = 1.15
     token_default_output_tokens: int = 512
+    rate_limit_requests_per_window: int = 120
+    rate_limit_window_seconds: int = 60
 
     @field_validator(
         "aisite_oauth_base_url",

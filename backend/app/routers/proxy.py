@@ -7,6 +7,7 @@ from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 
 from app.config import settings
+from app.services.rate_limiter import enforce_user_rate_limit
 from app.services.rbac import evaluate_access, required_roles_for_proxy_path
 
 router = APIRouter(tags=["proxy"])
@@ -14,6 +15,13 @@ router = APIRouter(tags=["proxy"])
 
 @router.api_route("/api/main-site/{path:path}", methods=["GET", "POST", "PUT", "PATCH", "DELETE"])
 async def call_main_site(path: str, request: Request):
+    rate_limit_response = await enforce_user_rate_limit(
+        request,
+        endpoint_key=f"{request.method}:/api/main-site/{path}",
+    )
+    if rate_limit_response is not None:
+        return rate_limit_response
+
     token = request.session.get("access_token")
     if not token:
         return JSONResponse(status_code=401, content={"error": "Not authenticated"})

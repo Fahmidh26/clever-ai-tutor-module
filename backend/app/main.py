@@ -14,6 +14,7 @@ from app.middleware.request_logging import request_logging_middleware
 from app.routers.auth import router as auth_router
 from app.routers.health import router as health_router
 from app.routers.proxy import router as proxy_router
+from app.services.rate_limiter import close_rate_limiter, init_rate_limiter
 
 configure_logging()
 
@@ -21,9 +22,11 @@ configure_logging()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await init_db_pool(app)
+    await init_rate_limiter(app)
     try:
         yield
     finally:
+        await close_rate_limiter(app)
         await close_db_pool(app)
 
 
