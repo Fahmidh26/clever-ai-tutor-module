@@ -549,3 +549,51 @@ Notes:
   - `php -l app/Http/Controllers/Api/TutorGatewayController.php`
   - `php -l routes/api.php`
   - `php artisan route:list --path=api` (verified new routes are registered)
+
+## 2026-03-11 - Next task completed (`1.3.7`)
+
+- Added SSE streaming chat endpoint on main site:
+  - `POST /api/tutor/sessions/{session}/chat` in `C:\AISITENEW\routes\api.php`
+  - Implemented in `C:\AISITENEW\app\Http\Controllers\Api\TutorGatewayController.php::streamSessionChat`
+  - Behavior:
+    - validates ownership of session
+    - executes tutor model call on main site
+    - persists prompt/response into `ai_chat_messages`
+    - updates `ai_chats.total_words`
+    - deducts tokens/credits on main-site side
+    - streams SSE events (`stream_start`, `token`, `stream_end`)
+- Added tutor proxy streaming pass-through:
+  - `backend/app/routers/proxy.py` now detects `Accept: text/event-stream`
+  - Uses upstream streamed request and returns `StreamingResponse` without buffering
+  - Preserves existing JSON behavior for non-stream requests
+- Validation run:
+  - Tutor repo:
+    - `python -m compileall backend/app`
+    - `powershell -ExecutionPolicy Bypass -File scripts/lint.ps1`
+  - Main site:
+    - `php -l app/Http/Controllers/Api/TutorGatewayController.php`
+    - `php -l routes/api.php`
+    - `php artisan route:list --path=api` (verified `api/tutor/sessions/{session}/chat`)
+
+## 2026-03-11 - Next task completed (`1.3.8`)
+
+- Hardened main-site tutor execution strategy in `C:\AISITENEW\app\Http\Controllers\Api\TutorGatewayController.php`:
+  - Added retry/fallback/timeout handling inside `runModelCompletion(...)`
+  - Candidate model selection now uses:
+    - site default model
+    - active OpenAI models from `AISettings`
+    - safe final fallbacks (`gpt-4o-mini`, `gpt-4o`)
+  - Retries transient failures (`408`, `429`, `5xx`) with short backoff
+  - Enforces per-request timeout via Laravel HTTP client
+  - Emits structured attempt metadata for observability
+- Response/stream metadata improvements:
+  - `expertChat` JSON now includes `execution` details (`strategy`, `fallback_used`, `attempts`)
+  - SSE stream start/end events now include fallback/attempt context
+- Validation run:
+  - Main site:
+    - `php -l app/Http/Controllers/Api/TutorGatewayController.php`
+    - `php -l routes/api.php`
+    - `php artisan route:list --path=api` (stream route still present)
+  - Tutor repo:
+    - `python -m compileall backend/app`
+    - `powershell -ExecutionPolicy Bypass -File scripts/lint.ps1`

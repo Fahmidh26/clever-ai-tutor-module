@@ -4,7 +4,7 @@ from urllib.parse import urljoin
 
 import httpx
 from fastapi import APIRouter, Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 
 from app.config import settings
 from app.services.rate_limiter import enforce_user_rate_limit
@@ -43,6 +43,7 @@ async def call_main_site(path: str, request: Request):
     target_url = urljoin(f"{settings.aisite_oauth_internal_url}/", path.lstrip("/"))
     query_params = dict(request.query_params)
     content_type = request.headers.get("content-type", "").lower()
+    accept_header = request.headers.get("accept", "application/json")
 
     json_body = None
     data_body = None
@@ -54,11 +55,50 @@ async def call_main_site(path: str, request: Request):
         elif "application/x-www-form-urlencoded" in content_type or "multipart/form-data" in content_type:
             data_body = dict(await request.form())
 
-    async with httpx.AsyncClient(timeout=30) as client:
-        headers = {"Authorization": f"Bearer {token}", "Accept": "application/json"}
-        if settings.root_site_x_auth_hex:
-            headers["X-Auth-Hex"] = settings.root_site_x_auth_hex
+    headers = {"Authorization": f"Bearer {token}", "Accept": accept_header}
+    if settings.root_site_x_auth_hex:
+        headers["X-Auth-Hex"] = settings.root_site_x_auth_hex
 
+    wants_sse = "text/event-stream" in accept_header
+    if wants_sse:
+        client = httpx.AsyncClient(timeout=None)
+        upstream_response = await client.send(
+            client.build_request(
+                method=request.method,
+                url=target_url,
+                params=query_params,
+                json=json_body,
+                data=data_body,
+                headers=headers,
+            ),
+            stream=True,
+        )
+        if upstream_response.status_code >= 400:
+            body = await upstream_response.aread()
+            await upstream_response.aclose()
+            await client.aclose()
+            return JSONResponse(
+                status_code=upstream_response.status_code,
+                content={"error": "Main-site stream request failed", "details": body.decode("utf-8", errors="ignore")},
+            )
+
+        async def sse_iterator():
+            try:
+                async for chunk in upstream_response.aiter_bytes():
+                    yield chunk
+            finally:
+                await upstream_response.aclose()
+                await client.aclose()
+
+        stream_content_type = upstream_response.headers.get("content-type", "text/event-stream")
+        return StreamingResponse(
+            sse_iterator(),
+            status_code=upstream_response.status_code,
+            media_type=stream_content_type,
+            headers={"Cache-Control": "no-cache"},
+        )
+
+    async with httpx.AsyncClient(timeout=30) as client:
         proxy_response = await client.request(
             method=request.method,
             url=target_url,

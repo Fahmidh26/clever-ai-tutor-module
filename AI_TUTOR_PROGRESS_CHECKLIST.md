@@ -13,7 +13,7 @@
 
 - Foundation setup: **100%**
 - Main-site auth/API integration: **100%**
-- Core tutoring engine: **45%**
+- Core tutoring engine: **65%**
 - RAG + teacher knowledge base: **5%**
 - UX polish + adaptive UI: **20%**
 - Intelligence (mastery/quiz/hints): **0%**
@@ -64,10 +64,10 @@
 - [x] At least one production LLM provider wired end-to-end (via main-site API execution + tutor proxy)
 - [x] Session create/list/get APIs (main-site `/api/tutor/sessions*`, consumed by tutor proxy)
 - [x] Message persistence (main-site `ai_chat_messages` through `/api/expert-chat`)
-- [ ] SSE streaming chat endpoint (`1.3.7`)
+- [x] SSE streaming chat endpoint (`1.3.7`) via main-site `POST /api/tutor/sessions/{session}/chat` + tutor proxy pass-through
 - [ ] 7 interaction modes (or MVP subset first)
 - [ ] Safety/guardrail middleware
-- [ ] Retry/fallback/timeout strategy (`1.3.8`)
+- [x] Retry/fallback/timeout strategy (`1.3.8`)
 - [ ] Token usage metering + credit reconciliation
 
 Phase 1.3 provider subtask status (implementation-only so far):
@@ -165,5 +165,7 @@ Phase 1.3 provider subtask status (implementation-only so far):
 - 2026-03-11: Completed `1.3.4` Gemini provider by adding streaming GenerateContent SSE integration (`gemini-2.5-pro`, `gemini-2.5-flash`), env-configurable Gemini settings, and provider auto-registration.
 - 2026-03-11: Architecture decision: tutor app runs in `main_site_proxy_only` mode (no direct provider keys/calls). All experts/functions/LLM execution are invoked through main-site APIs (`C:\AISITENEW`) via tutor backend proxy.
 - 2026-03-11: Main-site tutor API contract added in `C:\AISITENEW` (`/api/experts`, `/api/expert-chat`, `/api/tutor/sessions*`) and aligned as source of truth for tutor execution/data.
+- 2026-03-11: Completed `1.3.7` by adding main-site SSE endpoint (`/api/tutor/sessions/{session}/chat`) and implementing tutor proxy streaming pass-through for `text/event-stream` requests.
+- 2026-03-11: Completed `1.3.8` by adding main-site retry/fallback/timeout execution strategy in tutor gateway (`runModelCompletion`) with model candidate fallback, transient retry policy, timeout enforcement, and execution-attempt metadata in API responses/stream events.
 
 > Update this file daily by checking completed tasks and adjusting percentage estimates.
