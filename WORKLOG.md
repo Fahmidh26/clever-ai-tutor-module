@@ -390,3 +390,22 @@ Notes:
 - Validation run:
   - `python -m compileall backend/app`
   - `powershell -ExecutionPolicy Bypass -File scripts/lint.ps1`
+
+## 2026-03-11 - Next task completed (`1.3.1`)
+
+- Added provider abstraction layer under `backend/app/services/ai_providers/`:
+  - `base.py`:
+    - `BaseProvider` abstract class with unified interface:
+      - `stream_chat(messages, model_config)` -> `AsyncGenerator[str, None]`
+      - `count_tokens(text)` -> `int`
+    - Shared typed payloads (`ChatMessage`, `ModelConfig`) and `ProviderError`
+  - `registry.py`:
+    - `ProviderRegistry` for provider registration + lookup
+    - Model/provider resolution guard (`resolve`) with support validation
+  - `__init__.py` exports for clean imports by upcoming provider implementations
+- Wired global registry singleton:
+  - `backend/app/services/__init__.py` now initializes `provider_registry = ProviderRegistry()`
+- This creates the stable interface needed for upcoming provider tasks (`1.3.2+`) without locking to a specific vendor implementation yet.
+- Validation run:
+  - `python -m compileall backend/app`
+  - `powershell -ExecutionPolicy Bypass -File scripts/lint.ps1`

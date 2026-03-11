@@ -9,7 +9,7 @@
 
 - Foundation setup: **100%**
 - Main-site auth/API integration: **100%**
-- Core tutoring engine: **20%**
+- Core tutoring engine: **25%**
 - RAG + teacher knowledge base: **5%**
 - UX polish + adaptive UI: **20%**
 - Intelligence (mastery/quiz/hints): **0%**
@@ -56,7 +56,7 @@
 
 ## 3) Core Tutoring Engine (Phase 1.3)
 
-- [ ] Provider abstraction layer
+- [x] Provider abstraction layer
 - [ ] At least one production LLM provider wired end-to-end
 - [ ] Session create/list/get APIs
 - [ ] Message persistence
@@ -147,5 +147,6 @@
 - 2026-03-11: Completed `1.2.8` by adding first-login tutor user sync in OAuth callback (DB upsert into `tutor_users` with role/profile fields) and storing `tutor_user` metadata in session payload.
 - 2026-03-11: Completed `1.2.9` by adding RBAC utilities (role resolution + access decisions), enforcing role checks for proxied `/api/admin*`, `/api/teacher*`, and `/api/parent*` paths, and exposing resolved role via `/api/me` for frontend guards.
 - 2026-03-11: Completed `1.2.10` by adding Redis-backed user/endpoint rate limiter service, initializing it in app lifespan, and enforcing limits on authenticated session/proxy API routes.
+- 2026-03-11: Completed `1.3.1` provider abstraction layer by adding `BaseProvider` (`stream_chat`, `count_tokens`) and a provider registry scaffold for model/provider resolution.
 
 > Update this file daily by checking completed tasks and adjusting percentage estimates.
