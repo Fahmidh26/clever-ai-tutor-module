@@ -468,3 +468,58 @@ Notes:
 - Validation run:
   - `python -m compileall backend/app`
   - `powershell -ExecutionPolicy Bypass -File scripts/lint.ps1`
+
+## 2026-03-11 - Next task completed (`1.3.4`)
+
+- Added Gemini provider implementation:
+  - `backend/app/services/ai_providers/gemini_provider.py`
+  - Direct `httpx` integration with Gemini streaming endpoint (`:streamGenerateContent?alt=sse`)
+  - SSE chunk parsing for streamed candidate text tokens
+  - Supported models: `gemini-2.5-pro`, `gemini-2.5-flash`
+  - Token estimation method (`count_tokens`) aligned with existing heuristic
+- Wired provider registration:
+  - `backend/app/services/__init__.py` now auto-registers `GeminiProvider` when `GEMINI_API_KEY` is configured
+  - `backend/app/services/ai_providers/__init__.py` exports `GeminiProvider`
+- Added Gemini settings:
+  - `backend/app/config.py`:
+    - `gemini_api_key`
+    - `gemini_base_url`
+    - `gemini_timeout_seconds`
+  - `backend/.env.example`:
+    - `GEMINI_API_KEY`
+    - `GEMINI_BASE_URL`
+    - `GEMINI_TIMEOUT_SECONDS`
+- Validation run:
+  - `python -m compileall backend/app`
+  - `powershell -ExecutionPolicy Bypass -File scripts/lint.ps1`
+
+## 2026-03-11 - Architecture pivot: main-site-only function execution
+
+- Confirmed architecture rule from product direction:
+  - Tutor app must not require direct provider API keys
+  - All AI/expert/function execution is delegated to main-site APIs (`C:\AISITENEW`)
+  - Tutor backend acts as authenticated proxy/orchestrator only
+- Backend changes in tutor repo:
+  - `backend/app/config.py`:
+    - Removed direct provider key/base-url settings
+    - Added `ai_execution_mode` with default `main_site_proxy_only`
+  - `backend/.env.example`:
+    - Removed provider key variables (`OPENAI_*`, `ANTHROPIC_*`, `GEMINI_*`)
+    - Added `AI_EXECUTION_MODE=main_site_proxy_only`
+  - `backend/app/services/__init__.py`:
+    - Removed concrete provider registrations
+    - Exposes `ai_execution_mode` for runtime visibility
+  - `backend/app/routers/health.py`:
+    - Replaced provider list output with `ai_execution_mode`
+  - Removed direct provider implementations:
+    - `backend/app/services/ai_providers/openai_provider.py`
+    - `backend/app/services/ai_providers/anthropic_provider.py`
+    - `backend/app/services/ai_providers/gemini_provider.py`
+    - Updated `backend/app/services/ai_providers/__init__.py` exports accordingly
+- Frontend clarification:
+  - `frontend/app/page.tsx` text now explicitly states proxy-only AI function calls via main site
+- Docs/handoff updated:
+  - `AI_TUTOR_PROGRESS_CHECKLIST.md` and `SESSION_HANDOFF.md` now enforce main-site-proxy execution rule
+- Validation run:
+  - `python -m compileall backend/app`
+  - `powershell -ExecutionPolicy Bypass -File scripts/lint.ps1`

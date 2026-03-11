@@ -137,7 +137,7 @@ export default function HomePage() {
             <header className="header">
               <div>
                 <h1>Clever AI Tutor</h1>
-                <p>Next.js + FastAPI with shared main-site authentication.</p>
+                <p>Next.js + FastAPI with shared main-site auth and proxy-only AI function calls.</p>
               </div>
             </header>
 

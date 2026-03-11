@@ -22,6 +22,7 @@ After each task: implement, validate, and update checklist + worklog.
 - Follow strict order from checklist
 - Do not skip validation (build/lint/syntax checks)
 - Keep main-site integration (`:8000`) working
+- Enforce tutor AI flow: `main_site_proxy_only` (no direct provider API keys in tutor repo)
 - If shared APIs/data are needed, update both repos:
   - Tutor app: `D:\USA\clever-ai-tutor`
   - Main site: `C:\AISITENEW`

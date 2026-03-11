@@ -36,13 +36,7 @@ class Settings(BaseSettings):
     token_default_output_tokens: int = 512
     rate_limit_requests_per_window: int = 120
     rate_limit_window_seconds: int = 60
-    openai_api_key: str | None = None
-    openai_base_url: str = "https://api.openai.com"
-    openai_timeout_seconds: float = 60.0
-    anthropic_api_key: str | None = None
-    anthropic_base_url: str = "https://api.anthropic.com"
-    anthropic_api_version: str = "2023-06-01"
-    anthropic_timeout_seconds: float = 60.0
+    ai_execution_mode: str = "main_site_proxy_only"
 
     @field_validator(
         "aisite_oauth_base_url",

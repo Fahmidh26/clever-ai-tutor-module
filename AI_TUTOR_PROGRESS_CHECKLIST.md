@@ -13,7 +13,7 @@
 
 - Foundation setup: **100%**
 - Main-site auth/API integration: **100%**
-- Core tutoring engine: **35%**
+- Core tutoring engine: **30%**
 - RAG + teacher knowledge base: **5%**
 - UX polish + adaptive UI: **20%**
 - Intelligence (mastery/quiz/hints): **0%**
@@ -71,11 +71,11 @@
 - [ ] Token usage metering + credit reconciliation
 
 Phase 1.3 provider subtask status (implementation-only so far):
-- [x] `1.3.2` OpenAI provider class (not wired end-to-end yet)
-- [x] `1.3.3` Anthropic provider class (not wired end-to-end yet)
-- [ ] `1.3.4` Google Gemini provider
-- [ ] `1.3.5` xAI Grok provider
-- [ ] `1.3.6` Provider registry metadata expansion
+- [x] `1.3.2` OpenAI handled by main site APIs (`C:\AISITENEW`) - no local tutor API keys
+- [x] `1.3.3` Anthropic handled by main site APIs (`C:\AISITENEW`) - no local tutor API keys
+- [x] `1.3.4` Gemini handled by main site APIs (`C:\AISITENEW`) - no local tutor API keys
+- [ ] `1.3.5` xAI Grok (implement in main site, consume via tutor proxy)
+- [ ] `1.3.6` Provider/model metadata sourced from main site catalog sync
 
 ---
 
@@ -162,5 +162,7 @@ Phase 1.3 provider subtask status (implementation-only so far):
 - 2026-03-11: Completed `1.3.2` OpenAI provider by adding streaming Chat Completions integration (`gpt-4o`, `gpt-4o-mini`) with direct `httpx` SSE parsing, env-configurable OpenAI settings, and provider auto-registration.
 - 2026-03-11: Cross-repo reminder added to handoff/checklist: when shared platform API changes are required, update both `D:\USA\clever-ai-tutor` and `C:\AISITENEW`.
 - 2026-03-11: Completed `1.3.3` Anthropic provider by adding streaming Messages API integration (`claude-4-sonnet`, `claude-4-haiku`), env-configurable Anthropic settings, and provider auto-registration.
+- 2026-03-11: Completed `1.3.4` Gemini provider by adding streaming GenerateContent SSE integration (`gemini-2.5-pro`, `gemini-2.5-flash`), env-configurable Gemini settings, and provider auto-registration.
+- 2026-03-11: Architecture decision: tutor app runs in `main_site_proxy_only` mode (no direct provider keys/calls). All experts/functions/LLM execution are invoked through main-site APIs (`C:\AISITENEW`) via tutor backend proxy.
 
 > Update this file daily by checking completed tasks and adjusting percentage estimates.
