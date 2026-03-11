@@ -13,7 +13,7 @@
 
 - Foundation setup: **100%**
 - Main-site auth/API integration: **100%**
-- Core tutoring engine: **85%**
+- Core tutoring engine: **89%**
 - RAG + teacher knowledge base: **5%**
 - UX polish + adaptive UI: **20%**
 - Intelligence (mastery/quiz/hints): **0%**
@@ -74,7 +74,7 @@ Phase 1.3 provider subtask status (implementation-only so far):
 - [x] `1.3.2` OpenAI handled by main site APIs (`C:\AISITENEW`) - no local tutor API keys
 - [x] `1.3.3` Anthropic handled by main site APIs (`C:\AISITENEW`) - no local tutor API keys
 - [x] `1.3.4` Gemini handled by main site APIs (`C:\AISITENEW`) - no local tutor API keys
-- [ ] `1.3.5` xAI Grok (implement in main site, consume via tutor proxy)
+- [x] `1.3.5` xAI Grok (implement in main site, consume via tutor proxy)
 - [ ] `1.3.6` Provider/model metadata sourced from main site catalog sync
 
 ---
@@ -170,5 +170,6 @@ Phase 1.3 provider subtask status (implementation-only so far):
 - 2026-03-11: Completed safety/guardrails by adding `TutorGuardrailMiddleware` on main-site tutor chat routes (input filtering) plus output guardrail sanitization in `TutorGatewayController`.
 - 2026-03-11: Completed token usage metering + credit reconciliation by adding estimate/reserve/actual token billing metrics in main-site tutor gateway, persisting billing metadata per message, and charging reconciled actual tokens via `deductUserTokensAndCredits`.
 - 2026-03-11: Completed interaction modes by adding 7 mode definitions, mode catalog API (`/api/tutor/modes`), session mode switching (`/api/tutor/sessions/{id}/mode`), and mode-aware prompt layering in both standard and SSE tutor chat paths.
+- 2026-03-11: Completed `1.3.5` xAI Grok provider routing in main-site tutor gateway by making retry/fallback provider-aware (`openai` + `grok`), resolving active model/provider candidates from `AISettings`, and executing Grok via `services.xai` API credentials while preserving tutor proxy consumption flow.
 
 > Update this file daily by checking completed tasks and adjusting percentage estimates.

@@ -683,3 +683,32 @@ Notes:
   - Tutor repo:
     - `python -m compileall backend/app`
     - `powershell -ExecutionPolicy Bypass -File scripts/lint.ps1`
+
+## 2026-03-11 - Next task completed (`1.3.5` xAI Grok provider via main-site proxy)
+
+- Added provider-aware model execution in main-site tutor gateway:
+  - `C:\AISITENEW\app\Http\Controllers\Api\TutorGatewayController.php`
+  - Reworked retry/fallback from model-only to provider+model target routing
+  - Supports OpenAI + xAI Grok using provider-specific credentials/base URLs
+- Implemented Grok request path as OpenAI-compatible chat completions:
+  - Provider `grok` resolves credentials from `config('services.xai.*')`
+  - Requests sent to `https://api.x.ai/v1/chat/completions`
+  - OpenAI path continues to use `https://api.openai.com/v1/chat/completions`
+- Candidate model/provider selection now uses active `AISettings` rows:
+  - Reads both `openai` and `grok` provider entries
+  - Preserves default-model priority from `siteSettings.default_model`
+  - Skips providers that have missing API keys (fail-open to other configured providers)
+- Response/stream execution metadata now carries provider context:
+  - JSON usage includes `provider` + `model`
+  - SSE start/end metadata includes provider details
+  - Execution attempt entries include provider for fallback observability
+- Tutor app remains proxy-only and unchanged in architecture:
+  - `D:\USA\clever-ai-tutor` still consumes main-site tutor APIs only
+  - No direct provider keys/calls added in tutor repo
+- Validation run:
+  - Main site:
+    - `php -l app/Http/Controllers/Api/TutorGatewayController.php`
+    - `php artisan route:list --path=api/tutor`
+  - Tutor repo:
+    - `python -m compileall backend/app`
+    - `powershell -ExecutionPolicy Bypass -File scripts/lint.ps1`
