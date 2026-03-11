@@ -8,7 +8,7 @@
 ## Overall Progress Snapshot (Estimated)
 
 - Foundation setup: **100%**
-- Main-site auth/API integration: **90%**
+- Main-site auth/API integration: **96%**
 - Core tutoring engine: **20%**
 - RAG + teacher knowledge base: **5%**
 - UX polish + adaptive UI: **20%**
@@ -46,9 +46,9 @@
 - [x] `1.2.3` Internal `X-Auth-Hex` header for service-to-service calls
 - [x] `1.2.4` Token service (estimate/reserve/reconcile)
 - [x] `1.2.5` Frontend OAuth redirect flow + session management
-- [ ] `1.2.6` Frontend protected routes + auth context provider
+- [x] `1.2.6` Frontend protected routes + auth context provider
 - [x] `1.2.7` Frontend login/logout flow (+ root-site redirect path)
-- [ ] `1.2.8` Tutor user sync on first login
+- [x] `1.2.8` Tutor user sync on first login
 - [ ] `1.2.9` Role-based access control (student/teacher/parent/admin)
 - [ ] `1.2.10` Redis-backed per-user/per-endpoint rate limiting
 
@@ -143,5 +143,7 @@
 - 2026-03-10: Completed `1.2.1` by introducing `RootSiteClient` (OAuth code exchange, JWKS-cached RS256 JWT verification, user profile/credits/catalog/plan APIs) and wiring auth callback to use the service.
 - 2026-03-10: Completed `1.2.3` by adding optional internal `X-Auth-Hex` header injection for backend-to-root-site calls (both `RootSiteClient` and main-site proxy) via `ROOT_SITE_X_AUTH_HEX`.
 - 2026-03-10: Completed `1.2.4` by adding `TokenService` for token estimation, credit reservation, and reconciliation flows integrated with `RootSiteClient` credit deduction API.
+- 2026-03-10: Completed `1.2.6` by introducing frontend `AuthProvider` + auth context hook and wrapping page content with `ProtectedRoute` gating.
+- 2026-03-11: Completed `1.2.8` by adding first-login tutor user sync in OAuth callback (DB upsert into `tutor_users` with role/profile fields) and storing `tutor_user` metadata in session payload.
 
 > Update this file daily by checking completed tasks and adjusting percentage estimates.

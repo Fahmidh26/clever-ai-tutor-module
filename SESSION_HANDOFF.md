@@ -7,7 +7,7 @@ Use this file when starting a new chat/session so work continues exactly where i
 Continue this project from `AI_TUTOR_PROGRESS_CHECKLIST.md` and `WORKLOG.md`.
 Current roadmap source: `AI_TUTOR_MODULE (1).md`.
 Run one task at a time in order.
-Start from: `<PUT_NEXT_TASK_ID_HERE>` (for example: `1.2.1`).
+Start from: `<PUT_NEXT_TASK_ID_HERE>` (for example: `1.2.8`).
 After each task: implement, validate, and update checklist + worklog.
 
 ## Current Status Snapshot

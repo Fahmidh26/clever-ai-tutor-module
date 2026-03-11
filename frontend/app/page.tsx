@@ -1,17 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useAuthContext } from "@/components/auth/auth-context";
+import { ProtectedRoute } from "@/components/auth/protected-route";
 import { Button } from "@/components/ui/button";
-import { ApiError, createApiClient } from "@/lib/api-client";
-import { useAuthStore } from "@/stores/auth-store";
+import { createApiClient } from "@/lib/api-client";
 import { useChatStore } from "@/stores/chat-store";
-import { useSessionStore } from "@/stores/session-store";
 import { useUIStore } from "@/stores/ui-store";
-
-type SessionPayload = {
-  user: Record<string, unknown> | null;
-  access_token: string;
-};
 
 type Expert = {
   id?: string | number;
@@ -21,19 +16,10 @@ type Expert = {
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8003";
 export default function HomePage() {
-  const [session, setSession] = useState<SessionPayload | null>(null);
   const [experts, setExperts] = useState<Expert[]>([]);
   const [expertsError, setExpertsError] = useState("");
 
-  const loading = useSessionStore((state) => state.loading);
-  const error = useSessionStore((state) => state.error);
-  const setSessionUser = useSessionStore((state) => state.setSession);
-  const setSessionLoading = useSessionStore((state) => state.setLoading);
-  const setSessionError = useSessionStore((state) => state.setError);
-  const clearSessionStore = useSessionStore((state) => state.clearSession);
-
-  const setAuthenticated = useAuthStore((state) => state.setAuthenticated);
-  const clearAuth = useAuthStore((state) => state.clearAuth);
+  const { user, isAuthenticated, loading, error, startLogin, logout } = useAuthContext();
 
   const chatPrompt = useChatStore((state) => state.prompt);
   const chatResult = useChatStore((state) => state.result);
@@ -48,38 +34,7 @@ export default function HomePage() {
   const theme = useUIStore((state) => state.theme);
   const toggleTheme = useUIStore((state) => state.toggleTheme);
 
-  const apiClient = useMemo(
-    () =>
-      createApiClient({
-        baseUrl: apiBaseUrl,
-        onUnauthorized: () => {
-          setSession(null);
-          clearAuth();
-          clearSessionStore();
-        },
-      }),
-    [clearAuth, clearSessionStore]
-  );
-
-  const loadSession = async () => {
-    try {
-      setSessionError("");
-      const data = await apiClient.get<SessionPayload>("/api/me");
-      setSession(data);
-      setAuthenticated(data.access_token);
-      setSessionUser(data.user);
-    } catch (err) {
-      if (err instanceof ApiError && err.status === 401) {
-        setSession(null);
-        clearAuth();
-        clearSessionStore();
-        return;
-      }
-      setSessionError(err instanceof Error ? err.message : "Unexpected error while loading session");
-    } finally {
-      setSessionLoading(false);
-    }
-  };
+  const apiClient = useMemo(() => createApiClient({ baseUrl: apiBaseUrl }), []);
 
   const loadExperts = async () => {
     try {
@@ -100,17 +55,12 @@ export default function HomePage() {
   };
 
   useEffect(() => {
-    if (typeof window !== "undefined" && window.location.pathname === "/auth/callback") {
-      window.history.replaceState({}, "", "/");
-    }
-    void loadSession();
-  }, []);
-
-  useEffect(() => {
-    if (session?.access_token) {
+    if (isAuthenticated) {
       void loadExperts();
+      return;
     }
-  }, [session]);
+    setExperts([]);
+  }, [isAuthenticated]);
 
   useEffect(() => {
     if (typeof document !== "undefined") {
@@ -118,15 +68,8 @@ export default function HomePage() {
     }
   }, [theme]);
 
-  const startLogin = () => {
-    window.location.href = `${apiBaseUrl}/oauth/login`;
-  };
-
-  const logout = async () => {
-    await apiClient.post<{ ok: boolean }>("/api/logout");
-    setSession(null);
-    clearAuth();
-    clearSessionStore();
+  const handleLogout = async () => {
+    await logout();
     setExperts([]);
     resetChat();
   };
@@ -185,61 +128,58 @@ export default function HomePage() {
             <Button variant="secondary" onClick={toggleTheme}>
               {theme === "dark" ? "Light mode" : "Dark mode"}
             </Button>
-            {session ? (
-              <Button onClick={logout}>Logout</Button>
-            ) : (
-              <Button onClick={startLogin}>Login with Main Site</Button>
-            )}
+            {isAuthenticated ? <Button onClick={handleLogout}>Logout</Button> : <Button onClick={startLogin}>Login with Main Site</Button>}
           </div>
         </header>
 
         <div className="shell-content">
-          <header className="header">
-            <div>
-              <h1>Clever AI Tutor</h1>
-              <p>Next.js + FastAPI with shared main-site authentication.</p>
-            </div>
-          </header>
+          <ProtectedRoute>
+            <header className="header">
+              <div>
+                <h1>Clever AI Tutor</h1>
+                <p>Next.js + FastAPI with shared main-site authentication.</p>
+              </div>
+            </header>
 
-          <section className="card">
-            <h2>Session</h2>
-            {loading ? <p>Loading session...</p> : null}
-            {error ? <p className="error">Error: {error}</p> : null}
-            {!loading && !session ? <p>Not logged in.</p> : null}
-            {session?.user ? <pre>{JSON.stringify({ user: session.user }, null, 2)}</pre> : null}
-          </section>
+            <section className="card">
+              <h2>Session</h2>
+              {loading ? <p>Loading session...</p> : null}
+              {error ? <p className="error">Error: {error}</p> : null}
+              {!loading && !user ? <p>Not logged in.</p> : null}
+              {user ? <pre>{JSON.stringify({ user }, null, 2)}</pre> : null}
+            </section>
 
-          <section className="card">
-            <h2>Main Site Experts API (via backend proxy)</h2>
-            {!session ? <p>Login first to fetch experts.</p> : null}
-            {expertsError ? <p className="error">Error: {expertsError}</p> : null}
-            {session && !expertsError ? <p>Loaded experts: {experts.length}</p> : null}
-            {experts.length > 0 ? (
-              <ul>
-                {experts.slice(0, 5).map((expert) => (
-                  <li key={String(expert.id ?? expert.name ?? expert.expert_name)}>
-                    {expert.name || expert.expert_name || "Unnamed expert"}
-                  </li>
-                ))}
-              </ul>
-            ) : null}
-          </section>
+            <section className="card">
+              <h2>Main Site Experts API (via backend proxy)</h2>
+              {expertsError ? <p className="error">Error: {expertsError}</p> : null}
+              {!expertsError ? <p>Loaded experts: {experts.length}</p> : null}
+              {experts.length > 0 ? (
+                <ul>
+                  {experts.slice(0, 5).map((expert) => (
+                    <li key={String(expert.id ?? expert.name ?? expert.expert_name)}>
+                      {expert.name || expert.expert_name || "Unnamed expert"}
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+            </section>
 
-          <section className="card">
-            <h2>Demo Expert Chat</h2>
-            <textarea
-              value={chatPrompt}
-              onChange={(event) => setChatPrompt(event.target.value)}
-              rows={3}
-              placeholder="Ask a question..."
-              disabled={!session || chatLoading}
-            />
-            <Button onClick={sendDemoChat} disabled={!session || chatLoading || !chatPrompt.trim()}>
-              {chatLoading ? "Sending..." : "Send Prompt"}
-            </Button>
-            {chatError ? <p className="error">Error: {chatError}</p> : null}
-            {chatResult ? <pre>{chatResult}</pre> : null}
-          </section>
+            <section className="card">
+              <h2>Demo Expert Chat</h2>
+              <textarea
+                value={chatPrompt}
+                onChange={(event) => setChatPrompt(event.target.value)}
+                rows={3}
+                placeholder="Ask a question..."
+                disabled={!isAuthenticated || chatLoading}
+              />
+              <Button onClick={sendDemoChat} disabled={!isAuthenticated || chatLoading || !chatPrompt.trim()}>
+                {chatLoading ? "Sending..." : "Send Prompt"}
+              </Button>
+              {chatError ? <p className="error">Error: {chatError}</p> : null}
+              {chatResult ? <pre>{chatResult}</pre> : null}
+            </section>
+          </ProtectedRoute>
         </div>
       </section>
     </main>

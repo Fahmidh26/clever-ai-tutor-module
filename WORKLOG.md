@@ -310,3 +310,36 @@ Notes:
 - Validation run:
   - `python -m compileall backend/app`
   - `powershell -ExecutionPolicy Bypass -File scripts/lint.ps1`
+
+## 2026-03-10 - Next task completed (`1.2.6`)
+
+- Added frontend auth context provider:
+  - `frontend/components/auth/auth-context.tsx`
+  - Centralized session refresh (`/api/me`), login start, logout, and auth state hydration
+- Added protected route wrapper:
+  - `frontend/components/auth/protected-route.tsx`
+  - Blocks page content when unauthenticated and shows login CTA
+- Wired provider at app root:
+  - `frontend/app/layout.tsx` now wraps app with `AuthProvider`
+- Refactored main page to consume auth context and rely on `ProtectedRoute`:
+  - Removed duplicated per-page session bootstrapping logic
+  - Preserved existing experts fetch and demo chat behavior for authenticated users
+- Validation run:
+  - `npm run lint` (frontend)
+  - `npm run build` (frontend)
+
+## 2026-03-11 - Next task completed (`1.2.8`)
+
+- Added tutor user sync service:
+  - `backend/app/services/tutor_user_sync.py`
+  - Extracts root user identity from provider payload and upserts into `tutor_users`
+  - Persists baseline tutor profile fields on login (`role`, `display_name`, `grade_level`, `preferred_language`, `interests_json`)
+  - Marks first login via insert-vs-update detection and returns typed sync result
+- Wired first-login sync into OAuth callback:
+  - `backend/app/routers/auth.py` now calls sync immediately after provider profile fetch
+  - Login flow now fails with explicit API error if tutor sync cannot complete (DB missing/invalid payload)
+  - Session `user` payload now includes `tutor_user` metadata (`tutor_user_id`, `root_user_id`, `role`, `grade_level`, `preferred_language`, `first_login`)
+- Exported sync utilities in `backend/app/services/__init__.py` for router usage.
+- Validation run:
+  - `python -m compileall backend/app`
+  - `powershell -ExecutionPolicy Bypass -File scripts/lint.ps1`

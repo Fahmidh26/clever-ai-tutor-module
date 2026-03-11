@@ -7,8 +7,9 @@ from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse, RedirectResponse
 
 from app.config import settings
-from app.services import root_site_client
+from app.services import root_site_client, sync_tutor_user_on_login
 from app.services.root_site_client import RootSiteClientError
+from app.services.tutor_user_sync import TutorUserSyncError
 
 router = APIRouter(tags=["auth"])
 
@@ -52,14 +53,23 @@ async def oauth_callback(request: Request, code: str | None = None, state: str |
         if not access_token:
             return JSONResponse(status_code=500, content={"error": "No access_token in token response"})
         provider_user = await root_site_client.fetch_user_profile(access_token)
+        tutor_user_sync = await sync_tutor_user_on_login(request.app, provider_user)
     except RootSiteClientError as exc:
+        return JSONResponse(
+            status_code=exc.status_code,
+            content={"error": exc.message, "details": exc.details},
+        )
+    except TutorUserSyncError as exc:
         return JSONResponse(
             status_code=exc.status_code,
             content={"error": exc.message, "details": exc.details},
         )
 
     request.session["access_token"] = access_token
-    request.session["user"] = provider_user
+    request.session["user"] = {
+        **provider_user,
+        "tutor_user": tutor_user_sync.as_dict(),
+    }
 
     return RedirectResponse(url=f"{settings.frontend_url}{settings.normalized_post_login_path}")
 
