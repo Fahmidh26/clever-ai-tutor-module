@@ -36,6 +36,9 @@ class Settings(BaseSettings):
     token_default_output_tokens: int = 512
     rate_limit_requests_per_window: int = 120
     rate_limit_window_seconds: int = 60
+    openai_api_key: str | None = None
+    openai_base_url: str = "https://api.openai.com"
+    openai_timeout_seconds: float = 60.0
 
     @field_validator(
         "aisite_oauth_base_url",

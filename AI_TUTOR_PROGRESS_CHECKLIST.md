@@ -1,6 +1,8 @@
 # AI Tutor Progress Checklist
 
-Main Site in where all apis will be called C:\AISITENEW
+> Repos in scope:
+> - Tutor app: `D:\USA\clever-ai-tutor`
+> - Main site (shared APIs/auth/billing): `C:\AISITENEW`
 
 > Tracking against `AI_TUTOR_MODULE (1).md` roadmap  
 > Baseline estimate uses current `WORKLOG.md` state
@@ -11,7 +13,7 @@ Main Site in where all apis will be called C:\AISITENEW
 
 - Foundation setup: **100%**
 - Main-site auth/API integration: **100%**
-- Core tutoring engine: **25%**
+- Core tutoring engine: **30%**
 - RAG + teacher knowledge base: **5%**
 - UX polish + adaptive UI: **20%**
 - Intelligence (mastery/quiz/hints): **0%**
@@ -150,5 +152,7 @@ Main Site in where all apis will be called C:\AISITENEW
 - 2026-03-11: Completed `1.2.9` by adding RBAC utilities (role resolution + access decisions), enforcing role checks for proxied `/api/admin*`, `/api/teacher*`, and `/api/parent*` paths, and exposing resolved role via `/api/me` for frontend guards.
 - 2026-03-11: Completed `1.2.10` by adding Redis-backed user/endpoint rate limiter service, initializing it in app lifespan, and enforcing limits on authenticated session/proxy API routes.
 - 2026-03-11: Completed `1.3.1` provider abstraction layer by adding `BaseProvider` (`stream_chat`, `count_tokens`) and a provider registry scaffold for model/provider resolution.
+- 2026-03-11: Completed `1.3.2` OpenAI provider by adding streaming Chat Completions integration (`gpt-4o`, `gpt-4o-mini`) with direct `httpx` SSE parsing, env-configurable OpenAI settings, and provider auto-registration.
+- 2026-03-11: Cross-repo reminder added to handoff/checklist: when shared platform API changes are required, update both `D:\USA\clever-ai-tutor` and `C:\AISITENEW`.
 
 > Update this file daily by checking completed tasks and adjusting percentage estimates.

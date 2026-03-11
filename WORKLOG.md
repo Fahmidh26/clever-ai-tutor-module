@@ -409,3 +409,36 @@ Notes:
 - Validation run:
   - `python -m compileall backend/app`
   - `powershell -ExecutionPolicy Bypass -File scripts/lint.ps1`
+
+## 2026-03-11 - Next task completed (`1.3.2`)
+
+- Added OpenAI provider implementation:
+  - `backend/app/services/ai_providers/openai_provider.py`
+  - Direct `httpx` integration with OpenAI Chat Completions streaming endpoint (`/v1/chat/completions`)
+  - SSE chunk parsing (`data: ...`) with incremental token-yield support for future streaming endpoints
+  - Supported models: `gpt-4o`, `gpt-4o-mini`
+  - Token estimation method (`count_tokens`) aligned with existing heuristic
+- Wired provider registration:
+  - `backend/app/services/__init__.py` now auto-registers `OpenAIProvider` when `OPENAI_API_KEY` is configured
+  - `backend/app/services/ai_providers/__init__.py` exports `OpenAIProvider`
+- Added OpenAI settings:
+  - `backend/app/config.py`:
+    - `openai_api_key`
+    - `openai_base_url`
+    - `openai_timeout_seconds`
+  - `backend/.env.example`:
+    - `OPENAI_API_KEY`
+    - `OPENAI_BASE_URL`
+    - `OPENAI_TIMEOUT_SECONDS`
+- Exposed provider readiness in health output:
+  - `backend/app/routers/health.py` now returns registered provider names
+- Validation run:
+  - `python -m compileall backend/app`
+  - `powershell -ExecutionPolicy Bypass -File scripts/lint.ps1`
+
+## 2026-03-11 - Cross-repo coordination note
+
+- Session handoff/checklist now explicitly track both repos:
+  - Tutor app: `D:\USA\clever-ai-tutor`
+  - Main site: `C:\AISITENEW`
+- Rule going forward: when roadmap work needs shared APIs or data contracts, implement coordinated updates in both repos to keep integration in sync.
