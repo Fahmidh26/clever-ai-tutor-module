@@ -154,6 +154,7 @@ class RootSiteClient:
         expert_id: int | None = None,
         session_id: int | None = None,
         conversation: list[dict[str, Any]] | None = None,
+        mode: str | None = None,
         domain: str = "expert-chat",
     ) -> dict[str, Any]:
         payload: dict[str, Any] = {
@@ -165,6 +166,8 @@ class RootSiteClient:
             payload["expert_id"] = expert_id
         if session_id is not None:
             payload["session_id"] = session_id
+        if mode:
+            payload["mode"] = mode
         return await self._request_json(
             "POST",
             "/api/expert-chat",
@@ -203,6 +206,21 @@ class RootSiteClient:
             "GET",
             f"/api/tutor/sessions/{session_id}",
             headers=self._auth_headers(access_token),
+        )
+
+    async def list_tutor_modes(self, access_token: str) -> dict[str, Any]:
+        return await self._request_json(
+            "GET",
+            "/api/tutor/modes",
+            headers=self._auth_headers(access_token),
+        )
+
+    async def set_tutor_session_mode(self, access_token: str, *, session_id: int, mode: str) -> dict[str, Any]:
+        return await self._request_json(
+            "POST",
+            f"/api/tutor/sessions/{session_id}/mode",
+            headers=self._auth_headers(access_token),
+            json={"mode": mode},
         )
 
     def _auth_headers(self, access_token: str) -> dict[str, str]:

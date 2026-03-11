@@ -623,3 +623,63 @@ Notes:
   - Tutor repo:
     - `python -m compileall backend/app`
     - `powershell -ExecutionPolicy Bypass -File scripts/lint.ps1`
+
+## 2026-03-11 - Next task completed (Token usage metering + credit reconciliation)
+
+- Hardened billing metering in main-site tutor gateway:
+  - `C:\AISITENEW\app\Http\Controllers\Api\TutorGatewayController.php`
+  - Added billing metric assembly per completion:
+    - estimated input/output/total tokens
+    - reserved tokens (buffered estimate)
+    - actual tokens (provider usage fallback to estimate)
+    - reconcile delta (`actual - reserved`)
+  - Added billing metadata to:
+    - `/api/expert-chat` JSON responses
+    - SSE stream events (`stream_start`, `stream_end`)
+    - persisted `ai_chat_messages.result` payload
+- Credit/token deduction now reconciles against computed actual token usage:
+  - Uses `deductUserTokensAndCredits(actual_tokens, 0, model, user_id)`
+  - Keeps all token/credit authority in main site.
+- Validation run:
+  - Main site:
+    - `php -l app/Http/Controllers/Api/TutorGatewayController.php`
+    - `php -l routes/api.php`
+    - `php artisan route:list --path=api`
+  - Tutor repo:
+    - `python -m compileall backend/app`
+    - `powershell -ExecutionPolicy Bypass -File scripts/lint.ps1`
+
+## 2026-03-11 - Next task completed (7 interaction modes)
+
+- Added mode-capable tutor APIs on main site:
+  - `C:\AISITENEW\app\Http\Controllers\Api\TutorGatewayController.php`
+  - New mode catalog endpoint: `GET /api/tutor/modes`
+  - New session mode switch endpoint: `POST /api/tutor/sessions/{session}/mode`
+  - Added 7 defined modes:
+    - `teach_me`, `quiz_me`, `practice`, `explore`, `show_thinking`, `writing_workshop`, `debate_roleplay`
+- Wired mode-aware prompt behavior:
+  - Chat message construction now appends mode-specific instructions to the system prompt layer
+  - Applied to both:
+    - standard completion path (`/api/expert-chat`)
+    - SSE streaming path (`/api/tutor/sessions/{session}/chat`)
+- Added per-session mode persistence (cache-backed):
+  - Session mode is resolved from explicit request mode, otherwise from cached session mode, with fallback to `teach_me`
+  - `createSession` and `getSession` now return current mode context
+- Included mode metadata in outputs:
+  - `/api/expert-chat` response includes `mode`
+  - SSE `stream_start` and `stream_end` include `mode`
+  - Persisted `ai_chat_messages.result` includes `mode`
+- Updated tutor proxy client surface:
+  - `D:\USA\clever-ai-tutor\backend\app\services\root_site_client.py`
+  - `tutor_expert_chat(...)` accepts optional `mode`
+  - Added `list_tutor_modes(...)` and `set_tutor_session_mode(...)`
+- Route registration updates:
+  - `C:\AISITENEW\routes\api.php` includes tutor mode routes
+- Validation run:
+  - Main site:
+    - `php -l app/Http/Controllers/Api/TutorGatewayController.php`
+    - `php -l routes/api.php`
+    - `php artisan route:list --path=api` (verified `/api/tutor/modes` and `/api/tutor/sessions/{session}/mode`)
+  - Tutor repo:
+    - `python -m compileall backend/app`
+    - `powershell -ExecutionPolicy Bypass -File scripts/lint.ps1`

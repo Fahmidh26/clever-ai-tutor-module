@@ -13,7 +13,7 @@
 
 - Foundation setup: **100%**
 - Main-site auth/API integration: **100%**
-- Core tutoring engine: **72%**
+- Core tutoring engine: **85%**
 - RAG + teacher knowledge base: **5%**
 - UX polish + adaptive UI: **20%**
 - Intelligence (mastery/quiz/hints): **0%**
@@ -65,10 +65,10 @@
 - [x] Session create/list/get APIs (main-site `/api/tutor/sessions*`, consumed by tutor proxy)
 - [x] Message persistence (main-site `ai_chat_messages` through `/api/expert-chat`)
 - [x] SSE streaming chat endpoint (`1.3.7`) via main-site `POST /api/tutor/sessions/{session}/chat` + tutor proxy pass-through
-- [ ] 7 interaction modes (or MVP subset first)
+- [x] 7 interaction modes (or MVP subset first)
 - [x] Safety/guardrail middleware
 - [x] Retry/fallback/timeout strategy (`1.3.8`)
-- [ ] Token usage metering + credit reconciliation
+- [x] Token usage metering + credit reconciliation
 
 Phase 1.3 provider subtask status (implementation-only so far):
 - [x] `1.3.2` OpenAI handled by main site APIs (`C:\AISITENEW`) - no local tutor API keys
@@ -168,5 +168,7 @@ Phase 1.3 provider subtask status (implementation-only so far):
 - 2026-03-11: Completed `1.3.7` by adding main-site SSE endpoint (`/api/tutor/sessions/{session}/chat`) and implementing tutor proxy streaming pass-through for `text/event-stream` requests.
 - 2026-03-11: Completed `1.3.8` by adding main-site retry/fallback/timeout execution strategy in tutor gateway (`runModelCompletion`) with model candidate fallback, transient retry policy, timeout enforcement, and execution-attempt metadata in API responses/stream events.
 - 2026-03-11: Completed safety/guardrails by adding `TutorGuardrailMiddleware` on main-site tutor chat routes (input filtering) plus output guardrail sanitization in `TutorGatewayController`.
+- 2026-03-11: Completed token usage metering + credit reconciliation by adding estimate/reserve/actual token billing metrics in main-site tutor gateway, persisting billing metadata per message, and charging reconciled actual tokens via `deductUserTokensAndCredits`.
+- 2026-03-11: Completed interaction modes by adding 7 mode definitions, mode catalog API (`/api/tutor/modes`), session mode switching (`/api/tutor/sessions/{id}/mode`), and mode-aware prompt layering in both standard and SSE tutor chat paths.
 
 > Update this file daily by checking completed tasks and adjusting percentage estimates.
