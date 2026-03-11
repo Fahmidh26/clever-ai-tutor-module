@@ -8,6 +8,7 @@ from fastapi.responses import JSONResponse, RedirectResponse
 
 from app.config import settings
 from app.services import root_site_client, sync_tutor_user_on_login
+from app.services.rbac import resolve_user_role
 from app.services.root_site_client import RootSiteClientError
 from app.services.tutor_user_sync import TutorUserSyncError
 
@@ -80,7 +81,8 @@ async def me(request: Request):
     token = request.session.get("access_token")
     if not token:
         return JSONResponse(status_code=401, content={"error": "Not authenticated"})
-    return {"user": user, "access_token": token}
+    role = resolve_user_role(user)
+    return {"user": user, "access_token": token, "role": role}
 
 
 @router.post("/api/logout")

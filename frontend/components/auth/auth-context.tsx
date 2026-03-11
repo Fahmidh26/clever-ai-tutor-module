@@ -8,12 +8,14 @@ import { useSessionStore } from "@/stores/session-store";
 type SessionPayload = {
   user: Record<string, unknown> | null;
   access_token: string;
+  role?: string | null;
 };
 
 type AuthContextValue = {
   user: Record<string, unknown> | null;
   accessToken: string | null;
   isAuthenticated: boolean;
+  role: string | null;
   loading: boolean;
   error: string;
   apiBaseUrl: string;
@@ -27,6 +29,7 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [role, setRole] = useState<string | null>(null);
 
   const user = useSessionStore((state) => state.user);
   const loading = useSessionStore((state) => state.loading);
@@ -42,6 +45,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const clearAuthState = useCallback(() => {
     setAccessToken(null);
+    setRole(null);
     clearAuth();
     clearSessionStore();
   }, [clearAuth, clearSessionStore]);
@@ -61,6 +65,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSessionError("");
       const data = await apiClient.get<SessionPayload>("/api/me");
       setAccessToken(data.access_token);
+      setRole(typeof data.role === "string" ? data.role : null);
       setAuthenticated(data.access_token);
       setSessionUser(data.user);
     } catch (err) {
@@ -68,6 +73,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         clearAuthState();
         return;
       }
+      setRole(null);
       setSessionError(err instanceof Error ? err.message : "Unexpected error while loading session");
     } finally {
       setSessionLoading(false);
@@ -95,6 +101,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       user,
       accessToken,
       isAuthenticated,
+      role,
       loading,
       error,
       apiBaseUrl,
@@ -102,7 +109,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       logout,
       refreshSession,
     }),
-    [accessToken, error, isAuthenticated, loading, logout, refreshSession, startLogin, user]
+    [accessToken, error, isAuthenticated, loading, logout, refreshSession, role, startLogin, user]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

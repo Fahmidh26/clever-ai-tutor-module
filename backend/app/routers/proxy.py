@@ -7,6 +7,7 @@ from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 
 from app.config import settings
+from app.services.rbac import evaluate_access, required_roles_for_proxy_path
 
 router = APIRouter(tags=["proxy"])
 
@@ -16,6 +17,20 @@ async def call_main_site(path: str, request: Request):
     token = request.session.get("access_token")
     if not token:
         return JSONResponse(status_code=401, content={"error": "Not authenticated"})
+
+    user = request.session.get("user")
+    required_roles = required_roles_for_proxy_path(path)
+    decision = evaluate_access(user, required_roles)
+    if not decision.allowed:
+        return JSONResponse(
+            status_code=403,
+            content={
+                "error": "Forbidden",
+                "details": decision.reason,
+                "required_roles": decision.required_roles,
+                "user_role": decision.user_role,
+            },
+        )
 
     target_url = urljoin(f"{settings.aisite_oauth_internal_url}/", path.lstrip("/"))
     query_params = dict(request.query_params)

@@ -8,7 +8,7 @@
 ## Overall Progress Snapshot (Estimated)
 
 - Foundation setup: **100%**
-- Main-site auth/API integration: **96%**
+- Main-site auth/API integration: **97%**
 - Core tutoring engine: **20%**
 - RAG + teacher knowledge base: **5%**
 - UX polish + adaptive UI: **20%**
@@ -49,7 +49,7 @@
 - [x] `1.2.6` Frontend protected routes + auth context provider
 - [x] `1.2.7` Frontend login/logout flow (+ root-site redirect path)
 - [x] `1.2.8` Tutor user sync on first login
-- [ ] `1.2.9` Role-based access control (student/teacher/parent/admin)
+- [x] `1.2.9` Role-based access control (student/teacher/parent/admin)
 - [ ] `1.2.10` Redis-backed per-user/per-endpoint rate limiting
 
 ---
@@ -145,5 +145,6 @@
 - 2026-03-10: Completed `1.2.4` by adding `TokenService` for token estimation, credit reservation, and reconciliation flows integrated with `RootSiteClient` credit deduction API.
 - 2026-03-10: Completed `1.2.6` by introducing frontend `AuthProvider` + auth context hook and wrapping page content with `ProtectedRoute` gating.
 - 2026-03-11: Completed `1.2.8` by adding first-login tutor user sync in OAuth callback (DB upsert into `tutor_users` with role/profile fields) and storing `tutor_user` metadata in session payload.
+- 2026-03-11: Completed `1.2.9` by adding RBAC utilities (role resolution + access decisions), enforcing role checks for proxied `/api/admin*`, `/api/teacher*`, and `/api/parent*` paths, and exposing resolved role via `/api/me` for frontend guards.
 
 > Update this file daily by checking completed tasks and adjusting percentage estimates.

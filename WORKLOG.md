@@ -343,3 +343,27 @@ Notes:
 - Validation run:
   - `python -m compileall backend/app`
   - `powershell -ExecutionPolicy Bypass -File scripts/lint.ps1`
+
+## 2026-03-11 - Next task completed (`1.2.9`)
+
+- Added RBAC service:
+  - `backend/app/services/rbac.py`
+  - Resolves canonical role from session user (`tutor_user.role` fallback to `user.role`)
+  - Defines role rules for proxied routes and returns typed access decisions
+- Enforced backend role checks in proxy router:
+  - `backend/app/routers/proxy.py`
+  - Added RBAC checks before forwarding requests to main site
+  - Role restrictions:
+    - `/api/admin*` -> `admin`
+    - `/api/teacher*` -> `teacher`, `admin`
+    - `/api/parent*` -> `parent`, `admin`
+  - Unauthorized role requests now return `403` with required role metadata
+- Extended session endpoint for frontend guards:
+  - `backend/app/routers/auth.py` `/api/me` now includes resolved `role`
+- Added frontend role-aware protected route support:
+  - `frontend/components/auth/auth-context.tsx` now stores/exposes `role`
+  - `frontend/components/auth/protected-route.tsx` now supports optional `allowedRoles` prop
+  - Existing usage remains backward-compatible for auth-only pages
+- Validation run:
+  - `python -m compileall backend/app`
+  - `powershell -ExecutionPolicy Bypass -File scripts/lint.ps1`
