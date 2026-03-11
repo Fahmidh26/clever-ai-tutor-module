@@ -39,6 +39,10 @@ class Settings(BaseSettings):
     openai_api_key: str | None = None
     openai_base_url: str = "https://api.openai.com"
     openai_timeout_seconds: float = 60.0
+    anthropic_api_key: str | None = None
+    anthropic_base_url: str = "https://api.anthropic.com"
+    anthropic_api_version: str = "2023-06-01"
+    anthropic_timeout_seconds: float = 60.0
 
     @field_validator(
         "aisite_oauth_base_url",

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from app.config import settings
-from app.services.ai_providers import OpenAIProvider, ProviderRegistry
+from app.services.ai_providers import AnthropicProvider, OpenAIProvider, ProviderRegistry
 from app.services.root_site_client import RootSiteClient
 from app.services.token_service import TokenService
 from app.services.tutor_user_sync import TutorUserSyncError, sync_tutor_user_on_login
@@ -14,6 +14,15 @@ if settings.openai_api_key:
             api_key=settings.openai_api_key,
             base_url=settings.openai_base_url,
             timeout_seconds=settings.openai_timeout_seconds,
+        )
+    )
+if settings.anthropic_api_key:
+    provider_registry.register(
+        AnthropicProvider(
+            api_key=settings.anthropic_api_key,
+            base_url=settings.anthropic_base_url,
+            api_version=settings.anthropic_api_version,
+            timeout_seconds=settings.anthropic_timeout_seconds,
         )
     )
 token_service = TokenService(

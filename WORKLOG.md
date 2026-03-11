@@ -442,3 +442,29 @@ Notes:
   - Tutor app: `D:\USA\clever-ai-tutor`
   - Main site: `C:\AISITENEW`
 - Rule going forward: when roadmap work needs shared APIs or data contracts, implement coordinated updates in both repos to keep integration in sync.
+
+## 2026-03-11 - Next task completed (`1.3.3`)
+
+- Added Anthropic provider implementation:
+  - `backend/app/services/ai_providers/anthropic_provider.py`
+  - Direct `httpx` integration with Anthropic Messages streaming endpoint (`/v1/messages`)
+  - SSE chunk parsing for `content_block_delta` token output
+  - Supported models: `claude-4-sonnet`, `claude-4-haiku`
+  - Token estimation method (`count_tokens`) aligned with existing heuristic
+- Wired provider registration:
+  - `backend/app/services/__init__.py` now auto-registers `AnthropicProvider` when `ANTHROPIC_API_KEY` is configured
+  - `backend/app/services/ai_providers/__init__.py` exports `AnthropicProvider`
+- Added Anthropic settings:
+  - `backend/app/config.py`:
+    - `anthropic_api_key`
+    - `anthropic_base_url`
+    - `anthropic_api_version`
+    - `anthropic_timeout_seconds`
+  - `backend/.env.example`:
+    - `ANTHROPIC_API_KEY`
+    - `ANTHROPIC_BASE_URL`
+    - `ANTHROPIC_API_VERSION`
+    - `ANTHROPIC_TIMEOUT_SECONDS`
+- Validation run:
+  - `python -m compileall backend/app`
+  - `powershell -ExecutionPolicy Bypass -File scripts/lint.ps1`

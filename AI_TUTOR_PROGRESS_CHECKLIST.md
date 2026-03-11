@@ -13,7 +13,7 @@
 
 - Foundation setup: **100%**
 - Main-site auth/API integration: **100%**
-- Core tutoring engine: **30%**
+- Core tutoring engine: **35%**
 - RAG + teacher knowledge base: **5%**
 - UX polish + adaptive UI: **20%**
 - Intelligence (mastery/quiz/hints): **0%**
@@ -60,15 +60,22 @@
 
 ## 3) Core Tutoring Engine (Phase 1.3)
 
-- [x] Provider abstraction layer
-- [ ] At least one production LLM provider wired end-to-end
+- [x] Provider abstraction layer (`1.3.1`)
+- [ ] At least one production LLM provider wired end-to-end (`1.3.2` + `1.3.7` + session APIs)
 - [ ] Session create/list/get APIs
 - [ ] Message persistence
-- [ ] SSE streaming chat endpoint
+- [ ] SSE streaming chat endpoint (`1.3.7`)
 - [ ] 7 interaction modes (or MVP subset first)
 - [ ] Safety/guardrail middleware
-- [ ] Retry/fallback/timeout strategy
+- [ ] Retry/fallback/timeout strategy (`1.3.8`)
 - [ ] Token usage metering + credit reconciliation
+
+Phase 1.3 provider subtask status (implementation-only so far):
+- [x] `1.3.2` OpenAI provider class (not wired end-to-end yet)
+- [x] `1.3.3` Anthropic provider class (not wired end-to-end yet)
+- [ ] `1.3.4` Google Gemini provider
+- [ ] `1.3.5` xAI Grok provider
+- [ ] `1.3.6` Provider registry metadata expansion
 
 ---
 
@@ -154,5 +161,6 @@
 - 2026-03-11: Completed `1.3.1` provider abstraction layer by adding `BaseProvider` (`stream_chat`, `count_tokens`) and a provider registry scaffold for model/provider resolution.
 - 2026-03-11: Completed `1.3.2` OpenAI provider by adding streaming Chat Completions integration (`gpt-4o`, `gpt-4o-mini`) with direct `httpx` SSE parsing, env-configurable OpenAI settings, and provider auto-registration.
 - 2026-03-11: Cross-repo reminder added to handoff/checklist: when shared platform API changes are required, update both `D:\USA\clever-ai-tutor` and `C:\AISITENEW`.
+- 2026-03-11: Completed `1.3.3` Anthropic provider by adding streaming Messages API integration (`claude-4-sonnet`, `claude-4-haiku`), env-configurable Anthropic settings, and provider auto-registration.
 
 > Update this file daily by checking completed tasks and adjusting percentage estimates.
