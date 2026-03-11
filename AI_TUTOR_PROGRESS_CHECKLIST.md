@@ -1,5 +1,7 @@
 # AI Tutor Progress Checklist
 
+Main Site in where all apis will be called C:\AISITENEW
+
 > Tracking against `AI_TUTOR_MODULE (1).md` roadmap  
 > Baseline estimate uses current `WORKLOG.md` state
 

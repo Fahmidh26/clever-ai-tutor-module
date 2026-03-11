@@ -1,3 +1,4 @@
+Main Site in where all apis will be called C:\AISITENEW
 # Session Handoff (Resume Template)
 
 Use this file when starting a new chat/session so work continues exactly where it stopped.
