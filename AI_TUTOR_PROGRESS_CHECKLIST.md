@@ -13,7 +13,7 @@
 
 - Foundation setup: **100%**
 - Main-site auth/API integration: **100%**
-- Core tutoring engine: **65%**
+- Core tutoring engine: **72%**
 - RAG + teacher knowledge base: **5%**
 - UX polish + adaptive UI: **20%**
 - Intelligence (mastery/quiz/hints): **0%**
@@ -66,7 +66,7 @@
 - [x] Message persistence (main-site `ai_chat_messages` through `/api/expert-chat`)
 - [x] SSE streaming chat endpoint (`1.3.7`) via main-site `POST /api/tutor/sessions/{session}/chat` + tutor proxy pass-through
 - [ ] 7 interaction modes (or MVP subset first)
-- [ ] Safety/guardrail middleware
+- [x] Safety/guardrail middleware
 - [x] Retry/fallback/timeout strategy (`1.3.8`)
 - [ ] Token usage metering + credit reconciliation
 
@@ -167,5 +167,6 @@ Phase 1.3 provider subtask status (implementation-only so far):
 - 2026-03-11: Main-site tutor API contract added in `C:\AISITENEW` (`/api/experts`, `/api/expert-chat`, `/api/tutor/sessions*`) and aligned as source of truth for tutor execution/data.
 - 2026-03-11: Completed `1.3.7` by adding main-site SSE endpoint (`/api/tutor/sessions/{session}/chat`) and implementing tutor proxy streaming pass-through for `text/event-stream` requests.
 - 2026-03-11: Completed `1.3.8` by adding main-site retry/fallback/timeout execution strategy in tutor gateway (`runModelCompletion`) with model candidate fallback, transient retry policy, timeout enforcement, and execution-attempt metadata in API responses/stream events.
+- 2026-03-11: Completed safety/guardrails by adding `TutorGuardrailMiddleware` on main-site tutor chat routes (input filtering) plus output guardrail sanitization in `TutorGatewayController`.
 
 > Update this file daily by checking completed tasks and adjusting percentage estimates.

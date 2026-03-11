@@ -15,7 +15,7 @@ After each task: implement, validate, and update checklist + worklog.
 
 - Completed: Phase 1 Sprint 1.1 and Sprint 1.2 (`1.1.x`, `1.2.x`)
 - Current: Sprint 1.3 in progress (main-site-proxy execution mode)
-- Suggested next task: `1.3.9+` prompt assembly layers / interaction modes wiring on top of main-site tutor APIs
+- Suggested next task: token usage metering + credit reconciliation hardening and then interaction modes wiring on top of main-site tutor APIs
 
 ## Rules For Continuation
 

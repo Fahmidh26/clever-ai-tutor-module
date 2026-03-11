@@ -597,3 +597,29 @@ Notes:
   - Tutor repo:
     - `python -m compileall backend/app`
     - `powershell -ExecutionPolicy Bypass -File scripts/lint.ps1`
+
+## 2026-03-11 - Next task completed (Safety / guardrail middleware)
+
+- Added request safety middleware on main-site tutor endpoints:
+  - `C:\AISITENEW\app\Http\Middleware\TutorGuardrailMiddleware.php`
+  - Applied to:
+    - `POST /api/expert-chat`
+    - `POST /api/tutor/sessions/{session}/chat`
+  - Behavior:
+    - scans `message` and conversation content
+    - blocks clearly unsafe request patterns with `422` (`unsafe_input_detected`)
+- Added output safety sanitization in tutor gateway:
+  - `C:\AISITENEW\app\Http\Controllers\Api\TutorGatewayController.php`
+  - unsafe generated output is replaced with safe refusal text before persisting/returning/streaming
+- Registered middleware alias:
+  - `C:\AISITENEW\app\Http\Kernel.php` -> `tutor.guardrail`
+- Validation run:
+  - Main site:
+    - `php -l app/Http/Middleware/TutorGuardrailMiddleware.php`
+    - `php -l app/Http/Controllers/Api/TutorGatewayController.php`
+    - `php -l app/Http/Kernel.php`
+    - `php -l routes/api.php`
+    - `php artisan route:list --path=api` (tutor routes still present)
+  - Tutor repo:
+    - `python -m compileall backend/app`
+    - `powershell -ExecutionPolicy Bypass -File scripts/lint.ps1`
