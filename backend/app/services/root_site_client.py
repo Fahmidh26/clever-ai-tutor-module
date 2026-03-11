@@ -139,6 +139,72 @@ class RootSiteClient:
             "has_required_plan": has_required_plan,
         }
 
+    async def fetch_tutor_experts(self, access_token: str, *, domain: str = "expert-chat") -> dict[str, Any]:
+        return await self._request_json(
+            "GET",
+            f"/api/experts?domain={domain}",
+            headers=self._auth_headers(access_token),
+        )
+
+    async def tutor_expert_chat(
+        self,
+        access_token: str,
+        *,
+        message: str,
+        expert_id: int | None = None,
+        session_id: int | None = None,
+        conversation: list[dict[str, Any]] | None = None,
+        domain: str = "expert-chat",
+    ) -> dict[str, Any]:
+        payload: dict[str, Any] = {
+            "message": message,
+            "domain": domain,
+            "conversation": conversation or [],
+        }
+        if expert_id is not None:
+            payload["expert_id"] = expert_id
+        if session_id is not None:
+            payload["session_id"] = session_id
+        return await self._request_json(
+            "POST",
+            "/api/expert-chat",
+            headers=self._auth_headers(access_token),
+            json=payload,
+        )
+
+    async def list_tutor_sessions(self, access_token: str) -> dict[str, Any]:
+        return await self._request_json(
+            "GET",
+            "/api/tutor/sessions",
+            headers=self._auth_headers(access_token),
+        )
+
+    async def create_tutor_session(
+        self,
+        access_token: str,
+        *,
+        expert_id: int | None = None,
+        title: str | None = None,
+    ) -> dict[str, Any]:
+        payload: dict[str, Any] = {}
+        if expert_id is not None:
+            payload["expert_id"] = expert_id
+        if title:
+            payload["title"] = title
+        return await self._request_json(
+            "POST",
+            "/api/tutor/sessions",
+            headers=self._auth_headers(access_token),
+            json=payload,
+        )
+
+    async def get_tutor_session(self, access_token: str, *, session_id: int) -> dict[str, Any]:
+        return await self._request_json(
+            "GET",
+            f"/api/tutor/sessions/{session_id}",
+            headers=self._auth_headers(access_token),
+        )
+
     def _auth_headers(self, access_token: str) -> dict[str, str]:
         return {"Authorization": f"Bearer {access_token}", "Accept": "application/json"}
 

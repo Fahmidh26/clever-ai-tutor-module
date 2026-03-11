@@ -13,7 +13,7 @@
 
 - Foundation setup: **100%**
 - Main-site auth/API integration: **100%**
-- Core tutoring engine: **30%**
+- Core tutoring engine: **45%**
 - RAG + teacher knowledge base: **5%**
 - UX polish + adaptive UI: **20%**
 - Intelligence (mastery/quiz/hints): **0%**
@@ -61,9 +61,9 @@
 ## 3) Core Tutoring Engine (Phase 1.3)
 
 - [x] Provider abstraction layer (`1.3.1`)
-- [ ] At least one production LLM provider wired end-to-end (`1.3.2` + `1.3.7` + session APIs)
-- [ ] Session create/list/get APIs
-- [ ] Message persistence
+- [x] At least one production LLM provider wired end-to-end (via main-site API execution + tutor proxy)
+- [x] Session create/list/get APIs (main-site `/api/tutor/sessions*`, consumed by tutor proxy)
+- [x] Message persistence (main-site `ai_chat_messages` through `/api/expert-chat`)
 - [ ] SSE streaming chat endpoint (`1.3.7`)
 - [ ] 7 interaction modes (or MVP subset first)
 - [ ] Safety/guardrail middleware
@@ -164,5 +164,6 @@ Phase 1.3 provider subtask status (implementation-only so far):
 - 2026-03-11: Completed `1.3.3` Anthropic provider by adding streaming Messages API integration (`claude-4-sonnet`, `claude-4-haiku`), env-configurable Anthropic settings, and provider auto-registration.
 - 2026-03-11: Completed `1.3.4` Gemini provider by adding streaming GenerateContent SSE integration (`gemini-2.5-pro`, `gemini-2.5-flash`), env-configurable Gemini settings, and provider auto-registration.
 - 2026-03-11: Architecture decision: tutor app runs in `main_site_proxy_only` mode (no direct provider keys/calls). All experts/functions/LLM execution are invoked through main-site APIs (`C:\AISITENEW`) via tutor backend proxy.
+- 2026-03-11: Main-site tutor API contract added in `C:\AISITENEW` (`/api/experts`, `/api/expert-chat`, `/api/tutor/sessions*`) and aligned as source of truth for tutor execution/data.
 
 > Update this file daily by checking completed tasks and adjusting percentage estimates.

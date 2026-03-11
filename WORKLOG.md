@@ -523,3 +523,29 @@ Notes:
 - Validation run:
   - `python -m compileall backend/app`
   - `powershell -ExecutionPolicy Bypass -File scripts/lint.ps1`
+
+## 2026-03-11 - Main-site tutor API contract implemented (`C:\AISITENEW`)
+
+- Added new authenticated tutor endpoints in main site (`routes/api.php`):
+  - `GET /api/experts`
+  - `POST /api/expert-chat`
+  - `GET /api/tutor/sessions`
+  - `POST /api/tutor/sessions`
+  - `GET /api/tutor/sessions/{session}`
+- Added controller:
+  - `C:\AISITENEW\app\Http\Controllers\Api\TutorGatewayController.php`
+  - Provides tutor expert catalog, executes chat on main site, persists sessions/messages, returns session payloads.
+- Persistence path now centralized in main site:
+  - Uses `ai_chats` and `ai_chat_messages` for tutor session/message storage.
+  - Credits/token deduction remains on main-site side.
+- Tutor repo alignment:
+  - Added `RootSiteClient` helper methods for new main-site tutor endpoints:
+    - `fetch_tutor_experts`
+    - `tutor_expert_chat`
+    - `list_tutor_sessions`
+    - `create_tutor_session`
+    - `get_tutor_session`
+- Main-site validation run:
+  - `php -l app/Http/Controllers/Api/TutorGatewayController.php`
+  - `php -l routes/api.php`
+  - `php artisan route:list --path=api` (verified new routes are registered)
