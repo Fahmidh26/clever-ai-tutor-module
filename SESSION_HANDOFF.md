@@ -15,7 +15,7 @@ After each task: implement, validate, and update checklist + worklog.
 
 - Completed: Phase 1 Sprint 1.1 and Sprint 1.2 (`1.1.x`, `1.2.x`)
 - Current: Sprint 1.3 in progress (main-site-proxy execution mode)
-- Suggested next task: `1.3.6` Provider/model metadata sourced from main site catalog sync
+- Suggested next task: Phase 1.4 (RAG + Teacher Dashboard) or Phase 1.5 (Full tutor chat UX)
 
 ## Rules For Continuation
 

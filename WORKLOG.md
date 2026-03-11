@@ -712,3 +712,19 @@ Notes:
   - Tutor repo:
     - `python -m compileall backend/app`
     - `powershell -ExecutionPolicy Bypass -File scripts/lint.ps1`
+
+## 2026-03-11 - Next task completed (`1.3.6` Provider/model catalog sync)
+
+- Added model catalog endpoint on main site:
+  - `C:\AISITENEW\app\Http\Controllers\Api\TutorGatewayController.php` -> `catalog()` method
+  - `GET /api/catalog` (auth:sanctum) returns provider/model metadata from `AISettings`
+- Catalog payload includes:
+  - `models`: array of { id, provider, display_name, cost_per_m_tokens, token_multiplier, tier, supports_web_search, context_window, modules }
+  - `count`, `default_model`
+  - Provider-specific context_window defaults (openai 128k, grok 131k, claude 200k, gemini 1M)
+- ETag caching:
+  - Response ETag = MD5 of payload; 304 Not Modified when `If-None-Match` matches
+- Tutor app already consumes via `RootSiteClient.get_model_catalog()` (calls `/api/catalog` with ETag)
+- Route registered in `C:\AISITENEW\routes\api.php` under auth:sanctum group
+- Validation run:
+  - Main site: `php -l TutorGatewayController.php`, `php artisan route:list --path=api/catalog`
