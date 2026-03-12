@@ -117,8 +117,8 @@ Phase 1.3 provider subtask status (to implement locally in tutor):
 - [x] Tutor persona selection UX
 - [x] Session history panel
 - [x] Age-adaptive layouts (K-2, 3-5, 6-8, 9-12)
-- [ ] Error/loading/offline handling polish
-- [ ] End-to-end user journey test coverage
+- [x] Error/loading/offline handling polish
+- [x] End-to-end user journey test coverage
 
 ---
 
@@ -220,5 +220,8 @@ Phase 1.3 provider subtask status (to implement locally in tutor):
 - 2026-03-12: Completed Phase 1.5 full tutor chat UX rendering by adding streaming chat workspace message rendering for markdown-like formatting, fenced code blocks, and math-friendly inline/block expressions via new frontend/components/chat/message-renderer.tsx and related UI styles.
 
 - 2026-03-12: Completed Phase 1.5 age-adaptive layouts by adding grade-band detection (K-2/3-5/6-8/9-12) from session user data and applying band-specific UX in frontend/app/page.tsx + frontend/app/globals.css (labels, prompt suggestions, copy, and visual scaling).
+
+- 2026-03-12: Completed Phase 1.5 error/loading/offline polish in tutor UI by adding a System Status surface (online/offline state, active background loading indicators, current issue summary, and refresh/reload controls) plus age-band prompt quick-chips and adaptive copy improvements in frontend/app/page.tsx + frontend/app/globals.css.
+- 2026-03-12: Completed Phase 1.5 E2E user journey coverage by adding Playwright setup (frontend/playwright.config.ts), auth-gate and tutor-streaming smoke specs (frontend/e2e/*.spec.ts), and npm scripts (e2e, e2e:list) in frontend/package.json with dependency install validation via `npm.cmd run e2e:list`.
 
 > Update this file daily by checking completed tasks and adjusting percentage estimates.

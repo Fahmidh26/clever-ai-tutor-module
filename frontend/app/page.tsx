@@ -725,6 +725,29 @@ export default function HomePage() {
     }
   };
 
+  const refreshDashboard = async () => {
+    await Promise.allSettled([
+      loadExperts(),
+      loadModes(),
+      loadSessions(),
+      isTeacherRole ? loadKnowledgeBases() : Promise.resolve(),
+      isTeacherRole ? loadClasses() : Promise.resolve(),
+      selectedKbId ? loadDocuments(selectedKbId) : Promise.resolve(),
+      selectedClassId ? loadRoster(selectedClassId) : Promise.resolve(),
+    ]);
+  };
+
+  const loadingFlags = {
+    chatLoading,
+    sessionLoading,
+    kbLoading,
+    docsLoading,
+    classBusy,
+  };
+  const anyLoading = Object.values(loadingFlags).some(Boolean);
+  const activeErrors = [error, expertsError, chatError, kbError, docsError, classesError].filter(Boolean);
+  const primaryError = activeErrors.length > 0 ? activeErrors[0] : "";
+
   return (
     <main className={`page age-band-${gradeBand}`}>
       <aside className="shell-sidebar">
@@ -758,6 +781,25 @@ export default function HomePage() {
 
         <div className="shell-content">
           <ProtectedRoute>
+            <section className="card">
+              <h2>System Status</h2>
+              <p>
+                Connection: <strong>{isOnline ? "Online" : "Offline"}</strong>
+              </p>
+              {anyLoading ? <p>Background activity: syncing data...</p> : <p>Background activity: idle</p>}
+              {primaryError ? <p className="error">Current issue: {primaryError}</p> : null}
+              <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                <Button variant="outline" onClick={() => void refreshDashboard()} disabled={anyLoading}>
+                  Refresh Data
+                </Button>
+                {!isOnline ? (
+                  <Button variant="secondary" onClick={() => window.location.reload()}>
+                    Reload Page
+                  </Button>
+                ) : null}
+              </div>
+            </section>
+
             <header className="header">
               <div>
                 <h1>Clever AI Tutor</h1>
