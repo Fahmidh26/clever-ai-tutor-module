@@ -11,8 +11,13 @@ from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse, StreamingResponse
 
 from app.config import settings
-from app.services import root_site_client
-from app.services.ai_providers.base import ChatMessage, ModelConfig
+from app.services import provider_registry, root_site_client
+from app.services.ai_providers.base import ChatMessage
+from app.services.chat_execution import (
+    collect_chat_with_strategy,
+    start_stream_with_strategy,
+    stream_remaining_chunks,
+)
 from app.services.mode_prompts import MODE_IDS, build_system_prompt, normalize_mode
 from app.services.rate_limiter import enforce_user_rate_limit
 from app.services.safety_guardrails import sanitize_assistant_output
@@ -101,8 +106,6 @@ async def expert_chat(request: Request):
     else:
         hint_level = 1 if mode == "hint" else None
 
-    from app.services import provider_registry
-
     if not provider_registry.registered_provider_names():
         return JSONResponse(
             status_code=503,
@@ -130,39 +133,41 @@ async def expert_chat(request: Request):
                 messages.append(ChatMessage(role=str(role), content=str(content)))
     messages.append(ChatMessage(role="user", content=message))
 
-    model_config = ModelConfig(
-        provider="openai",
-        model=settings.openai_default_model,
-        temperature=0.2,
-        max_tokens=1024,
-    )
-
+    provider_name = "openai"
+    selected_model = settings.openai_default_model
+    attempts: list[dict[str, object]] = []
     try:
-        provider = provider_registry.get_provider("openai")
-    except Exception:
-        return JSONResponse(
-            status_code=503,
-            content={"error": "OpenAI provider not available"},
+        full_response, selected_model, attempts = await collect_chat_with_strategy(
+            provider_registry=provider_registry,
+            provider_name=provider_name,
+            messages=messages,
+            primary_model=settings.openai_default_model,
+            fallback_models=settings.llm_fallback_models_list,
+            temperature=0.2,
+            max_tokens=1024,
+            timeout_seconds=settings.llm_request_timeout_seconds,
+            retry_attempts=settings.llm_retry_attempts,
+            retry_backoff_seconds=settings.llm_retry_backoff_seconds,
         )
-
-    full_response = ""
-    try:
-        async for chunk in provider.stream_chat(messages, model_config):
-            full_response += chunk
     except Exception as e:
         return JSONResponse(
             status_code=502,
-            content={"error": "LLM request failed", "details": str(e)},
+            content={
+                "error": "LLM request failed after retries/fallback",
+                "details": str(e),
+                "attempts": attempts,
+            },
         )
     full_response = sanitize_assistant_output(full_response)
 
+    provider = provider_registry.get_provider(provider_name)
     tokens_used = provider.count_tokens(message) + provider.count_tokens(full_response)
     try:
         await root_site_client.deduct_credits(
             token,
             tokens=tokens_used,
             action="reconcile",
-            metadata={"source": "tutor_expert_chat", "model": model_config.model},
+            metadata={"source": "tutor_expert_chat", "model": selected_model},
         )
     except Exception:
         pass
@@ -181,7 +186,7 @@ async def expert_chat(request: Request):
                     session_mode,
                     hint_level,
                     provider.count_tokens(message),
-                    model_config.model,
+                    selected_model,
                 )
                 await conn.execute(
                     """
@@ -193,7 +198,7 @@ async def expert_chat(request: Request):
                     session_mode,
                     hint_level,
                     provider.count_tokens(full_response),
-                    model_config.model,
+                    selected_model,
                 )
                 await conn.execute(
                     """
@@ -203,12 +208,18 @@ async def expert_chat(request: Request):
                     """,
                     session_id,
                     tokens_used,
-                    model_config.model,
+                    selected_model,
                 )
         except Exception:
             pass
 
-    return {"response": full_response, "tokens_used": tokens_used, "session_id": session_id}
+    return {
+        "response": full_response,
+        "tokens_used": tokens_used,
+        "session_id": session_id,
+        "model_used": selected_model,
+        "execution_attempts": attempts,
+    }
 
 
 def _sse_event(event: str, data: dict | str) -> bytes:
@@ -280,8 +291,6 @@ async def expert_chat_stream(request: Request):
     else:
         hint_level = 1 if mode == "hint" else None
 
-    from app.services import provider_registry
-
     if not provider_registry.registered_provider_names():
         return JSONResponse(
             status_code=503,
@@ -309,31 +318,57 @@ async def expert_chat_stream(request: Request):
                 messages.append(ChatMessage(role=str(role), content=str(content)))
     messages.append(ChatMessage(role="user", content=message))
 
-    model_config = ModelConfig(
-        provider="openai",
-        model=settings.openai_default_model,
-        temperature=0.2,
-        max_tokens=1024,
-    )
-
-    try:
-        provider = provider_registry.get_provider("openai")
-    except Exception:
-        return JSONResponse(
-            status_code=503,
-            content={"error": "OpenAI provider not available"},
-        )
+    provider_name = "openai"
+    provider = provider_registry.get_provider(provider_name)
 
     async def stream_generator():
         full_response = ""
+        selected_model = settings.openai_default_model
+        attempts: list[dict[str, object]] = []
+        stream = None
         try:
-            yield _sse_event("stream_start", {"session_id": session_id})
-            async for chunk in provider.stream_chat(messages, model_config):
+            selection = await start_stream_with_strategy(
+                provider_registry=provider_registry,
+                provider_name=provider_name,
+                messages=messages,
+                primary_model=settings.openai_default_model,
+                fallback_models=settings.llm_fallback_models_list,
+                temperature=0.2,
+                max_tokens=1024,
+                timeout_seconds=settings.llm_request_timeout_seconds,
+                retry_attempts=settings.llm_retry_attempts,
+                retry_backoff_seconds=settings.llm_retry_backoff_seconds,
+            )
+            stream = selection.stream
+            selected_model = selection.model
+            attempts = selection.attempts
+
+            yield _sse_event(
+                "stream_start",
+                {"session_id": session_id, "model_used": selected_model, "execution_attempts": attempts},
+            )
+
+            if selection.first_chunk:
+                full_response += selection.first_chunk
+                yield _sse_event("token", {"content": selection.first_chunk})
+
+            async for chunk in stream_remaining_chunks(
+                stream,
+                timeout_seconds=settings.llm_request_timeout_seconds,
+            ):
                 full_response += chunk
                 yield _sse_event("token", {"content": chunk})
         except Exception as e:
-            yield _sse_event("error", {"message": str(e)})
+            yield _sse_event("error", {"message": str(e), "execution_attempts": attempts})
             return
+        finally:
+            if stream is not None:
+                close = getattr(stream, "aclose", None)
+                if callable(close):
+                    try:
+                        await close()
+                    except Exception:
+                        pass
         full_response = sanitize_assistant_output(full_response)
 
         tokens_used = provider.count_tokens(message) + provider.count_tokens(full_response)
@@ -342,7 +377,7 @@ async def expert_chat_stream(request: Request):
                 token,
                 tokens=tokens_used,
                 action="reconcile",
-                metadata={"source": "tutor_expert_chat_stream", "model": model_config.model},
+                metadata={"source": "tutor_expert_chat_stream", "model": selected_model},
             )
         except Exception:
             pass
@@ -360,7 +395,7 @@ async def expert_chat_stream(request: Request):
                         session_mode,
                         hint_level,
                         provider.count_tokens(message),
-                        model_config.model,
+                        selected_model,
                     )
                     await conn.execute(
                         """
@@ -372,7 +407,7 @@ async def expert_chat_stream(request: Request):
                         session_mode,
                         hint_level,
                         provider.count_tokens(full_response),
-                        model_config.model,
+                        selected_model,
                     )
                     await conn.execute(
                         """
@@ -382,12 +417,20 @@ async def expert_chat_stream(request: Request):
                         """,
                         session_id,
                         tokens_used,
-                        model_config.model,
+                        selected_model,
                     )
             except Exception:
                 pass
 
-        yield _sse_event("stream_end", {"tokens_used": tokens_used, "session_id": session_id})
+        yield _sse_event(
+            "stream_end",
+            {
+                "tokens_used": tokens_used,
+                "session_id": session_id,
+                "model_used": selected_model,
+                "execution_attempts": attempts,
+            },
+        )
 
     return StreamingResponse(
         stream_generator(),

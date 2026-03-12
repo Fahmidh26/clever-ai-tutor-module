@@ -40,6 +40,10 @@ class Settings(BaseSettings):
     openai_api_key: str | None = None
     openai_base_url: str = "https://api.openai.com/v1"
     openai_default_model: str = "gpt-4o-mini"
+    llm_request_timeout_seconds: float = 60.0
+    llm_retry_attempts: int = 1
+    llm_retry_backoff_seconds: float = 0.6
+    llm_fallback_models: str = "gpt-4o,gpt-4"
 
     @field_validator(
         "aisite_oauth_base_url",
@@ -72,6 +76,10 @@ class Settings(BaseSettings):
         if self.root_site_jwt_issuer:
             return self.root_site_jwt_issuer
         return self.aisite_oauth_base_url
+
+    @property
+    def llm_fallback_models_list(self) -> list[str]:
+        return [m.strip() for m in self.llm_fallback_models.split(",") if m.strip()]
 
 
 settings = Settings()
