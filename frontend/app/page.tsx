@@ -137,7 +137,7 @@ export default function HomePage() {
             <header className="header">
               <div>
                 <h1>Clever AI Tutor</h1>
-                <p>Next.js + FastAPI with shared main-site auth and proxy-only AI function calls.</p>
+                <p>Next.js + FastAPI. Auth via main site; experts and chat run locally. See ARCHITECTURE.md.</p>
               </div>
             </header>
 
@@ -150,7 +150,7 @@ export default function HomePage() {
             </section>
 
             <section className="card">
-              <h2>Main Site Experts API (via backend proxy)</h2>
+              <h2>Experts (local API)</h2>
               {expertsError ? <p className="error">Error: {expertsError}</p> : null}
               {!expertsError ? <p>Loaded experts: {experts.length}</p> : null}
               {experts.length > 0 ? (

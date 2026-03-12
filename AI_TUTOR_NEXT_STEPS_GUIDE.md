@@ -1,8 +1,13 @@
-# AI Tutor Implementation Guide (Main Site API Integrated)
+# AI Tutor Implementation Guide
 
 ## Purpose
 
-Build the AI Tutor module in `D:\USA\clever-ai-tutor` by using APIs from your main site running on port `8000`, following `AI_TUTOR_MODULE (1).md` in a practical, execution-first order.
+Build the AI Tutor module in `D:\USA\clever-ai-tutor` following `AI_TUTOR_MODULE (1).md` in a practical, execution-first order.
+
+## Architecture (See `ARCHITECTURE.md`)
+
+- **Main site** (port `8000`): Auth, billing, credit deduction only.
+- **Tutor site** (local): Experts, chat, sessions, AI execution. All tutor functions run locally.
 
 ---
 
@@ -104,15 +109,15 @@ Goal: Add measurable learning impact.
 
 ---
 
-## Main-Site API Integration Pattern (How To Use Port 8000 Correctly)
+## Main-Site Integration Pattern (Auth + Credits Only)
 
-1. Frontend never calls `:8000` directly for protected operations.
-2. Frontend calls Tutor backend routes.
-3. Tutor backend forwards protected root-site operations through `/api/main-site/{path}`.
-4. Backend attaches session access token, handles retries, and normalizes errors.
-5. Log each proxied call with route, latency, status, and user id.
+1. Frontend never calls main site (`:8000`) directly.
+2. Frontend calls Tutor backend for all operations.
+3. Auth: Tutor backend uses OAuth with main site for login/callback; session stored locally.
+4. Credits: When chat consumes tokens, tutor backend calls main site to deduct credits.
+5. Experts, chat, sessions: Implemented locally in tutor backend — do NOT proxy to main site.
 
-This keeps auth/session logic centralized and avoids CORS/session leakage issues.
+See `ARCHITECTURE.md` for the canonical rule.
 
 ---
 

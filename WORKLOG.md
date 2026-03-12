@@ -17,17 +17,10 @@
 
 These are implemented to match the working auth approach from the current project.
 
-## Main-site API proxy
+## Main-site integration
 
-- Endpoint: `/api/main-site/{path:path}`
-- Methods: `GET, POST, PUT, PATCH, DELETE`
-- Uses the logged-in session `access_token`
-- Forwards requests to `AISITE_OAUTH_INTERNAL_URL` (default: `http://localhost:8000/`)
-
-Example:
-
-- `GET /api/main-site/api/experts?domain=expert-chat`
-- `POST /api/main-site/api/expert-chat`
+- **Architecture** (see `ARCHITECTURE.md`): Main site only for auth, billing, credit deduction. Experts, chat, sessions are local tutor APIs.
+- Proxy endpoint `/api/main-site/{path:path}` exists but should be used only for auth/credits when needed. Experts and chat must be implemented locally.
 
 ## Environment setup done
 
@@ -728,3 +721,13 @@ Notes:
 - Route registered in `C:\AISITENEW\routes\api.php` under auth:sanctum group
 - Validation run:
   - Main site: `php -l TutorGatewayController.php`, `php artisan route:list --path=api/catalog`
+
+## 2026-03-12 - Architecture clarification (main site vs tutor responsibilities)
+
+- **Clarified architecture**: Main site only for auth, billing, credit deduction. Experts, chat, sessions run locally in tutor.
+- Added `ARCHITECTURE.md` as canonical reference.
+- Updated docs to prevent confusion:
+  - `SESSION_HANDOFF.md`: Rules now state main site = auth/credits only; experts/chat/sessions = local
+  - `AI_TUTOR_PROGRESS_CHECKLIST.md`: Phase 1.3 items reset to reflect local implementation; main site header updated
+  - `AI_TUTOR_NEXT_STEPS_GUIDE.md`: Main-site integration pattern updated; experts/chat/sessions do NOT proxy
+- **Migration required**: Current code still proxies experts/chat to main site. Need to implement local tutor APIs and update frontend to call them. See `ARCHITECTURE.md`.

@@ -131,7 +131,7 @@ function App() {
       <header className="header">
         <div>
           <h1>Clever AI Tutor</h1>
-          <p>React + FastAPI with shared main-site authentication.</p>
+          <p>React + FastAPI. Auth via main site; experts and chat run locally. See ARCHITECTURE.md.</p>
         </div>
         <div className="actions">
           {session ? (
@@ -153,7 +153,7 @@ function App() {
       </section>
 
       <section className="card">
-        <h2>Main Site Experts API (via backend proxy)</h2>
+        <h2>Experts (local API)</h2>
         {!session ? <p>Login first to fetch experts.</p> : null}
         {expertsError ? <p className="error">Error: {expertsError}</p> : null}
         {session && !expertsError ? <p>Loaded experts: {experts.length}</p> : null}

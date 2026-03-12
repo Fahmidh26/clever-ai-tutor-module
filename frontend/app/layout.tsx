@@ -4,7 +4,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Clever AI Tutor",
-  description: "Next.js + FastAPI with shared main-site authentication.",
+  description: "Next.js + FastAPI. Auth via main site; experts and chat run locally.",
 };
 
 export default function RootLayout({

@@ -2,8 +2,9 @@
 
 > Repos in scope:
 > - Tutor app: `D:\USA\clever-ai-tutor`
-> - Main site (shared APIs/auth/billing): `C:\AISITENEW`
+> - Main site (auth/billing/credits only): `C:\AISITENEW`
 
+> **Architecture**: Main site = auth, billing, credit deduction. Experts, chat, sessions = local tutor APIs. See `ARCHITECTURE.md`.
 > Tracking against `AI_TUTOR_MODULE (1).md` roadmap  
 > Baseline estimate uses current `WORKLOG.md` state
 
@@ -60,22 +61,24 @@
 
 ## 3) Core Tutoring Engine (Phase 1.3)
 
-- [x] Provider abstraction layer (`1.3.1`)
-- [x] At least one production LLM provider wired end-to-end (via main-site API execution + tutor proxy)
-- [x] Session create/list/get APIs (main-site `/api/tutor/sessions*`, consumed by tutor proxy)
-- [x] Message persistence (main-site `ai_chat_messages` through `/api/expert-chat`)
-- [x] SSE streaming chat endpoint (`1.3.7`) via main-site `POST /api/tutor/sessions/{session}/chat` + tutor proxy pass-through
-- [x] 7 interaction modes (or MVP subset first)
-- [x] Safety/guardrail middleware
-- [x] Retry/fallback/timeout strategy (`1.3.8`)
-- [x] Token usage metering + credit reconciliation
+> **Architecture note**: Experts, chat, sessions run locally. Main site only for auth + credit deduction. See `ARCHITECTURE.md`.
 
-Phase 1.3 provider subtask status (implementation-only so far):
-- [x] `1.3.2` OpenAI handled by main site APIs (`C:\AISITENEW`) - no local tutor API keys
-- [x] `1.3.3` Anthropic handled by main site APIs (`C:\AISITENEW`) - no local tutor API keys
-- [x] `1.3.4` Gemini handled by main site APIs (`C:\AISITENEW`) - no local tutor API keys
-- [x] `1.3.5` xAI Grok (implement in main site, consume via tutor proxy)
-- [x] `1.3.6` Provider/model metadata sourced from main site catalog sync
+- [x] Provider abstraction layer (`1.3.1`)
+- [ ] At least one production LLM provider wired end-to-end **locally** (tutor has own API keys; main site only for credit deduct)
+- [ ] Session create/list/get APIs **local** (`/api/tutor/sessions*`)
+- [ ] Message persistence **local** (tutor DB)
+- [ ] SSE streaming chat endpoint (`1.3.7`) **local**
+- [ ] 7 interaction modes (or MVP subset first)
+- [ ] Safety/guardrail middleware
+- [ ] Retry/fallback/timeout strategy (`1.3.8`)
+- [ ] Token usage metering + credit reconciliation (call main site for deduct only)
+
+Phase 1.3 provider subtask status (to implement locally in tutor):
+- [ ] `1.3.2` OpenAI — tutor backend direct API calls
+- [ ] `1.3.3` Anthropic — tutor backend direct API calls
+- [ ] `1.3.4` Gemini — tutor backend direct API calls
+- [ ] `1.3.5` xAI Grok — tutor backend direct API calls
+- [ ] `1.3.6` Provider/model metadata — local catalog or optional sync from main site
 
 ---
 
@@ -172,5 +175,6 @@ Phase 1.3 provider subtask status (implementation-only so far):
 - 2026-03-11: Completed interaction modes by adding 7 mode definitions, mode catalog API (`/api/tutor/modes`), session mode switching (`/api/tutor/sessions/{id}/mode`), and mode-aware prompt layering in both standard and SSE tutor chat paths.
 - 2026-03-11: Completed `1.3.5` xAI Grok provider routing in main-site tutor gateway by making retry/fallback provider-aware (`openai` + `grok`), resolving active model/provider candidates from `AISettings`, and executing Grok via `services.xai` API credentials while preserving tutor proxy consumption flow.
 - 2026-03-11: Completed `1.3.6` provider/model catalog sync by adding main-site `GET /api/catalog` endpoint returning model metadata (provider, cost, tier, context_window, supports_web_search, modules) from `AISettings` with ETag caching; tutor app consumes via existing `RootSiteClient.get_model_catalog()`.
+- 2026-03-12: **Architecture clarification**: Main site only for auth, billing, credit deduction. Experts, chat, sessions run locally in tutor. See `ARCHITECTURE.md`. Phase 1.3 checklist items updated to reflect local implementation; migration from proxy pattern required.
 
 > Update this file daily by checking completed tasks and adjusting percentage estimates.

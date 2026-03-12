@@ -78,7 +78,9 @@ The AI Tutor blends five teaching philosophies proven to maximize learning outco
 
 ## 2. Ecosystem Architecture
 
-The AI Tutor is a **fully independent application** with its own Docker containers, codebase, and database. It connects to the Clever Creator root site via API for shared services (auth, billing, credits). ChatterMate/Forge serve as architectural reference and optional integrations, not runtime dependencies.
+> **Quick reference**: See `ARCHITECTURE.md` in the tutor repo for the canonical rule: main site = auth, billing, credits only; experts, chat, sessions = local tutor APIs.
+
+The AI Tutor is a **fully independent application** with its own Docker containers, codebase, and database. It connects to the Clever Creator root site via API **only for** auth, billing, and credits. Experts, chat, and sessions run locally. ChatterMate/Forge serve as architectural reference and optional integrations, not runtime dependencies.
 
 ```mermaid
 graph TB
