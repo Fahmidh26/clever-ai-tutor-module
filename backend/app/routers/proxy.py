@@ -12,7 +12,7 @@ from app.services.rbac import evaluate_access, required_roles_for_proxy_path
 
 router = APIRouter(tags=["proxy"])
 
-_PROXY_BLOCKED_PREFIXES = ("api/experts", "api/expert-chat", "api/tutor/sessions")
+_PROXY_BLOCKED_PREFIXES = ("api/experts", "api/expert-chat", "api/tutor")
 
 
 def _is_proxy_blocked(path: str) -> bool:

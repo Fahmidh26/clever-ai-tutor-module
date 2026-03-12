@@ -28,7 +28,7 @@ Frontend calls `/api/experts` and `/api/expert-chat` (local). Proxy blocked for 
 
 - Foundation setup: **100%**
 - Main-site auth/API integration: **100%**
-- Core tutoring engine (local per ARCHITECTURE): **~70%** — experts + chat + sessions + streaming
+- Core tutoring engine (local per ARCHITECTURE): **~75%** — experts + chat + sessions + streaming + 7 modes
 - RAG + teacher knowledge base: **5%**
 - UX polish + adaptive UI: **20%**
 - Intelligence (mastery/quiz/hints): **0%**
@@ -36,7 +36,7 @@ Frontend calls `/api/experts` and `/api/expert-chat` (local). Proxy blocked for 
 
 **Estimated overall completion (MVP path): ~22%**
 
-> **Current working state**: Experts, chat, and sessions run locally. Use `POST /api/expert-chat/stream` for SSE streaming. Pass `session_id` for message persistence.
+> **Current working state**: Experts, chat, sessions run locally. 7 interaction modes via `mode` param. `GET /api/tutor/modes`, `PATCH /api/tutor/sessions/{id}/mode`.
 
 ---
 
@@ -84,7 +84,7 @@ Frontend calls `/api/experts` and `/api/expert-chat` (local). Proxy blocked for 
 - [x] Session create/list/get APIs **local** (`/api/tutor/sessions*`)
 - [x] Message persistence **local** (tutor DB)
 - [x] SSE streaming chat endpoint (`1.3.7`) **local**
-- [ ] 7 interaction modes (or MVP subset first)
+- [x] 7 interaction modes (or MVP subset first)
 - [ ] Safety/guardrail middleware
 - [ ] Retry/fallback/timeout strategy (`1.3.8`)
 - [x] Token usage metering + credit reconciliation (call main site for deduct only)
@@ -153,6 +153,7 @@ Phase 1.3 provider subtask status (to implement locally in tutor):
 - [x] Local experts + chat APIs implemented
 - [x] Implement local `/api/tutor/sessions*` (create, list, get, message persistence)
 - [x] SSE streaming chat (`POST /api/expert-chat/stream`)
+- [x] 7 interaction modes (Teach Me, Quiz Me, Hint, Apply It, Show Thinking, Writing Workshop, Debate/Roleplay)
 
 ---
 
@@ -196,5 +197,6 @@ Phase 1.3 provider subtask status (to implement locally in tutor):
 - 2026-03-12: **Architecture clarification**: Main site only for auth, billing, credit deduction. Experts, chat, sessions run locally in tutor. See `ARCHITECTURE.md`. Phase 1.3 checklist items updated to reflect local implementation; migration from proxy pattern required.
 - 2026-03-12: Completed local sessions API (`POST/GET /api/tutor/sessions`, `GET /api/tutor/sessions/{id}`) and message persistence in chat when `session_id` provided.
 - 2026-03-12: Completed SSE streaming chat endpoint `POST /api/expert-chat/stream` — streams `stream_start`, `token`, `stream_end` (or `error`) events.
+- 2026-03-12: Completed 7 interaction modes — `mode_prompts.py`, `GET /api/tutor/modes`, `PATCH /api/tutor/sessions/{id}/mode`, mode-aware prompt layering in chat.
 
 > Update this file daily by checking completed tasks and adjusting percentage estimates.

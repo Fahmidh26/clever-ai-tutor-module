@@ -7,6 +7,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 
+from app.services.mode_prompts import MODE_IDS
 from app.services.rate_limiter import enforce_user_rate_limit
 
 router = APIRouter(prefix="/api/tutor", tags=["sessions"])
@@ -60,7 +61,9 @@ async def create_session(request: Request):
 
     subject = body.get("subject")
     topic = body.get("topic")
-    mode = body.get("mode") or "teach"
+    mode = (body.get("mode") or "teach_me").strip().lower()
+    if mode not in MODE_IDS:
+        mode = "teach_me"
 
     db_pool = getattr(request.app.state, "db_pool", None)
     if db_pool is None:
@@ -258,3 +261,60 @@ async def get_session(request: Request, session_id: int):
         },
         "messages": messages,
     }
+
+
+@router.patch("/sessions/{session_id:int}/mode")
+async def set_session_mode(request: Request, session_id: int):
+    """Switch interaction mode for a session. Local implementation."""
+    rate_limit_response = await enforce_user_rate_limit(
+        request,
+        endpoint_key=f"{request.method}:{request.url.path}",
+    )
+    if rate_limit_response is not None:
+        return rate_limit_response
+
+    token = request.session.get("access_token")
+    if not token:
+        return JSONResponse(status_code=401, content={"error": "Not authenticated"})
+
+    tutor_user_id = _get_tutor_user_id(request)
+    if tutor_user_id is None:
+        return JSONResponse(status_code=401, content={"error": "Tutor user not synced"})
+
+    try:
+        body = await request.json() if request.headers.get("content-type", "").lower().startswith("application/json") else {}
+    except Exception:
+        body = {}
+
+    mode = (body.get("mode") or "").strip().lower()
+    if not mode:
+        return JSONResponse(status_code=400, content={"error": "mode is required"})
+
+    if mode not in MODE_IDS:
+        return JSONResponse(
+            status_code=400,
+            content={"error": f"Invalid mode. Valid: {sorted(MODE_IDS)}"},
+        )
+
+    db_pool = getattr(request.app.state, "db_pool", None)
+    if db_pool is None:
+        return JSONResponse(status_code=503, content={"error": "Database not configured"})
+
+    try:
+        async with db_pool.acquire() as conn:
+            row = await conn.fetchrow(
+                """
+                UPDATE tutor_sessions SET mode = $2
+                WHERE id = $1 AND user_id = $3
+                RETURNING id, mode
+                """,
+                session_id,
+                mode,
+                tutor_user_id,
+            )
+            if not row:
+                return JSONResponse(status_code=404, content={"error": "Session not found"})
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": "Failed to update mode", "details": str(e)})
+
+    return {"session_id": session_id, "mode": row["mode"]}

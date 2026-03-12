@@ -16,6 +16,7 @@ from app.routers.chat import router as chat_router
 from app.routers.experts import router as experts_router
 from app.routers.health import router as health_router
 from app.routers.proxy import router as proxy_router
+from app.routers.modes import router as modes_router
 from app.routers.sessions import router as sessions_router
 from app.services.rate_limiter import close_rate_limiter, init_rate_limiter
 
@@ -53,6 +54,7 @@ app.middleware("http")(request_logging_middleware)
 app.include_router(auth_router)
 app.include_router(experts_router)
 app.include_router(chat_router)
+app.include_router(modes_router)
 app.include_router(sessions_router)
 app.include_router(proxy_router)
 app.include_router(health_router)

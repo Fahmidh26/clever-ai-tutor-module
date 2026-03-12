@@ -13,6 +13,7 @@ from fastapi.responses import JSONResponse, StreamingResponse
 from app.config import settings
 from app.services import root_site_client
 from app.services.ai_providers.base import ChatMessage, ModelConfig
+from app.services.mode_prompts import MODE_IDS, build_system_prompt, normalize_mode
 from app.services.rate_limiter import enforce_user_rate_limit
 
 router = APIRouter(prefix="/api", tags=["chat"])
@@ -53,10 +54,14 @@ async def expert_chat(request: Request):
     message = (body.get("message") or "").strip()
     expert_id = body.get("expert_id")
     session_id = body.get("session_id")
+    mode = (body.get("mode") or "").strip().lower() or "teach_me"
+    hint_level = body.get("hint_level")
     conversation = body.get("conversation") or []
 
     if not message:
         return JSONResponse(status_code=400, content={"error": "message is required"})
+    if mode not in MODE_IDS:
+        return JSONResponse(status_code=400, content={"error": f"Invalid mode. Valid: {sorted(MODE_IDS)}"})
 
     db_pool = getattr(request.app.state, "db_pool", None)
     if db_pool is None:
@@ -66,7 +71,10 @@ async def expert_chat(request: Request):
     if session_id and tutor_user_id is None:
         return JSONResponse(status_code=401, content={"error": "Tutor user not synced for session persistence"})
 
-    # If session_id provided, verify ownership
+    session_mode = mode
+    grade_level = None
+
+    # If session_id provided, verify ownership and get session mode/grade
     if session_id is not None:
         try:
             session_id = int(session_id)
@@ -74,12 +82,23 @@ async def expert_chat(request: Request):
             return JSONResponse(status_code=400, content={"error": "session_id must be an integer"})
         async with db_pool.acquire() as conn:
             row = await conn.fetchrow(
-                "SELECT id FROM tutor_sessions WHERE id = $1 AND user_id = $2",
+                "SELECT id, mode, grade_level FROM tutor_sessions WHERE id = $1 AND user_id = $2",
                 session_id,
                 tutor_user_id,
             )
             if not row:
                 return JSONResponse(status_code=404, content={"error": "Session not found"})
+            if not body.get("mode"):
+                session_mode = normalize_mode(row["mode"])
+            grade_level = row["grade_level"]
+
+    if hint_level is not None:
+        try:
+            hint_level = max(1, min(3, int(hint_level)))
+        except (TypeError, ValueError):
+            hint_level = 1
+    else:
+        hint_level = 1 if mode == "hint" else None
 
     from app.services import provider_registry
 
@@ -89,7 +108,7 @@ async def expert_chat(request: Request):
             content={"error": "No LLM provider configured. Set OPENAI_API_KEY for local chat."},
         )
 
-    system_prompt = "You are a helpful tutor. Be clear, concise, and encouraging."
+    base_prompt = "You are a helpful tutor. Be clear, concise, and encouraging."
     if expert_id is not None:
         async with db_pool.acquire() as conn:
             row = await conn.fetchrow(
@@ -97,7 +116,9 @@ async def expert_chat(request: Request):
                 expert_id,
             )
             if row:
-                system_prompt = row["system_prompt"] or system_prompt
+                base_prompt = row["system_prompt"] or base_prompt
+
+    system_prompt = build_system_prompt(base_prompt, mode=session_mode, hint_level=hint_level, grade_level=grade_level)
 
     messages: list[ChatMessage] = [ChatMessage(role="system", content=system_prompt)]
     for item in conversation:
@@ -150,21 +171,25 @@ async def expert_chat(request: Request):
             async with db_pool.acquire() as conn:
                 await conn.execute(
                     """
-                    INSERT INTO tutor_messages (session_id, role, content, tokens_used, model_used)
-                    VALUES ($1, 'user', $2, $3, $4)
+                    INSERT INTO tutor_messages (session_id, role, content, mode, hint_level, tokens_used, model_used)
+                    VALUES ($1, 'user', $2, $3, $4, $5, $6)
                     """,
                     session_id,
                     message,
+                    session_mode,
+                    hint_level,
                     provider.count_tokens(message),
                     model_config.model,
                 )
                 await conn.execute(
                     """
-                    INSERT INTO tutor_messages (session_id, role, content, tokens_used, model_used)
-                    VALUES ($1, 'assistant', $2, $3, $4)
+                    INSERT INTO tutor_messages (session_id, role, content, mode, hint_level, tokens_used, model_used)
+                    VALUES ($1, 'assistant', $2, $3, $4, $5, $6)
                     """,
                     session_id,
                     full_response,
+                    session_mode,
+                    hint_level,
                     provider.count_tokens(full_response),
                     model_config.model,
                 )
@@ -208,10 +233,14 @@ async def expert_chat_stream(request: Request):
     message = (body.get("message") or "").strip()
     expert_id = body.get("expert_id")
     session_id = body.get("session_id")
+    mode = (body.get("mode") or "").strip().lower() or "teach_me"
+    hint_level = body.get("hint_level")
     conversation = body.get("conversation") or []
 
     if not message:
         return JSONResponse(status_code=400, content={"error": "message is required"})
+    if mode not in MODE_IDS:
+        return JSONResponse(status_code=400, content={"error": f"Invalid mode. Valid: {sorted(MODE_IDS)}"})
 
     db_pool = getattr(request.app.state, "db_pool", None)
     if db_pool is None:
@@ -221,6 +250,9 @@ async def expert_chat_stream(request: Request):
     if session_id and tutor_user_id is None:
         return JSONResponse(status_code=401, content={"error": "Tutor user not synced for session persistence"})
 
+    session_mode = mode
+    grade_level = None
+
     if session_id is not None:
         try:
             session_id = int(session_id)
@@ -228,12 +260,23 @@ async def expert_chat_stream(request: Request):
             return JSONResponse(status_code=400, content={"error": "session_id must be an integer"})
         async with db_pool.acquire() as conn:
             row = await conn.fetchrow(
-                "SELECT id FROM tutor_sessions WHERE id = $1 AND user_id = $2",
+                "SELECT id, mode, grade_level FROM tutor_sessions WHERE id = $1 AND user_id = $2",
                 session_id,
                 tutor_user_id,
             )
             if not row:
                 return JSONResponse(status_code=404, content={"error": "Session not found"})
+            if not body.get("mode"):
+                session_mode = normalize_mode(row["mode"])
+            grade_level = row["grade_level"]
+
+    if hint_level is not None:
+        try:
+            hint_level = max(1, min(3, int(hint_level)))
+        except (TypeError, ValueError):
+            hint_level = 1
+    else:
+        hint_level = 1 if mode == "hint" else None
 
     from app.services import provider_registry
 
@@ -243,7 +286,7 @@ async def expert_chat_stream(request: Request):
             content={"error": "No LLM provider configured. Set OPENAI_API_KEY for local chat."},
         )
 
-    system_prompt = "You are a helpful tutor. Be clear, concise, and encouraging."
+    base_prompt = "You are a helpful tutor. Be clear, concise, and encouraging."
     if expert_id is not None:
         async with db_pool.acquire() as conn:
             row = await conn.fetchrow(
@@ -251,7 +294,9 @@ async def expert_chat_stream(request: Request):
                 expert_id,
             )
             if row:
-                system_prompt = row["system_prompt"] or system_prompt
+                base_prompt = row["system_prompt"] or base_prompt
+
+    system_prompt = build_system_prompt(base_prompt, mode=session_mode, hint_level=hint_level, grade_level=grade_level)
 
     messages: list[ChatMessage] = [ChatMessage(role="system", content=system_prompt)]
     for item in conversation:
@@ -304,21 +349,25 @@ async def expert_chat_stream(request: Request):
                 async with db_pool.acquire() as conn:
                     await conn.execute(
                         """
-                        INSERT INTO tutor_messages (session_id, role, content, tokens_used, model_used)
-                        VALUES ($1, 'user', $2, $3, $4)
+                        INSERT INTO tutor_messages (session_id, role, content, mode, hint_level, tokens_used, model_used)
+                        VALUES ($1, 'user', $2, $3, $4, $5, $6)
                         """,
                         session_id,
                         message,
+                        session_mode,
+                        hint_level,
                         provider.count_tokens(message),
                         model_config.model,
                     )
                     await conn.execute(
                         """
-                        INSERT INTO tutor_messages (session_id, role, content, tokens_used, model_used)
-                        VALUES ($1, 'assistant', $2, $3, $4)
+                        INSERT INTO tutor_messages (session_id, role, content, mode, hint_level, tokens_used, model_used)
+                        VALUES ($1, 'assistant', $2, $3, $4, $5, $6)
                         """,
                         session_id,
                         full_response,
+                        session_mode,
+                        hint_level,
                         provider.count_tokens(full_response),
                         model_config.model,
                     )

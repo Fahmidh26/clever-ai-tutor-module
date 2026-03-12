@@ -757,3 +757,11 @@ Notes:
   - Returns `text/event-stream` with SSE events: `stream_start`, `token`, `stream_end` (or `error` on failure)
   - Deducts credits and persists messages after stream completes
   - Supports `session_id` for message persistence
+
+## 2026-03-12 - 7 interaction modes
+
+- **Mode definitions**: Added `backend/app/services/mode_prompts.py` — Teach Me, Quiz Me, Hint, Apply It, Show Thinking, Writing Workshop, Debate/Roleplay
+- **Mode catalog**: `GET /api/tutor/modes` — list modes with id, name, description, phase
+- **Session mode switch**: `PATCH /api/tutor/sessions/{id}/mode` — set session mode
+- **Mode-aware chat**: Chat endpoints accept `mode` and `hint_level`; inject mode-specific prompt instructions
+- **Hint mode**: 3-level hint progression (nudge → direction → approach) via `hint_level` param
