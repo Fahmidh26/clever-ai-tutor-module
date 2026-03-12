@@ -36,6 +36,23 @@ type KBDocument = {
   created_at?: string | null;
 };
 
+type TeacherClass = {
+  id: number;
+  name: string;
+  subject?: string | null;
+  grade_level?: number | null;
+  invite_code?: string | null;
+  roster_count?: number;
+};
+
+type RosterEntry = {
+  enrollment_id: number;
+  student_id: number;
+  display_name?: string | null;
+  grade_level?: number | null;
+  status?: string;
+};
+
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8003";
 export default function HomePage() {
   const [experts, setExperts] = useState<Expert[]>([]);
@@ -55,6 +72,14 @@ export default function HomePage() {
   const [processingQueued, setProcessingQueued] = useState(false);
   const [previewDocId, setPreviewDocId] = useState<number | null>(null);
   const [previewText, setPreviewText] = useState("");
+  const [classes, setClasses] = useState<TeacherClass[]>([]);
+  const [classesError, setClassesError] = useState("");
+  const [className, setClassName] = useState("");
+  const [classSubject, setClassSubject] = useState("");
+  const [selectedClassId, setSelectedClassId] = useState<number | null>(null);
+  const [roster, setRoster] = useState<RosterEntry[]>([]);
+  const [studentIdInput, setStudentIdInput] = useState("");
+  const [classBusy, setClassBusy] = useState(false);
 
   const { user, role, isAuthenticated, loading, error, startLogin, logout } = useAuthContext();
 
@@ -118,6 +143,40 @@ export default function HomePage() {
     }
   };
 
+  const loadClasses = async () => {
+    if (!isTeacherRole) {
+      setClasses([]);
+      setSelectedClassId(null);
+      return;
+    }
+    try {
+      setClassesError("");
+      const data = await apiClient.get<{ classes?: TeacherClass[] }>("/api/teacher/classes");
+      const list = Array.isArray(data.classes) ? data.classes : [];
+      setClasses(list);
+      if (!selectedClassId && list.length > 0) {
+        setSelectedClassId(list[0].id);
+      }
+      if (selectedClassId && !list.some((cls) => cls.id === selectedClassId)) {
+        setSelectedClassId(list.length > 0 ? list[0].id : null);
+      }
+    } catch (err) {
+      setClassesError(err instanceof Error ? err.message : "Could not load classes");
+      setClasses([]);
+    }
+  };
+
+  const loadRoster = async (classId: number) => {
+    try {
+      setClassesError("");
+      const data = await apiClient.get<{ roster?: RosterEntry[] }>(`/api/teacher/classes/${classId}`);
+      setRoster(Array.isArray(data.roster) ? data.roster : []);
+    } catch (err) {
+      setClassesError(err instanceof Error ? err.message : "Could not load roster");
+      setRoster([]);
+    }
+  };
+
   const loadDocuments = async (kbId: number) => {
     try {
       setDocsLoading(true);
@@ -136,16 +195,21 @@ export default function HomePage() {
     if (isAuthenticated) {
       void loadExperts();
       void loadKnowledgeBases();
+      void loadClasses();
       return;
     }
     setExperts([]);
     setKnowledgeBases([]);
     setSelectedKbId(null);
+    setClasses([]);
+    setSelectedClassId(null);
+    setRoster([]);
   }, [isAuthenticated]);
 
   useEffect(() => {
     if (isAuthenticated && isTeacherRole) {
       void loadKnowledgeBases();
+      void loadClasses();
     }
   }, [isAuthenticated, isTeacherRole]);
 
@@ -158,6 +222,14 @@ export default function HomePage() {
     }
     setDocuments([]);
   }, [selectedKbId, isAuthenticated, isTeacherRole]);
+
+  useEffect(() => {
+    if (selectedClassId && isAuthenticated && isTeacherRole) {
+      void loadRoster(selectedClassId);
+      return;
+    }
+    setRoster([]);
+  }, [selectedClassId, isAuthenticated, isTeacherRole]);
 
   useEffect(() => {
     if (typeof document !== "undefined") {
@@ -296,6 +368,68 @@ export default function HomePage() {
       await loadKnowledgeBases();
     } catch (err) {
       setDocsError(err instanceof Error ? err.message : "Failed to delete document");
+    }
+  };
+
+  const createClass = async () => {
+    if (!className.trim()) {
+      setClassesError("Class name is required");
+      return;
+    }
+    try {
+      setClassBusy(true);
+      setClassesError("");
+      await apiClient.post("/api/teacher/classes", {
+        name: className.trim(),
+        subject: classSubject.trim() || undefined,
+      });
+      setClassName("");
+      setClassSubject("");
+      await loadClasses();
+    } catch (err) {
+      setClassesError(err instanceof Error ? err.message : "Failed to create class");
+    } finally {
+      setClassBusy(false);
+    }
+  };
+
+  const enrollStudent = async () => {
+    if (!selectedClassId) {
+      return;
+    }
+    const sid = Number(studentIdInput);
+    if (!Number.isInteger(sid) || sid <= 0) {
+      setClassesError("Enter a valid student ID");
+      return;
+    }
+    try {
+      setClassBusy(true);
+      setClassesError("");
+      await apiClient.post(`/api/teacher/classes/${selectedClassId}/enroll`, { student_id: sid });
+      setStudentIdInput("");
+      await loadRoster(selectedClassId);
+      await loadClasses();
+    } catch (err) {
+      setClassesError(err instanceof Error ? err.message : "Failed to enroll student");
+    } finally {
+      setClassBusy(false);
+    }
+  };
+
+  const removeEnrollment = async (enrollmentId: number) => {
+    if (!selectedClassId) {
+      return;
+    }
+    try {
+      setClassBusy(true);
+      setClassesError("");
+      await apiClient.del(`/api/teacher/classes/${selectedClassId}/enrollments/${enrollmentId}`);
+      await loadRoster(selectedClassId);
+      await loadClasses();
+    } catch (err) {
+      setClassesError(err instanceof Error ? err.message : "Failed to remove enrollment");
+    } finally {
+      setClassBusy(false);
     }
   };
 
@@ -476,6 +610,90 @@ export default function HomePage() {
                       <h3>Preview (Doc #{previewDocId})</h3>
                       <pre>{previewText || "Loading preview..."}</pre>
                     </div>
+                  ) : null}
+                </>
+              ) : null}
+            </section>
+
+            <section className="card">
+              <h2>Class & Roster Basics</h2>
+              {!isTeacherRole ? <p>Teacher/admin role required for class management.</p> : null}
+              {isTeacherRole ? (
+                <>
+                  <div style={{ display: "grid", gap: "8px", marginBottom: "10px" }}>
+                    <input
+                      value={className}
+                      onChange={(event) => setClassName(event.target.value)}
+                      placeholder="Class name"
+                    />
+                    <input
+                      value={classSubject}
+                      onChange={(event) => setClassSubject(event.target.value)}
+                      placeholder="Subject (optional)"
+                    />
+                    <Button onClick={createClass} disabled={!className.trim() || classBusy}>
+                      {classBusy ? "Working..." : "Create Class"}
+                    </Button>
+                  </div>
+
+                  {classesError ? <p className="error">Error: {classesError}</p> : null}
+                  {classes.length > 0 ? (
+                    <select
+                      value={selectedClassId ?? ""}
+                      onChange={(event) => setSelectedClassId(Number(event.target.value))}
+                      style={{ width: "100%", padding: "8px", marginBottom: "10px" }}
+                    >
+                      {classes.map((cls) => (
+                        <option key={cls.id} value={cls.id}>
+                          {cls.name} ({cls.roster_count ?? 0} students)
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <p>No classes yet.</p>
+                  )}
+
+                  {selectedClassId ? (
+                    <>
+                      <div style={{ display: "flex", gap: "8px", marginBottom: "8px", flexWrap: "wrap" }}>
+                        <input
+                          value={studentIdInput}
+                          onChange={(event) => setStudentIdInput(event.target.value)}
+                          placeholder="Student tutor_user ID"
+                        />
+                        <Button onClick={enrollStudent} disabled={classBusy || !studentIdInput.trim()}>
+                          Enroll Student
+                        </Button>
+                      </div>
+
+                      {roster.length === 0 ? <p>No students enrolled.</p> : null}
+                      {roster.length > 0 ? (
+                        <div style={{ display: "grid", gap: "8px" }}>
+                          {roster.map((entry) => (
+                            <div
+                              key={entry.enrollment_id}
+                              style={{
+                                border: "1px solid var(--border)",
+                                borderRadius: "8px",
+                                padding: "10px",
+                                display: "flex",
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                                gap: "8px",
+                              }}
+                            >
+                              <div>
+                                <strong>{entry.display_name || `Student #${entry.student_id}`}</strong>
+                                <div>ID: {entry.student_id}</div>
+                              </div>
+                              <Button variant="outline" onClick={() => removeEnrollment(entry.enrollment_id)}>
+                                Remove
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      ) : null}
+                    </>
                   ) : null}
                 </>
               ) : null}

@@ -105,7 +105,7 @@ Phase 1.3 provider subtask status (to implement locally in tutor):
 - [x] Vector retrieval and rerank
 - [x] Citation rendering in responses
 - [x] KB management UI (upload/status/delete/preview)
-- [ ] Teacher class/roster basics
+- [x] Teacher class/roster basics
 
 ---
 
@@ -212,5 +212,7 @@ Phase 1.3 provider subtask status (to implement locally in tutor):
 - 2026-03-12: Completed Phase 1.4 citation rendering in chat responses by injecting retrieved KB context into prompt when kb_id is provided and returning citation metadata in both /api/expert-chat JSON and /api/expert-chat/stream SSE lifecycle events.
 
 - 2026-03-12: Completed Phase 1.4 KB management UI in frontend (frontend/app/page.tsx) with teacher/admin gating and end-to-end wiring for KB create/list, document upload, queued processing trigger, status list, preview, and delete using local /api/teacher/kb* endpoints.
+
+- 2026-03-12: Completed Phase 1.4 teacher class/roster basics with local backend APIs (/api/teacher/classes*) for class create/list/detail, enroll/remove student, and frontend wiring in frontend/app/page.tsx for teacher/admin class + roster management.
 
 > Update this file daily by checking completed tasks and adjusting percentage estimates.
