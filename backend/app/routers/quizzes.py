@@ -16,6 +16,7 @@ from app.services.adaptive_quiz import (
 )
 from app.services.explain_my_answer import explain_student_answer
 from app.services.mastery_tracking import estimate_reasoning_quality, next_mastery_level
+from app.services.misconception_detection import detect_misconception
 from app.services.rate_limiter import enforce_user_rate_limit
 
 router = APIRouter(prefix="/api/tutor/quiz", tags=["adaptive-quiz"])
@@ -303,6 +304,27 @@ async def submit_quiz_answer(request: Request, quiz_id: int):
                 is_correct=is_correct,
                 used_explain_my_answer=False,
             )
+            if not is_correct:
+                signal = detect_misconception(
+                    question_text=str(row["question_text"] or ""),
+                    selected_answer=selected_answer,
+                    correct_answer=str(row["correct_answer"] or ""),
+                    explanation=str(row["explanation"] or ""),
+                    student_reasoning=None,
+                )
+                await conn.execute(
+                    """
+                    INSERT INTO misconception_log (
+                        student_id, subject, topic, misconception_type, description, detected_at
+                    )
+                    VALUES ($1, $2, $3, $4, $5, NOW())
+                    """,
+                    tutor_user_id,
+                    row["subject"],
+                    row["topic"],
+                    signal.misconception_type,
+                    signal.description,
+                )
 
             recent_rows = await conn.fetch(
                 """

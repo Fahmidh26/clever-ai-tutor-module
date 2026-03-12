@@ -119,6 +119,16 @@ type MasteryRecord = {
   last_assessed_at?: string | null;
 };
 
+type MisconceptionRecord = {
+  id: number;
+  subject?: string | null;
+  topic?: string | null;
+  misconception_type: string;
+  description: string;
+  detected_at?: string | null;
+  resolved_at?: string | null;
+};
+
 type GradeBand = "k2" | "g35" | "g68" | "g912";
 
 function extractGradeLevel(user: Record<string, unknown> | null): number | null {
@@ -225,6 +235,9 @@ export default function HomePage() {
   const [masteryRecords, setMasteryRecords] = useState<MasteryRecord[]>([]);
   const [masteryLoading, setMasteryLoading] = useState(false);
   const [masteryError, setMasteryError] = useState("");
+  const [misconceptions, setMisconceptions] = useState<MisconceptionRecord[]>([]);
+  const [misconceptionsLoading, setMisconceptionsLoading] = useState(false);
+  const [misconceptionsError, setMisconceptionsError] = useState("");
   const [isOnline, setIsOnline] = useState(true);
   const [subjectInput, setSubjectInput] = useState("");
   const [topicInput, setTopicInput] = useState("");
@@ -472,6 +485,35 @@ export default function HomePage() {
     }
   };
 
+  const loadMisconceptions = async () => {
+    try {
+      setMisconceptionsLoading(true);
+      setMisconceptionsError("");
+      const data = await apiClient.get<{ misconceptions?: MisconceptionRecord[] }>(
+        "/api/tutor/misconceptions?include_resolved=false&limit=50"
+      );
+      setMisconceptions(Array.isArray(data.misconceptions) ? data.misconceptions : []);
+    } catch (err) {
+      setMisconceptionsError(err instanceof Error ? err.message : "Could not load misconceptions");
+      setMisconceptions([]);
+    } finally {
+      setMisconceptionsLoading(false);
+    }
+  };
+
+  const resolveMisconception = async (misconceptionId: number) => {
+    try {
+      setMisconceptionsLoading(true);
+      setMisconceptionsError("");
+      await apiClient.post(`/api/tutor/misconceptions/${misconceptionId}/resolve`);
+      await loadMisconceptions();
+    } catch (err) {
+      setMisconceptionsError(err instanceof Error ? err.message : "Failed to resolve misconception");
+    } finally {
+      setMisconceptionsLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (isAuthenticated) {
       void loadExperts();
@@ -480,6 +522,7 @@ export default function HomePage() {
       void loadFlashcardDecks();
       void loadDueFlashcards();
       void loadMasteryRecords();
+      void loadMisconceptions();
       void loadKnowledgeBases();
       void loadClasses();
       return;
@@ -497,6 +540,7 @@ export default function HomePage() {
     setSelectedFlashDeckId(null);
     setDueFlashcards([]);
     setMasteryRecords([]);
+    setMisconceptions([]);
   }, [isAuthenticated]);
 
   useEffect(() => {
@@ -1178,6 +1222,7 @@ export default function HomePage() {
       loadFlashcardDecks(),
       loadDueFlashcards(),
       loadMasteryRecords(),
+      loadMisconceptions(),
       isTeacherRole ? loadKnowledgeBases() : Promise.resolve(),
       isTeacherRole ? loadClasses() : Promise.resolve(),
       selectedKbId ? loadDocuments(selectedKbId) : Promise.resolve(),
@@ -1193,6 +1238,7 @@ export default function HomePage() {
     classBusy,
     flashcardsLoading,
     masteryLoading,
+    misconceptionsLoading,
   };
   const anyLoading = Object.values(loadingFlags).some(Boolean);
   const activeErrors = [error, expertsError, chatError, kbError, docsError, classesError].filter(Boolean);
@@ -1613,6 +1659,46 @@ export default function HomePage() {
                       </strong>
                       <div>Mastery: {record.mastery_level}/5</div>
                       <div>Reasoning quality: {record.reasoning_quality ?? "-"}/5</div>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+            </section>
+
+            <section className="card">
+              <h2>Misconception Detection</h2>
+              <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginBottom: "8px" }}>
+                <Button variant="secondary" onClick={loadMisconceptions} disabled={misconceptionsLoading}>
+                  {misconceptionsLoading ? "Loading..." : "Refresh Misconceptions"}
+                </Button>
+              </div>
+              {misconceptionsError ? <p className="error">Error: {misconceptionsError}</p> : null}
+              {misconceptions.length === 0 ? <p>No active misconceptions detected.</p> : null}
+              {misconceptions.length > 0 ? (
+                <div style={{ display: "grid", gap: "8px" }}>
+                  {misconceptions.map((item) => (
+                    <div
+                      key={item.id}
+                      style={{
+                        border: "1px solid var(--border)",
+                        borderRadius: "8px",
+                        padding: "10px",
+                        display: "grid",
+                        gap: "6px",
+                      }}
+                    >
+                      <strong>
+                        {item.subject || "General"} {item.topic ? `- ${item.topic}` : ""}
+                      </strong>
+                      <div style={{ fontSize: "12px", opacity: 0.85 }}>
+                        Type: {item.misconception_type}
+                      </div>
+                      <div>{item.description}</div>
+                      <div>
+                        <Button variant="outline" onClick={() => resolveMisconception(item.id)} disabled={misconceptionsLoading}>
+                          Mark Resolved
+                        </Button>
+                      </div>
                     </div>
                   ))}
                 </div>
