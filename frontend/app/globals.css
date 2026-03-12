@@ -149,6 +149,12 @@ textarea {
   color: var(--foreground);
 }
 
+.workspace-grid {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 10px;
+}
+
 input,
 select {
   width: 100%;
@@ -188,5 +194,9 @@ pre {
   .shell-sidebar {
     border-right: 0;
     border-bottom: 1px solid var(--border);
+  }
+
+  .workspace-grid {
+    grid-template-columns: 1fr;
   }
 }

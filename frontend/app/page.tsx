@@ -12,6 +12,8 @@ type Expert = {
   id?: string | number;
   name?: string;
   expert_name?: string;
+  tagline?: string;
+  subject_expertise?: unknown;
 };
 
 type KnowledgeBase = {
@@ -53,6 +55,28 @@ type RosterEntry = {
   status?: string;
 };
 
+type TutorMode = {
+  id: string;
+  label: string;
+};
+
+type TutorSessionSummary = {
+  id: number;
+  persona_id: number;
+  persona_name?: string;
+  subject?: string | null;
+  topic?: string | null;
+  mode?: string;
+  created_at?: string | null;
+};
+
+type TutorSessionMessage = {
+  id?: number;
+  role: "user" | "assistant";
+  content: string;
+  mode?: string;
+};
+
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8003";
 export default function HomePage() {
   const [experts, setExperts] = useState<Expert[]>([]);
@@ -80,6 +104,16 @@ export default function HomePage() {
   const [roster, setRoster] = useState<RosterEntry[]>([]);
   const [studentIdInput, setStudentIdInput] = useState("");
   const [classBusy, setClassBusy] = useState(false);
+  const [modes, setModes] = useState<TutorMode[]>([]);
+  const [selectedMode, setSelectedMode] = useState("teach_me");
+  const [selectedExpertId, setSelectedExpertId] = useState<number | null>(null);
+  const [sessions, setSessions] = useState<TutorSessionSummary[]>([]);
+  const [selectedSessionId, setSelectedSessionId] = useState<number | null>(null);
+  const [chatMessages, setChatMessages] = useState<TutorSessionMessage[]>([]);
+  const [sessionLoading, setSessionLoading] = useState(false);
+  const [isOnline, setIsOnline] = useState(true);
+  const [subjectInput, setSubjectInput] = useState("");
+  const [topicInput, setTopicInput] = useState("");
 
   const { user, role, isAuthenticated, loading, error, startLogin, logout } = useAuthContext();
 
@@ -111,9 +145,74 @@ export default function HomePage() {
           ? data
           : [];
       setExperts(list);
+      if (!selectedExpertId && list.length > 0) {
+        const firstId = Number(list[0].id);
+        if (Number.isInteger(firstId)) {
+          setSelectedExpertId(firstId);
+        }
+      }
     } catch (err) {
       setExpertsError(err instanceof Error ? err.message : "Could not fetch experts");
       setExperts([]);
+    }
+  };
+
+  const loadModes = async () => {
+    try {
+      const data = await apiClient.get<{ modes?: TutorMode[] }>("/api/tutor/modes");
+      const list = Array.isArray(data.modes) ? data.modes : [];
+      setModes(list);
+      if (list.length > 0 && !list.some((m) => m.id === selectedMode)) {
+        setSelectedMode(list[0].id);
+      }
+    } catch {
+      setModes([]);
+    }
+  };
+
+  const loadSessions = async () => {
+    try {
+      setSessionLoading(true);
+      const data = await apiClient.get<{ sessions?: TutorSessionSummary[] }>("/api/tutor/sessions?limit=50");
+      const list = Array.isArray(data.sessions) ? data.sessions : [];
+      setSessions(list);
+      if (list.length > 0 && selectedSessionId === null) {
+        setSelectedSessionId(list[0].id);
+      }
+    } catch (err) {
+      setChatError(err instanceof Error ? err.message : "Could not load sessions");
+      setSessions([]);
+    } finally {
+      setSessionLoading(false);
+    }
+  };
+
+  const loadSessionDetail = async (sessionId: number) => {
+    try {
+      setSessionLoading(true);
+      const data = await apiClient.get<{ session?: TutorSessionSummary; messages?: TutorSessionMessage[] }>(
+        `/api/tutor/sessions/${sessionId}`
+      );
+      const messages = Array.isArray(data.messages) ? data.messages : [];
+      setChatMessages(
+        messages.map((m) => ({
+          id: m.id,
+          role: m.role === "assistant" ? "assistant" : "user",
+          content: String(m.content || ""),
+          mode: m.mode,
+        }))
+      );
+      if (data.session?.persona_id) {
+        setSelectedExpertId(Number(data.session.persona_id));
+      }
+      if (data.session?.mode) {
+        setSelectedMode(data.session.mode);
+      }
+    } catch (err) {
+      setChatError(err instanceof Error ? err.message : "Could not load session messages");
+      setChatMessages([]);
+    } finally {
+      setSessionLoading(false);
     }
   };
 
@@ -194,6 +293,8 @@ export default function HomePage() {
   useEffect(() => {
     if (isAuthenticated) {
       void loadExperts();
+      void loadModes();
+      void loadSessions();
       void loadKnowledgeBases();
       void loadClasses();
       return;
@@ -204,6 +305,9 @@ export default function HomePage() {
     setClasses([]);
     setSelectedClassId(null);
     setRoster([]);
+    setSessions([]);
+    setSelectedSessionId(null);
+    setChatMessages([]);
   }, [isAuthenticated]);
 
   useEffect(() => {
@@ -232,6 +336,27 @@ export default function HomePage() {
   }, [selectedClassId, isAuthenticated, isTeacherRole]);
 
   useEffect(() => {
+    if (!isAuthenticated || selectedSessionId === null) {
+      return;
+    }
+    void loadSessionDetail(selectedSessionId);
+  }, [selectedSessionId, isAuthenticated]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+    const setOnline = () => setIsOnline(navigator.onLine);
+    setOnline();
+    window.addEventListener("online", setOnline);
+    window.addEventListener("offline", setOnline);
+    return () => {
+      window.removeEventListener("online", setOnline);
+      window.removeEventListener("offline", setOnline);
+    };
+  }, []);
+
+  useEffect(() => {
     if (typeof document !== "undefined") {
       document.documentElement.classList.toggle("dark", theme === "dark");
     }
@@ -243,26 +368,132 @@ export default function HomePage() {
     resetChat();
   };
 
-  const sendDemoChat = async () => {
+  const startSessionIfNeeded = async (): Promise<number | null> => {
+    if (selectedSessionId !== null) {
+      return selectedSessionId;
+    }
+    if (!selectedExpertId) {
+      setChatError("Select a tutor first");
+      return null;
+    }
+    try {
+      const created = await apiClient.post<{ session?: { id: number } }>("/api/tutor/sessions", {
+        persona_id: selectedExpertId,
+        subject: subjectInput.trim() || undefined,
+        topic: topicInput.trim() || undefined,
+        mode: selectedMode,
+      });
+      const id = created.session?.id ?? null;
+      if (id !== null) {
+        setSelectedSessionId(id);
+        await loadSessions();
+      }
+      return id;
+    } catch (err) {
+      setChatError(err instanceof Error ? err.message : "Failed to create session");
+      return null;
+    }
+  };
+
+  const sendStreamChat = async () => {
     if (!chatPrompt.trim()) {
+      return;
+    }
+    if (!isOnline) {
+      setChatError("You are offline. Reconnect and try again.");
       return;
     }
     setChatLoading(true);
     setChatError("");
+    setChatResult("");
+    const userContent = chatPrompt.trim();
+    const nextMessages = [...chatMessages, { role: "user" as const, content: userContent }];
+    setChatMessages([...nextMessages, { role: "assistant" as const, content: "" }]);
 
+    const sessionId = await startSessionIfNeeded();
+    if (sessionId === null) {
+      setChatLoading(false);
+      return;
+    }
     try {
-      const expertId = experts[0]?.id ?? null;
-      const data = await apiClient.post<{
-        message?: string;
-        error?: string;
-        response?: string;
-      }>("/api/expert-chat", {
-        message: chatPrompt.trim(),
-        expert_id: expertId,
-        domain: "expert-chat",
-        conversation: [],
+      const response = await fetch(`${apiBaseUrl}/api/expert-chat/stream`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json", Accept: "text/event-stream" },
+        body: JSON.stringify({
+          message: userContent,
+          expert_id: selectedExpertId,
+          session_id: sessionId,
+          mode: selectedMode,
+          conversation: nextMessages.map((m) => ({ role: m.role, content: m.content })),
+          kb_id: selectedKbId ?? undefined,
+        }),
       });
-      setChatResult(data.response || data.message || JSON.stringify(data));
+      if (!response.ok || !response.body) {
+        const text = await response.text();
+        throw new Error(text || `Chat request failed (${response.status})`);
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) {
+          break;
+        }
+        buffer += decoder.decode(value, { stream: true });
+
+        let boundary = buffer.indexOf("\n\n");
+        while (boundary >= 0) {
+          const block = buffer.slice(0, boundary);
+          buffer = buffer.slice(boundary + 2);
+          boundary = buffer.indexOf("\n\n");
+
+          const lines = block.split("\n");
+          const eventLine = lines.find((l) => l.startsWith("event: "));
+          const dataLine = lines.find((l) => l.startsWith("data: "));
+          const event = eventLine ? eventLine.replace("event: ", "").trim() : "message";
+          const dataRaw = dataLine ? dataLine.replace("data: ", "") : "";
+          let payload: Record<string, unknown> = {};
+          try {
+            payload = dataRaw ? (JSON.parse(dataRaw) as Record<string, unknown>) : {};
+          } catch {
+            payload = {};
+          }
+
+          if (event === "token") {
+            const token = String(payload.content || "");
+            setChatMessages((prev) => {
+              if (prev.length === 0) {
+                return [{ role: "assistant", content: token }];
+              }
+              const copy = [...prev];
+              const lastIdx = copy.length - 1;
+              const last = copy[lastIdx];
+              if (last.role !== "assistant") {
+                copy.push({ role: "assistant", content: token });
+                return copy;
+              }
+              copy[lastIdx] = { ...last, content: `${last.content}${token}` };
+              return copy;
+            });
+          } else if (event === "error") {
+            const message = String(payload.message || "Streaming error");
+            throw new Error(message);
+          } else if (event === "stream_end") {
+            const assistantText = String(
+              (chatMessages.length > 0 ? chatMessages[chatMessages.length - 1]?.content : "") || ""
+            );
+            if (assistantText) {
+              setChatResult(assistantText);
+            }
+          }
+        }
+      }
+      setChatPrompt("");
+      await loadSessions();
     } catch (err) {
       setChatError(err instanceof Error ? err.message : "Chat request failed");
       setChatResult("");
@@ -496,19 +727,124 @@ export default function HomePage() {
             </section>
 
             <section className="card">
-              <h2>Demo Expert Chat</h2>
-              <textarea
-                value={chatPrompt}
-                onChange={(event) => setChatPrompt(event.target.value)}
-                rows={3}
-                placeholder="Ask a question..."
-                disabled={!isAuthenticated || chatLoading}
-              />
-              <Button onClick={sendDemoChat} disabled={!isAuthenticated || chatLoading || !chatPrompt.trim()}>
-                {chatLoading ? "Sending..." : "Send Prompt"}
-              </Button>
-              {chatError ? <p className="error">Error: {chatError}</p> : null}
-              {chatResult ? <pre>{chatResult}</pre> : null}
+              <h2>Tutor Workspace</h2>
+              {!isOnline ? <p className="error">Offline mode: connect to send messages.</p> : null}
+              <div style={{ display: "grid", gap: "8px", marginBottom: "10px" }}>
+                <select
+                  value={selectedExpertId ?? ""}
+                  onChange={(event) => setSelectedExpertId(Number(event.target.value))}
+                  disabled={experts.length === 0}
+                >
+                  {experts.map((expert) => (
+                    <option key={String(expert.id)} value={Number(expert.id)}>
+                      {expert.name || expert.expert_name || "Unnamed tutor"}
+                    </option>
+                  ))}
+                </select>
+                <select value={selectedMode} onChange={(event) => setSelectedMode(event.target.value)}>
+                  {modes.map((mode) => (
+                    <option key={mode.id} value={mode.id}>
+                      {mode.label}
+                    </option>
+                  ))}
+                </select>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
+                  <input
+                    value={subjectInput}
+                    onChange={(event) => setSubjectInput(event.target.value)}
+                    placeholder="Subject (optional)"
+                  />
+                  <input
+                    value={topicInput}
+                    onChange={(event) => setTopicInput(event.target.value)}
+                    placeholder="Topic (optional)"
+                  />
+                </div>
+                <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                  <Button
+                    variant="secondary"
+                    onClick={async () => {
+                      const id = await startSessionIfNeeded();
+                      if (id !== null) {
+                        setSelectedSessionId(id);
+                      }
+                    }}
+                    disabled={chatLoading || !selectedExpertId}
+                  >
+                    Start Session
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setSelectedSessionId(null);
+                      setChatMessages([]);
+                      setChatError("");
+                    }}
+                    disabled={chatLoading}
+                  >
+                    New Session Draft
+                  </Button>
+                </div>
+              </div>
+
+              <div className="workspace-grid">
+                <div style={{ border: "1px solid var(--border)", borderRadius: "8px", padding: "8px" }}>
+                  <strong>Session History</strong>
+                  {sessionLoading ? <p>Loading...</p> : null}
+                  {sessions.length === 0 ? <p>No sessions yet.</p> : null}
+                  <div style={{ display: "grid", gap: "6px", marginTop: "8px", maxHeight: "340px", overflow: "auto" }}>
+                    {sessions.map((session) => (
+                      <button
+                        key={session.id}
+                        type="button"
+                        className="shell-nav-item"
+                        style={{
+                          background:
+                            selectedSessionId === session.id ? "var(--secondary)" : "var(--background)",
+                        }}
+                        onClick={() => setSelectedSessionId(session.id)}
+                      >
+                        <div>#{session.id} {session.persona_name || "Tutor"}</div>
+                        <div style={{ fontSize: "12px", opacity: 0.8 }}>
+                          {session.subject || "General"} {session.topic ? `· ${session.topic}` : ""}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div style={{ border: "1px solid var(--border)", borderRadius: "8px", padding: "10px" }}>
+                  <div style={{ maxHeight: "340px", overflow: "auto", display: "grid", gap: "8px", marginBottom: "10px" }}>
+                    {chatMessages.length === 0 ? <p>Start a conversation.</p> : null}
+                    {chatMessages.map((message, index) => (
+                      <div
+                        key={`${message.role}-${index}`}
+                        style={{
+                          border: "1px solid var(--border)",
+                          borderRadius: "8px",
+                          padding: "10px",
+                          background: message.role === "assistant" ? "var(--card)" : "var(--secondary)",
+                        }}
+                      >
+                        <strong>{message.role === "assistant" ? "Tutor" : "You"}</strong>
+                        <pre style={{ marginTop: "6px", whiteSpace: "pre-wrap" }}>{message.content}</pre>
+                      </div>
+                    ))}
+                  </div>
+                  <textarea
+                    value={chatPrompt}
+                    onChange={(event) => setChatPrompt(event.target.value)}
+                    rows={3}
+                    placeholder="Ask your tutor..."
+                    disabled={!isAuthenticated || chatLoading}
+                  />
+                  <Button onClick={sendStreamChat} disabled={!isAuthenticated || chatLoading || !chatPrompt.trim()}>
+                    {chatLoading ? "Streaming..." : "Send Message"}
+                  </Button>
+                  {chatError ? <p className="error">Error: {chatError}</p> : null}
+                  {chatResult ? <p style={{ marginTop: "6px", fontSize: "12px", opacity: 0.8 }}>Latest response captured.</p> : null}
+                </div>
+              </div>
             </section>
 
             <section className="card">

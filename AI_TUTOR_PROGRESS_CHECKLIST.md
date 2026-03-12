@@ -114,8 +114,8 @@ Phase 1.3 provider subtask status (to implement locally in tutor):
 - [x] Basic login/session wiring in frontend
 - [x] Basic experts fetch + demo chat wiring
 - [ ] Full tutor chat UX (streaming markdown/math/code)
-- [ ] Tutor persona selection UX
-- [ ] Session history panel
+- [x] Tutor persona selection UX
+- [x] Session history panel
 - [ ] Age-adaptive layouts (K-2, 3-5, 6-8, 9-12)
 - [ ] Error/loading/offline handling polish
 - [ ] End-to-end user journey test coverage
@@ -214,5 +214,7 @@ Phase 1.3 provider subtask status (to implement locally in tutor):
 - 2026-03-12: Completed Phase 1.4 KB management UI in frontend (frontend/app/page.tsx) with teacher/admin gating and end-to-end wiring for KB create/list, document upload, queued processing trigger, status list, preview, and delete using local /api/teacher/kb* endpoints.
 
 - 2026-03-12: Completed Phase 1.4 teacher class/roster basics with local backend APIs (/api/teacher/classes*) for class create/list/detail, enroll/remove student, and frontend wiring in frontend/app/page.tsx for teacher/admin class + roster management.
+
+- 2026-03-12: Phase 1.5 chat workspace upgrade: added tutor persona selection, mode selection, session creation/loading, session history panel, and SSE streaming chat flow in frontend/app/page.tsx. Kept Full tutor chat UX (streaming markdown/math/code) open for richer markdown/math/code rendering polish.
 
 > Update this file daily by checking completed tasks and adjusting percentage estimates.
