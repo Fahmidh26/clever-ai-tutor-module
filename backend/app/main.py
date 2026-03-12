@@ -11,6 +11,7 @@ from app.config import settings
 from app.db.pool import close_db_pool, init_db_pool
 from app.logging_config import configure_logging
 from app.middleware.request_logging import request_logging_middleware
+from app.middleware.tutor_guardrail import tutor_guardrail_middleware
 from app.routers.auth import router as auth_router
 from app.routers.chat import router as chat_router
 from app.routers.experts import router as experts_router
@@ -49,6 +50,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.middleware("http")(tutor_guardrail_middleware)
 app.middleware("http")(request_logging_middleware)
 
 app.include_router(auth_router)

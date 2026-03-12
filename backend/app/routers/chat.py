@@ -15,6 +15,7 @@ from app.services import root_site_client
 from app.services.ai_providers.base import ChatMessage, ModelConfig
 from app.services.mode_prompts import MODE_IDS, build_system_prompt, normalize_mode
 from app.services.rate_limiter import enforce_user_rate_limit
+from app.services.safety_guardrails import sanitize_assistant_output
 
 router = APIRouter(prefix="/api", tags=["chat"])
 
@@ -153,6 +154,7 @@ async def expert_chat(request: Request):
             status_code=502,
             content={"error": "LLM request failed", "details": str(e)},
         )
+    full_response = sanitize_assistant_output(full_response)
 
     tokens_used = provider.count_tokens(message) + provider.count_tokens(full_response)
     try:
@@ -332,6 +334,7 @@ async def expert_chat_stream(request: Request):
         except Exception as e:
             yield _sse_event("error", {"message": str(e)})
             return
+        full_response = sanitize_assistant_output(full_response)
 
         tokens_used = provider.count_tokens(message) + provider.count_tokens(full_response)
         try:

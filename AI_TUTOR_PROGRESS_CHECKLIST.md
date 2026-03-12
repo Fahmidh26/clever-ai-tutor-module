@@ -85,7 +85,7 @@ Frontend calls `/api/experts` and `/api/expert-chat` (local). Proxy blocked for 
 - [x] Message persistence **local** (tutor DB)
 - [x] SSE streaming chat endpoint (`1.3.7`) **local**
 - [x] 7 interaction modes (or MVP subset first)
-- [ ] Safety/guardrail middleware
+- [x] Safety/guardrail middleware
 - [ ] Retry/fallback/timeout strategy (`1.3.8`)
 - [x] Token usage metering + credit reconciliation (call main site for deduct only)
 
@@ -198,5 +198,7 @@ Phase 1.3 provider subtask status (to implement locally in tutor):
 - 2026-03-12: Completed local sessions API (`POST/GET /api/tutor/sessions`, `GET /api/tutor/sessions/{id}`) and message persistence in chat when `session_id` provided.
 - 2026-03-12: Completed SSE streaming chat endpoint `POST /api/expert-chat/stream` — streams `stream_start`, `token`, `stream_end` (or `error`) events.
 - 2026-03-12: Completed 7 interaction modes — `mode_prompts.py`, `GET /api/tutor/modes`, `PATCH /api/tutor/sessions/{id}/mode`, mode-aware prompt layering in chat.
+
+- 2026-03-12: Completed local safety/guardrail middleware by adding request filtering on /api/expert-chat* (prompt-injection/unsafe-content checks + payload cap) and assistant-output sanitization in chat + streaming handlers.
 
 > Update this file daily by checking completed tasks and adjusting percentage estimates.
