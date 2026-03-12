@@ -31,10 +31,10 @@ Frontend calls `/api/experts` and `/api/expert-chat` (local). Proxy blocked for 
 - Core tutoring engine (local per ARCHITECTURE): **~85%** - experts + chat + sessions + streaming + 7 modes; multi-provider local wiring pending
 - RAG + teacher knowledge base: **100%**
 - UX polish + adaptive UI: **100%**
-- Intelligence (mastery/quiz/hints): **~88%** (hint progression + adaptive quiz + explain-my-answer + flashcards + mastery + misconception detection implemented)
+- Intelligence (mastery/quiz/hints): **100%** (Phase 2 core complete)
 - Gamification/interactive tools/test prep: **0%**
 
-**Estimated overall completion (MVP path): ~68%**
+**Estimated overall completion (MVP path): ~72%**
 
 > **Current working state**: Experts, chat, sessions run locally. 7 interaction modes via `mode` param. `GET /api/tutor/modes`, `PATCH /api/tutor/sessions/{id}/mode`.
 
@@ -130,7 +130,7 @@ Phase 1.3 provider subtask status (to implement locally in tutor):
 - [x] Flashcards + spaced repetition
 - [x] Mastery tracking per topic
 - [x] Misconception detection
-- [ ] Student + teacher progress dashboards
+- [x] Student + teacher progress dashboards
 
 ---
 
@@ -232,6 +232,8 @@ Phase 1.3 provider subtask status (to implement locally in tutor):
 - 2026-03-12: Implemented flashcards + spaced repetition with backend APIs (`/api/tutor/flashcards/decks*`, `/api/tutor/flashcards/generate`, `/api/tutor/flashcards/review`, `/api/tutor/flashcards/{id}/review`) using SM-2 scheduling and frontend flashcard deck/generation/review UI.
 - 2026-03-12: Implemented mastery tracking per topic with backend APIs (`GET /api/tutor/mastery`, `POST /api/tutor/mastery/recompute`), auto-updates from quiz submission, and frontend mastery panel for refresh/recompute and level visibility.
 - 2026-03-12: Implemented misconception detection baseline with automatic logging from incorrect quiz submissions, misconception APIs (`GET /api/tutor/misconceptions`, `POST /api/tutor/misconceptions/{id}/resolve`), and frontend misconception review/resolve panel.
+- 2026-03-12: Implemented student + teacher progress dashboards with backend APIs (`GET /api/tutor/progress/student`, `GET /api/tutor/progress/teacher?class_id=...`) and frontend dashboard panels for student metrics and teacher class rollups.
+- 2026-03-12: Phase 2 core marked complete (hint progression, adaptive quiz, explain-my-answer, flashcards/spaced repetition, mastery tracking, misconception detection, progress dashboards).
 
 > Update this file daily by checking completed tasks and adjusting percentage estimates.
 

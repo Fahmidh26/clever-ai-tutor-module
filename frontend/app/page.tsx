@@ -129,6 +129,25 @@ type MisconceptionRecord = {
   resolved_at?: string | null;
 };
 
+type StudentProgressSummary = {
+  total_sessions: number;
+  total_tokens: number;
+  total_quiz: number;
+  correct_quiz: number;
+  quiz_accuracy: number;
+  mastery_topics: number;
+  avg_mastery: number;
+  active_misconceptions: number;
+  due_flashcards: number;
+};
+
+type TeacherProgressSummary = {
+  student_count: number;
+  avg_mastery: number;
+  quiz_accuracy: number;
+  active_misconceptions: number;
+};
+
 type GradeBand = "k2" | "g35" | "g68" | "g912";
 
 function extractGradeLevel(user: Record<string, unknown> | null): number | null {
@@ -238,6 +257,10 @@ export default function HomePage() {
   const [misconceptions, setMisconceptions] = useState<MisconceptionRecord[]>([]);
   const [misconceptionsLoading, setMisconceptionsLoading] = useState(false);
   const [misconceptionsError, setMisconceptionsError] = useState("");
+  const [studentProgress, setStudentProgress] = useState<StudentProgressSummary | null>(null);
+  const [teacherProgress, setTeacherProgress] = useState<TeacherProgressSummary | null>(null);
+  const [progressLoading, setProgressLoading] = useState(false);
+  const [progressError, setProgressError] = useState("");
   const [isOnline, setIsOnline] = useState(true);
   const [subjectInput, setSubjectInput] = useState("");
   const [topicInput, setTopicInput] = useState("");
@@ -514,6 +537,36 @@ export default function HomePage() {
     }
   };
 
+  const loadStudentProgress = async () => {
+    try {
+      setProgressLoading(true);
+      setProgressError("");
+      const data = await apiClient.get<{ summary?: StudentProgressSummary }>("/api/tutor/progress/student");
+      setStudentProgress(data.summary ?? null);
+    } catch (err) {
+      setProgressError(err instanceof Error ? err.message : "Could not load student progress");
+      setStudentProgress(null);
+    } finally {
+      setProgressLoading(false);
+    }
+  };
+
+  const loadTeacherProgress = async (classId: number) => {
+    try {
+      setProgressLoading(true);
+      setProgressError("");
+      const data = await apiClient.get<{ summary?: TeacherProgressSummary }>(
+        `/api/tutor/progress/teacher?class_id=${classId}`
+      );
+      setTeacherProgress(data.summary ?? null);
+    } catch (err) {
+      setProgressError(err instanceof Error ? err.message : "Could not load teacher progress");
+      setTeacherProgress(null);
+    } finally {
+      setProgressLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (isAuthenticated) {
       void loadExperts();
@@ -523,6 +576,7 @@ export default function HomePage() {
       void loadDueFlashcards();
       void loadMasteryRecords();
       void loadMisconceptions();
+      void loadStudentProgress();
       void loadKnowledgeBases();
       void loadClasses();
       return;
@@ -541,6 +595,8 @@ export default function HomePage() {
     setDueFlashcards([]);
     setMasteryRecords([]);
     setMisconceptions([]);
+    setStudentProgress(null);
+    setTeacherProgress(null);
   }, [isAuthenticated]);
 
   useEffect(() => {
@@ -563,8 +619,10 @@ export default function HomePage() {
   useEffect(() => {
     if (selectedClassId && isAuthenticated && isTeacherRole) {
       void loadRoster(selectedClassId);
+      void loadTeacherProgress(selectedClassId);
       return;
     }
+    setTeacherProgress(null);
     setRoster([]);
   }, [selectedClassId, isAuthenticated, isTeacherRole]);
 
@@ -1223,6 +1281,8 @@ export default function HomePage() {
       loadDueFlashcards(),
       loadMasteryRecords(),
       loadMisconceptions(),
+      loadStudentProgress(),
+      selectedClassId && isTeacherRole ? loadTeacherProgress(selectedClassId) : Promise.resolve(),
       isTeacherRole ? loadKnowledgeBases() : Promise.resolve(),
       isTeacherRole ? loadClasses() : Promise.resolve(),
       selectedKbId ? loadDocuments(selectedKbId) : Promise.resolve(),
@@ -1239,6 +1299,7 @@ export default function HomePage() {
     flashcardsLoading,
     masteryLoading,
     misconceptionsLoading,
+    progressLoading,
   };
   const anyLoading = Object.values(loadingFlags).some(Boolean);
   const activeErrors = [error, expertsError, chatError, kbError, docsError, classesError].filter(Boolean);
@@ -1701,6 +1762,50 @@ export default function HomePage() {
                       </div>
                     </div>
                   ))}
+                </div>
+              ) : null}
+            </section>
+
+            <section className="card">
+              <h2>Progress Dashboards</h2>
+              <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginBottom: "8px" }}>
+                <Button variant="secondary" onClick={loadStudentProgress} disabled={progressLoading}>
+                  {progressLoading ? "Loading..." : "Refresh Student Dashboard"}
+                </Button>
+                {isTeacherRole && selectedClassId ? (
+                  <Button variant="secondary" onClick={() => loadTeacherProgress(selectedClassId)} disabled={progressLoading}>
+                    {progressLoading ? "Loading..." : "Refresh Teacher Dashboard"}
+                  </Button>
+                ) : null}
+              </div>
+              {progressError ? <p className="error">Error: {progressError}</p> : null}
+
+              <div style={{ display: "grid", gap: "8px", marginBottom: "10px" }}>
+                <strong>Student Summary</strong>
+                {!studentProgress ? <p>No student summary yet.</p> : null}
+                {studentProgress ? (
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))", gap: "8px" }}>
+                    <div className="chip">Sessions: {studentProgress.total_sessions}</div>
+                    <div className="chip">Quiz Accuracy: {(studentProgress.quiz_accuracy * 100).toFixed(1)}%</div>
+                    <div className="chip">Avg Mastery: {studentProgress.avg_mastery}/5</div>
+                    <div className="chip">Due Cards: {studentProgress.due_flashcards}</div>
+                    <div className="chip">Active Misconceptions: {studentProgress.active_misconceptions}</div>
+                  </div>
+                ) : null}
+              </div>
+
+              {isTeacherRole ? (
+                <div style={{ display: "grid", gap: "8px" }}>
+                  <strong>Teacher Class Summary</strong>
+                  {!teacherProgress ? <p>Select a class to view teacher dashboard.</p> : null}
+                  {teacherProgress ? (
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))", gap: "8px" }}>
+                      <div className="chip">Students: {teacherProgress.student_count}</div>
+                      <div className="chip">Class Avg Mastery: {teacherProgress.avg_mastery}/5</div>
+                      <div className="chip">Class Quiz Accuracy: {(teacherProgress.quiz_accuracy * 100).toFixed(1)}%</div>
+                      <div className="chip">Class Misconceptions: {teacherProgress.active_misconceptions}</div>
+                    </div>
+                  ) : null}
                 </div>
               ) : null}
             </section>
