@@ -185,6 +185,21 @@ CREATE TABLE IF NOT EXISTS mistake_journal (
     created_at          TIMESTAMPTZ DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS hint_progressions (
+    id                  SERIAL PRIMARY KEY,
+    user_id             INTEGER NOT NULL REFERENCES tutor_users(id),
+    session_id          INTEGER REFERENCES tutor_sessions(id) ON DELETE SET NULL,
+    subject             VARCHAR(255),
+    topic               VARCHAR(255),
+    problem_text        TEXT NOT NULL,
+    current_level       SMALLINT NOT NULL DEFAULT 1,
+    status              VARCHAR(20) NOT NULL DEFAULT 'active',
+    last_hint           TEXT,
+    model_used          VARCHAR(100),
+    created_at          TIMESTAMPTZ DEFAULT NOW(),
+    updated_at          TIMESTAMPTZ DEFAULT NOW()
+);
+
 CREATE TABLE IF NOT EXISTS concept_nodes (
     id                  SERIAL PRIMARY KEY,
     subject             VARCHAR(255) NOT NULL,
@@ -439,6 +454,8 @@ CREATE INDEX IF NOT EXISTS idx_enrollments_class ON class_enrollments(class_id);
 CREATE INDEX IF NOT EXISTS idx_enrollments_student ON class_enrollments(student_id);
 CREATE INDEX IF NOT EXISTS idx_mastery_student ON student_mastery(student_id);
 CREATE INDEX IF NOT EXISTS idx_misconception_student ON misconception_log(student_id);
+CREATE INDEX IF NOT EXISTS idx_hint_progressions_user ON hint_progressions(user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_hint_progressions_session ON hint_progressions(session_id);
 CREATE INDEX IF NOT EXISTS idx_assessment_attempts_student ON assessment_attempts(student_id);
 CREATE INDEX IF NOT EXISTS idx_xp_transactions_student ON xp_transactions(student_id);
 CREATE INDEX IF NOT EXISTS idx_flashcard_decks_student ON flashcard_decks(student_id);
