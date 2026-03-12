@@ -186,6 +186,8 @@ export default function HomePage() {
   const [sessionLoading, setSessionLoading] = useState(false);
   const [hintState, setHintState] = useState<HintProgressionState | null>(null);
   const [activeQuiz, setActiveQuiz] = useState<ActiveQuizState | null>(null);
+  const [lastSubmittedQuizId, setLastSubmittedQuizId] = useState<number | null>(null);
+  const [explainReasoningInput, setExplainReasoningInput] = useState("");
   const [isOnline, setIsOnline] = useState(true);
   const [subjectInput, setSubjectInput] = useState("");
   const [topicInput, setTopicInput] = useState("");
@@ -417,6 +419,8 @@ export default function HomePage() {
       return;
     }
     setHintState(null);
+    setLastSubmittedQuizId(null);
+    setExplainReasoningInput("");
     void loadSessionDetail(selectedSessionId);
   }, [selectedSessionId, isAuthenticated]);
 
@@ -426,6 +430,8 @@ export default function HomePage() {
     }
     if (selectedMode !== "quiz_me") {
       setActiveQuiz(null);
+      setLastSubmittedQuizId(null);
+      setExplainReasoningInput("");
     }
   }, [selectedMode]);
 
@@ -582,6 +588,7 @@ export default function HomePage() {
             .join("\n");
           setChatMessages((prev) => [...prev, { role: "assistant", content: feedbackText, mode: "quiz_me" }]);
           setChatResult(feedbackText);
+          setLastSubmittedQuizId(activeQuiz.id);
           setActiveQuiz(null);
         } else {
           setChatMessages((prev) => [...prev, { role: "user", content: userContent, mode: "quiz_me" }]);
@@ -783,11 +790,44 @@ export default function HomePage() {
         .join("\n");
       setChatMessages((prev) => [...prev, { role: "assistant", content: feedbackText, mode: "quiz_me" }]);
       setChatResult(feedbackText);
+      setLastSubmittedQuizId(activeQuiz.id);
       setActiveQuiz(null);
       setChatPrompt("");
       await loadSessions();
     } catch (err) {
       setChatError(err instanceof Error ? err.message : "Failed to submit quiz answer");
+    } finally {
+      setChatLoading(false);
+    }
+  };
+
+  const runExplainMyAnswer = async () => {
+    if (!lastSubmittedQuizId || !explainReasoningInput.trim()) {
+      return;
+    }
+    if (!isOnline) {
+      setChatError("You are offline. Reconnect and try again.");
+      return;
+    }
+    setChatLoading(true);
+    setChatError("");
+    try {
+      setChatMessages((prev) => [
+        ...prev,
+        { role: "user", content: `Why I chose my answer: ${explainReasoningInput.trim()}`, mode: "quiz_me" },
+      ]);
+      const data = await apiClient.post<{ explanation?: string }>(
+        `/api/tutor/quiz/${lastSubmittedQuizId}/explain-my-answer`,
+        { student_reasoning: explainReasoningInput.trim() }
+      );
+      const explanation = String(data.explanation || "").trim();
+      if (explanation) {
+        setChatMessages((prev) => [...prev, { role: "assistant", content: explanation, mode: "quiz_me" }]);
+        setChatResult(explanation);
+      }
+      setExplainReasoningInput("");
+    } catch (err) {
+      setChatError(err instanceof Error ? err.message : "Explain-my-answer failed");
     } finally {
       setChatLoading(false);
     }
@@ -1118,6 +1158,8 @@ export default function HomePage() {
                       setChatMessages([]);
                       setHintState(null);
                       setActiveQuiz(null);
+                      setLastSubmittedQuizId(null);
+                      setExplainReasoningInput("");
                       setChatError("");
                     }}
                     disabled={chatLoading}
@@ -1248,6 +1290,24 @@ export default function HomePage() {
                     <p style={{ marginTop: "6px", fontSize: "12px", opacity: 0.8 }}>
                       Active quiz difficulty: {activeQuiz.difficulty}/3
                     </p>
+                  ) : null}
+                  {selectedMode === "quiz_me" && !activeQuiz && lastSubmittedQuizId ? (
+                    <div style={{ marginTop: "8px", display: "grid", gap: "6px" }}>
+                      <textarea
+                        rows={2}
+                        value={explainReasoningInput}
+                        onChange={(event) => setExplainReasoningInput(event.target.value)}
+                        placeholder="Explain why you chose your answer..."
+                        disabled={chatLoading}
+                      />
+                      <Button
+                        variant="secondary"
+                        onClick={runExplainMyAnswer}
+                        disabled={chatLoading || !explainReasoningInput.trim()}
+                      >
+                        {chatLoading ? "Explaining..." : "Explain My Answer"}
+                      </Button>
+                    </div>
                   ) : null}
                 </div>
               </div>

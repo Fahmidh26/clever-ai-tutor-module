@@ -14,6 +14,7 @@ from app.services.adaptive_quiz import (
     generate_adaptive_quiz_question,
     recommend_difficulty_from_recent_scores,
 )
+from app.services.explain_my_answer import explain_student_answer
 from app.services.rate_limiter import enforce_user_rate_limit
 
 router = APIRouter(prefix="/api/tutor/quiz", tags=["adaptive-quiz"])
@@ -308,3 +309,90 @@ async def quiz_history(request: Request, limit: int = 20):
             }
         )
     return {"history": history}
+
+
+@router.post("/{quiz_id:int}/explain-my-answer")
+async def explain_my_answer(request: Request, quiz_id: int):
+    rate_limit_response = await enforce_user_rate_limit(
+        request,
+        endpoint_key=f"{request.method}:{request.url.path}",
+    )
+    if rate_limit_response is not None:
+        return rate_limit_response
+
+    if not request.session.get("access_token"):
+        return JSONResponse(status_code=401, content={"error": "Not authenticated"})
+
+    tutor_user_id = _get_tutor_user_id(request)
+    if tutor_user_id is None:
+        return JSONResponse(status_code=401, content={"error": "Tutor user not synced"})
+
+    db_pool = getattr(request.app.state, "db_pool", None)
+    if db_pool is None:
+        return JSONResponse(status_code=503, content={"error": "Database not configured"})
+
+    try:
+        body = await request.json() if request.headers.get("content-type", "").lower().startswith("application/json") else {}
+    except Exception:
+        body = {}
+    student_reasoning = (body.get("student_reasoning") or "").strip()
+    if not student_reasoning:
+        return JSONResponse(status_code=400, content={"error": "student_reasoning is required"})
+
+    try:
+        async with db_pool.acquire() as conn:
+            row = await conn.fetchrow(
+                """
+                SELECT q.id, q.user_id, q.session_id, q.subject, q.topic, q.question_text, q.selected_answer,
+                       q.correct_answer, q.explanation, q.is_correct, q.status,
+                       s.grade_level
+                FROM adaptive_quiz_attempts q
+                LEFT JOIN tutor_sessions s ON s.id = q.session_id
+                WHERE q.id = $1 AND q.user_id = $2
+                """,
+                quiz_id,
+                tutor_user_id,
+            )
+            if not row:
+                return JSONResponse(status_code=404, content={"error": "Quiz attempt not found"})
+            if row["status"] != "submitted":
+                return JSONResponse(status_code=400, content={"error": "Submit an answer before requesting explanation"})
+
+            selected_answer = str(row["selected_answer"] or "")
+            correct_answer = str(row["correct_answer"] or "")
+            explanation = str(row["explanation"] or "")
+
+            result = await explain_student_answer(
+                question_text=str(row["question_text"] or ""),
+                selected_answer=selected_answer,
+                correct_answer=correct_answer,
+                base_explanation=explanation,
+                student_reasoning=student_reasoning,
+                subject=row["subject"],
+                topic=row["topic"],
+                grade_level=row["grade_level"],
+            )
+
+            if row["is_correct"] is False:
+                await conn.execute(
+                    """
+                    INSERT INTO mistake_journal (
+                        student_id, session_id, question, student_answer, correct_answer, explanation_that_worked
+                    )
+                    VALUES ($1, $2, $3, $4, $5, $6)
+                    """,
+                    tutor_user_id,
+                    row["session_id"],
+                    row["question_text"],
+                    selected_answer,
+                    correct_answer,
+                    result.response,
+                )
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": "Failed to explain answer", "details": str(e)})
+
+    return {
+        "explanation": result.response,
+        "execution_attempts": result.execution_attempts,
+        "quiz_id": quiz_id,
+    }
