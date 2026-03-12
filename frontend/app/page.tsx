@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useAuthContext } from "@/components/auth/auth-context";
+import { MessageRenderer } from "@/components/chat/message-renderer";
 import { ProtectedRoute } from "@/components/auth/protected-route";
 import { Button } from "@/components/ui/button";
 import { createApiClient } from "@/lib/api-client";
@@ -827,7 +828,9 @@ export default function HomePage() {
                         }}
                       >
                         <strong>{message.role === "assistant" ? "Tutor" : "You"}</strong>
-                        <pre style={{ marginTop: "6px", whiteSpace: "pre-wrap" }}>{message.content}</pre>
+                        <div style={{ marginTop: "6px" }}>
+                          <MessageRenderer content={message.content} />
+                        </div>
                       </div>
                     ))}
                   </div>
