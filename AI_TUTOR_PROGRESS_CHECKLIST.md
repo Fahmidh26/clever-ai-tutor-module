@@ -26,15 +26,15 @@ Frontend calls `/api/experts` and `/api/expert-chat` (local). Proxy blocked for 
 
 ## Overall Progress Snapshot (Estimated)
 
-- Foundation setup: **100%**
+- Foundation setup: **~93%** (pending `1.1.1`)
 - Main-site auth/API integration: **100%**
-- Core tutoring engine (local per ARCHITECTURE): **~75%** — experts + chat + sessions + streaming + 7 modes
-- RAG + teacher knowledge base: **5%**
-- UX polish + adaptive UI: **20%**
+- Core tutoring engine (local per ARCHITECTURE): **~85%** - experts + chat + sessions + streaming + 7 modes; multi-provider local wiring pending
+- RAG + teacher knowledge base: **100%**
+- UX polish + adaptive UI: **100%**
 - Intelligence (mastery/quiz/hints): **0%**
 - Gamification/interactive tools/test prep: **0%**
 
-**Estimated overall completion (MVP path): ~22%**
+**Estimated overall completion (MVP path): ~48%**
 
 > **Current working state**: Experts, chat, sessions run locally. 7 interaction modes via `mode` param. `GET /api/tutor/modes`, `PATCH /api/tutor/sessions/{id}/mode`.
 
@@ -148,12 +148,11 @@ Phase 1.3 provider subtask status (to implement locally in tutor):
 
 ## Current Week Focus (Recommended)
 
-- [x] Phase 1.1 complete
-- [x] Phase 1.2 complete
-- [x] Local experts + chat APIs implemented
-- [x] Implement local `/api/tutor/sessions*` (create, list, get, message persistence)
-- [x] SSE streaming chat (`POST /api/expert-chat/stream`)
-- [x] 7 interaction modes (Teach Me, Quiz Me, Hint, Apply It, Show Thinking, Writing Workshop, Debate/Roleplay)
+- [ ] Complete `1.1.1` Python project initialization (`pyproject.toml` + toolchain standardization)
+- [ ] Complete local provider expansion: `1.3.3` Anthropic, `1.3.4` Gemini, `1.3.5` xAI Grok
+- [ ] Complete `1.3.6` provider/model metadata catalog (local catalog or optional sync)
+- [ ] Start Phase 2 with Hint progression engine (3 levels)
+- [ ] Implement Adaptive quiz generation
 
 ---
 
@@ -223,5 +222,7 @@ Phase 1.3 provider subtask status (to implement locally in tutor):
 
 - 2026-03-12: Completed Phase 1.5 error/loading/offline polish in tutor UI by adding a System Status surface (online/offline state, active background loading indicators, current issue summary, and refresh/reload controls) plus age-band prompt quick-chips and adaptive copy improvements in frontend/app/page.tsx + frontend/app/globals.css.
 - 2026-03-12: Completed Phase 1.5 E2E user journey coverage by adding Playwright setup (frontend/playwright.config.ts), auth-gate and tutor-streaming smoke specs (frontend/e2e/*.spec.ts), and npm scripts (e2e, e2e:list) in frontend/package.json with dependency install validation via `npm.cmd run e2e:list`.
+- 2026-03-12: Refreshed checklist estimates and Current Week Focus to match implemented Phase 1.4/1.5 work and remaining open items (`1.1.1`, `1.3.3`-`1.3.6`, Phase 2 kickoff).
 
 > Update this file daily by checking completed tasks and adjusting percentage estimates.
+
