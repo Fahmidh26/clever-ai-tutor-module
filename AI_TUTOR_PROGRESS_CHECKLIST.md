@@ -31,10 +31,10 @@ Frontend calls `/api/experts` and `/api/expert-chat` (local). Proxy blocked for 
 - Core tutoring engine (local per ARCHITECTURE): **~85%** - experts + chat + sessions + streaming + 7 modes; multi-provider local wiring pending
 - RAG + teacher knowledge base: **100%**
 - UX polish + adaptive UI: **100%**
-- Intelligence (mastery/quiz/hints): **~15%** (hint progression baseline implemented)
+- Intelligence (mastery/quiz/hints): **~30%** (hint progression + adaptive quiz baseline implemented)
 - Gamification/interactive tools/test prep: **0%**
 
-**Estimated overall completion (MVP path): ~50%**
+**Estimated overall completion (MVP path): ~53%**
 
 > **Current working state**: Experts, chat, sessions run locally. 7 interaction modes via `mode` param. `GET /api/tutor/modes`, `PATCH /api/tutor/sessions/{id}/mode`.
 
@@ -125,7 +125,7 @@ Phase 1.3 provider subtask status (to implement locally in tutor):
 ## 6) Intelligence Layer (Phase 2 Core)
 
 - [x] Hint progression engine (3 levels)
-- [ ] Adaptive quiz generation
+- [x] Adaptive quiz generation
 - [ ] Explain-my-answer workflow
 - [ ] Flashcards + spaced repetition
 - [ ] Mastery tracking per topic
@@ -152,7 +152,7 @@ Phase 1.3 provider subtask status (to implement locally in tutor):
 - [ ] Complete local provider expansion: `1.3.3` Anthropic, `1.3.4` Gemini, `1.3.5` xAI Grok
 - [ ] Complete `1.3.6` provider/model metadata catalog (local catalog or optional sync)
 - [x] Start Phase 2 with Hint progression engine (3 levels)
-- [ ] Implement Adaptive quiz generation
+- [x] Implement Adaptive quiz generation
 
 ---
 
@@ -225,6 +225,7 @@ Phase 1.3 provider subtask status (to implement locally in tutor):
 - 2026-03-12: Refreshed checklist estimates and Current Week Focus to match implemented Phase 1.4/1.5 work and remaining open items (`1.1.1`, `1.3.3`-`1.3.6`, Phase 2 kickoff).
 - 2026-03-12: Started Phase 2 by implementing backend hint progression baseline (`/api/tutor/hints/start`, `/api/tutor/hints/{id}/next`, `/api/tutor/hints/{id}`) with enforced 3-level sequence and persistence in `hint_progressions`.
 - 2026-03-12: Wired frontend Hint mode to Phase 2 endpoints in chat workspace (`/api/tutor/hints/start` + `/api/tutor/hints/{id}/next`) with level-aware UI controls and progression state handling.
+- 2026-03-12: Implemented adaptive quiz generation baseline with backend APIs (`POST /api/tutor/quiz/generate`, `POST /api/tutor/quiz/{id}/submit`, `GET /api/tutor/quiz/history`), persistence in `adaptive_quiz_attempts`, and frontend `Quiz Me` mode wiring for question generation, option selection, and adaptive feedback.
 
 > Update this file daily by checking completed tasks and adjusting percentage estimates.
 

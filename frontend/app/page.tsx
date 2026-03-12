@@ -85,6 +85,13 @@ type HintProgressionState = {
   problem_text: string;
 };
 
+type ActiveQuizState = {
+  id: number;
+  difficulty: number;
+  question: string;
+  options: string[];
+};
+
 type GradeBand = "k2" | "g35" | "g68" | "g912";
 
 function extractGradeLevel(user: Record<string, unknown> | null): number | null {
@@ -178,6 +185,7 @@ export default function HomePage() {
   const [chatMessages, setChatMessages] = useState<TutorSessionMessage[]>([]);
   const [sessionLoading, setSessionLoading] = useState(false);
   const [hintState, setHintState] = useState<HintProgressionState | null>(null);
+  const [activeQuiz, setActiveQuiz] = useState<ActiveQuizState | null>(null);
   const [isOnline, setIsOnline] = useState(true);
   const [subjectInput, setSubjectInput] = useState("");
   const [topicInput, setTopicInput] = useState("");
@@ -416,6 +424,9 @@ export default function HomePage() {
     if (selectedMode !== "hint") {
       setHintState(null);
     }
+    if (selectedMode !== "quiz_me") {
+      setActiveQuiz(null);
+    }
   }, [selectedMode]);
 
   useEffect(() => {
@@ -523,6 +534,83 @@ export default function HomePage() {
         await loadSessions();
       } catch (err) {
         setChatError(err instanceof Error ? err.message : "Hint request failed");
+        setChatResult("");
+      } finally {
+        setChatLoading(false);
+      }
+      return;
+    }
+
+    if (selectedMode === "quiz_me") {
+      setChatLoading(true);
+      setChatError("");
+      setChatResult("");
+      const userContent = chatPrompt.trim();
+      const sessionId = await startSessionIfNeeded();
+      if (sessionId === null) {
+        setChatLoading(false);
+        return;
+      }
+
+      const renderQuizQuestion = (question: string, options: string[]) =>
+        [question, ...options.map((opt, idx) => `${String.fromCharCode(65 + idx)}. ${opt}`)].join("\n");
+
+      try {
+        if (activeQuiz) {
+          const normalizedAnswer = userContent.toUpperCase();
+          setChatMessages((prev) => [...prev, { role: "user", content: userContent, mode: "quiz_me" }]);
+          const submitted = await apiClient.post<{
+            result?: {
+              is_correct?: boolean;
+              selected_answer?: string;
+              correct_answer?: string;
+              feedback?: string;
+              explanation?: string;
+              next_recommended_difficulty?: number;
+            };
+          }>(`/api/tutor/quiz/${activeQuiz.id}/submit`, { answer: normalizedAnswer });
+          const result = submitted.result;
+          const feedbackText = [
+            result?.is_correct ? "Correct." : "Not correct.",
+            result?.feedback || "",
+            result?.explanation ? `Explanation: ${result.explanation}` : "",
+            Number.isFinite(Number(result?.next_recommended_difficulty))
+              ? `Next difficulty suggestion: ${result?.next_recommended_difficulty}/3`
+              : "",
+          ]
+            .filter(Boolean)
+            .join("\n");
+          setChatMessages((prev) => [...prev, { role: "assistant", content: feedbackText, mode: "quiz_me" }]);
+          setChatResult(feedbackText);
+          setActiveQuiz(null);
+        } else {
+          setChatMessages((prev) => [...prev, { role: "user", content: userContent, mode: "quiz_me" }]);
+          const generated = await apiClient.post<{
+            quiz?: { id?: number; difficulty?: number; question?: string; options?: string[] };
+          }>("/api/tutor/quiz/generate", {
+            session_id: sessionId,
+            subject: subjectInput.trim() || undefined,
+            topic: topicInput.trim() || undefined,
+            prompt_context: userContent,
+          });
+          const quiz = generated.quiz;
+          const quizId = Number(quiz?.id);
+          const options = Array.isArray(quiz?.options) ? quiz.options.map((v) => String(v)) : [];
+          const question = String(quiz?.question || "").trim();
+          const difficulty = Number(quiz?.difficulty || 2);
+          if (!Number.isInteger(quizId) || quizId <= 0 || !question || options.length === 0) {
+            throw new Error("Quiz generation returned invalid payload");
+          }
+          setActiveQuiz({ id: quizId, difficulty, question, options });
+          const quizMessage = renderQuizQuestion(question, options);
+          setChatMessages((prev) => [...prev, { role: "assistant", content: quizMessage, mode: "quiz_me" }]);
+          setChatResult(quizMessage);
+        }
+
+        setChatPrompt("");
+        await loadSessions();
+      } catch (err) {
+        setChatError(err instanceof Error ? err.message : "Quiz request failed");
         setChatResult("");
       } finally {
         setChatLoading(false);
@@ -660,6 +748,46 @@ export default function HomePage() {
       await loadSessions();
     } catch (err) {
       setChatError(err instanceof Error ? err.message : "Failed to request next hint");
+    } finally {
+      setChatLoading(false);
+    }
+  };
+
+  const submitActiveQuizChoice = async (choice: "A" | "B" | "C" | "D") => {
+    if (!activeQuiz || selectedMode !== "quiz_me") {
+      return;
+    }
+    setChatPrompt(choice);
+    setChatLoading(true);
+    setChatError("");
+    try {
+      setChatMessages((prev) => [...prev, { role: "user", content: choice, mode: "quiz_me" }]);
+      const submitted = await apiClient.post<{
+        result?: {
+          is_correct?: boolean;
+          feedback?: string;
+          explanation?: string;
+          next_recommended_difficulty?: number;
+        };
+      }>(`/api/tutor/quiz/${activeQuiz.id}/submit`, { answer: choice });
+      const result = submitted.result;
+      const feedbackText = [
+        result?.is_correct ? "Correct." : "Not correct.",
+        result?.feedback || "",
+        result?.explanation ? `Explanation: ${result.explanation}` : "",
+        Number.isFinite(Number(result?.next_recommended_difficulty))
+          ? `Next difficulty suggestion: ${result?.next_recommended_difficulty}/3`
+          : "",
+      ]
+        .filter(Boolean)
+        .join("\n");
+      setChatMessages((prev) => [...prev, { role: "assistant", content: feedbackText, mode: "quiz_me" }]);
+      setChatResult(feedbackText);
+      setActiveQuiz(null);
+      setChatPrompt("");
+      await loadSessions();
+    } catch (err) {
+      setChatError(err instanceof Error ? err.message : "Failed to submit quiz answer");
     } finally {
       setChatLoading(false);
     }
@@ -989,6 +1117,7 @@ export default function HomePage() {
                       setSelectedSessionId(null);
                       setChatMessages([]);
                       setHintState(null);
+                      setActiveQuiz(null);
                       setChatError("");
                     }}
                     disabled={chatLoading}
@@ -1068,11 +1197,36 @@ export default function HomePage() {
                     {chatLoading
                       ? selectedMode === "hint"
                         ? "Getting Hint..."
-                        : "Streaming..."
+                        : selectedMode === "quiz_me"
+                          ? activeQuiz
+                            ? "Submitting..."
+                            : "Generating Quiz..."
+                          : "Streaming..."
                       : selectedMode === "hint"
                         ? "Get Hint (Level 1)"
+                        : selectedMode === "quiz_me"
+                          ? activeQuiz
+                            ? "Submit Typed Answer"
+                            : "Generate Quiz Question"
                         : "Send Message"}
                   </Button>
+                  {selectedMode === "quiz_me" && activeQuiz ? (
+                    <div style={{ marginTop: "8px", display: "flex", gap: "6px", flexWrap: "wrap" }}>
+                      {(activeQuiz.options.slice(0, 4) as string[]).map((option, idx) => {
+                        const label = String.fromCharCode(65 + idx) as "A" | "B" | "C" | "D";
+                        return (
+                          <Button
+                            key={`${activeQuiz.id}-${label}`}
+                            variant="secondary"
+                            onClick={() => submitActiveQuizChoice(label)}
+                            disabled={chatLoading}
+                          >
+                            {label}. {option}
+                          </Button>
+                        );
+                      })}
+                    </div>
+                  ) : null}
                   {selectedMode === "hint" && hintState && hintState.can_request_next ? (
                     <Button
                       variant="secondary"
@@ -1088,6 +1242,11 @@ export default function HomePage() {
                   {selectedMode === "hint" && hintState ? (
                     <p style={{ marginTop: "6px", fontSize: "12px", opacity: 0.8 }}>
                       Hint progression active: level {hintState.current_level}/3
+                    </p>
+                  ) : null}
+                  {selectedMode === "quiz_me" && activeQuiz ? (
+                    <p style={{ marginTop: "6px", fontSize: "12px", opacity: 0.8 }}>
+                      Active quiz difficulty: {activeQuiz.difficulty}/3
                     </p>
                   ) : null}
                 </div>

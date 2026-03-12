@@ -200,6 +200,27 @@ CREATE TABLE IF NOT EXISTS hint_progressions (
     updated_at          TIMESTAMPTZ DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS adaptive_quiz_attempts (
+    id                  SERIAL PRIMARY KEY,
+    user_id             INTEGER NOT NULL REFERENCES tutor_users(id),
+    session_id          INTEGER REFERENCES tutor_sessions(id) ON DELETE SET NULL,
+    subject             VARCHAR(255),
+    topic               VARCHAR(255),
+    prompt_context      TEXT,
+    difficulty          SMALLINT NOT NULL DEFAULT 2,
+    question_text       TEXT NOT NULL,
+    options_json        JSONB,
+    correct_answer      TEXT NOT NULL,
+    explanation         TEXT,
+    selected_answer     TEXT,
+    is_correct          BOOLEAN,
+    feedback            TEXT,
+    status              VARCHAR(20) NOT NULL DEFAULT 'pending',
+    model_used          VARCHAR(100),
+    created_at          TIMESTAMPTZ DEFAULT NOW(),
+    submitted_at        TIMESTAMPTZ
+);
+
 CREATE TABLE IF NOT EXISTS concept_nodes (
     id                  SERIAL PRIMARY KEY,
     subject             VARCHAR(255) NOT NULL,
@@ -456,6 +477,8 @@ CREATE INDEX IF NOT EXISTS idx_mastery_student ON student_mastery(student_id);
 CREATE INDEX IF NOT EXISTS idx_misconception_student ON misconception_log(student_id);
 CREATE INDEX IF NOT EXISTS idx_hint_progressions_user ON hint_progressions(user_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_hint_progressions_session ON hint_progressions(session_id);
+CREATE INDEX IF NOT EXISTS idx_adaptive_quiz_user ON adaptive_quiz_attempts(user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_adaptive_quiz_session ON adaptive_quiz_attempts(session_id);
 CREATE INDEX IF NOT EXISTS idx_assessment_attempts_student ON assessment_attempts(student_id);
 CREATE INDEX IF NOT EXISTS idx_xp_transactions_student ON xp_transactions(student_id);
 CREATE INDEX IF NOT EXISTS idx_flashcard_decks_student ON flashcard_decks(student_id);
