@@ -100,7 +100,7 @@ Phase 1.3 provider subtask status (to implement locally in tutor):
 
 ## 4) RAG + Teacher Dashboard (Phase 1.4)
 
-- [ ] Teacher document upload
+- [x] Teacher document upload
 - [ ] Extraction/chunking/embedding pipeline
 - [ ] Vector retrieval and rerank
 - [ ] Citation rendering in responses
@@ -202,5 +202,7 @@ Phase 1.3 provider subtask status (to implement locally in tutor):
 - 2026-03-12: Completed local safety/guardrail middleware by adding request filtering on /api/expert-chat* (prompt-injection/unsafe-content checks + payload cap) and assistant-output sanitization in chat + streaming handlers.
 
 - 2026-03-12: Completed local retry/fallback/timeout strategy (1.3.8) for /api/expert-chat and /api/expert-chat/stream with model fallback candidates, transient retries with backoff, per-attempt timeout enforcement, and execution-attempt metadata in responses/events.
+
+- 2026-03-12: Completed Phase 1.4 teacher KB upload/list/delete/preview APIs (/api/teacher/kb*) with teacher/admin RBAC, local file persistence, and KB/document metadata storage in knowledge_bases + kb_documents tables.
 
 > Update this file daily by checking completed tasks and adjusting percentage estimates.

@@ -44,6 +44,8 @@ class Settings(BaseSettings):
     llm_retry_attempts: int = 1
     llm_retry_backoff_seconds: float = 0.6
     llm_fallback_models: str = "gpt-4o,gpt-4"
+    kb_upload_dir: str = "backend/storage/kb_uploads"
+    kb_upload_max_bytes: int = 26214400
 
     @field_validator(
         "aisite_oauth_base_url",
