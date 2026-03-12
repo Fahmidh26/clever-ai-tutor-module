@@ -31,10 +31,10 @@ Frontend calls `/api/experts` and `/api/expert-chat` (local). Proxy blocked for 
 - Core tutoring engine (local per ARCHITECTURE): **~85%** - experts + chat + sessions + streaming + 7 modes; multi-provider local wiring pending
 - RAG + teacher knowledge base: **100%**
 - UX polish + adaptive UI: **100%**
-- Intelligence (mastery/quiz/hints): **~60%** (hint progression + adaptive quiz + explain-my-answer + flashcards implemented)
+- Intelligence (mastery/quiz/hints): **~75%** (hint progression + adaptive quiz + explain-my-answer + flashcards + mastery implemented)
 - Gamification/interactive tools/test prep: **0%**
 
-**Estimated overall completion (MVP path): ~60%**
+**Estimated overall completion (MVP path): ~64%**
 
 > **Current working state**: Experts, chat, sessions run locally. 7 interaction modes via `mode` param. `GET /api/tutor/modes`, `PATCH /api/tutor/sessions/{id}/mode`.
 
@@ -128,7 +128,7 @@ Phase 1.3 provider subtask status (to implement locally in tutor):
 - [x] Adaptive quiz generation
 - [x] Explain-my-answer workflow
 - [x] Flashcards + spaced repetition
-- [ ] Mastery tracking per topic
+- [x] Mastery tracking per topic
 - [ ] Misconception detection
 - [ ] Student + teacher progress dashboards
 
@@ -153,7 +153,7 @@ Phase 1.3 provider subtask status (to implement locally in tutor):
 - [ ] Complete `1.3.6` provider/model metadata catalog (local catalog or optional sync)
 - [x] Start Phase 2 with Hint progression engine (3 levels)
 - [x] Implement Adaptive quiz generation
-- [ ] Implement Mastery tracking per topic
+- [x] Implement Mastery tracking per topic
 - [ ] Implement Misconception detection baseline
 
 ---
@@ -230,6 +230,7 @@ Phase 1.3 provider subtask status (to implement locally in tutor):
 - 2026-03-12: Implemented adaptive quiz generation baseline with backend APIs (`POST /api/tutor/quiz/generate`, `POST /api/tutor/quiz/{id}/submit`, `GET /api/tutor/quiz/history`), persistence in `adaptive_quiz_attempts`, and frontend `Quiz Me` mode wiring for question generation, option selection, and adaptive feedback.
 - 2026-03-12: Implemented explain-my-answer workflow with backend endpoint (`POST /api/tutor/quiz/{id}/explain-my-answer`) and frontend `Quiz Me` integration for student reasoning submission and personalized diagnostic feedback; logs wrong answers to `mistake_journal`.
 - 2026-03-12: Implemented flashcards + spaced repetition with backend APIs (`/api/tutor/flashcards/decks*`, `/api/tutor/flashcards/generate`, `/api/tutor/flashcards/review`, `/api/tutor/flashcards/{id}/review`) using SM-2 scheduling and frontend flashcard deck/generation/review UI.
+- 2026-03-12: Implemented mastery tracking per topic with backend APIs (`GET /api/tutor/mastery`, `POST /api/tutor/mastery/recompute`), auto-updates from quiz submission, and frontend mastery panel for refresh/recompute and level visibility.
 
 > Update this file daily by checking completed tasks and adjusting percentage estimates.
 

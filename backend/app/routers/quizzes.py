@@ -15,6 +15,7 @@ from app.services.adaptive_quiz import (
     recommend_difficulty_from_recent_scores,
 )
 from app.services.explain_my_answer import explain_student_answer
+from app.services.mastery_tracking import estimate_reasoning_quality, next_mastery_level
 from app.services.rate_limiter import enforce_user_rate_limit
 
 router = APIRouter(prefix="/api/tutor/quiz", tags=["adaptive-quiz"])
@@ -34,6 +35,80 @@ def _get_tutor_user_id(request: Request) -> int | None:
         return int(tid)
     except (TypeError, ValueError):
         return None
+
+
+async def _update_mastery_for_quiz_result(
+    conn,
+    *,
+    user_id: int,
+    subject: str | None,
+    topic: str | None,
+    is_correct: bool,
+    used_explain_my_answer: bool = False,
+) -> None:
+    if not subject or not topic:
+        return
+
+    existing = await conn.fetchrow(
+        """
+        SELECT mastery_level
+        FROM student_mastery
+        WHERE student_id = $1 AND subject = $2 AND topic = $3
+        """,
+        user_id,
+        subject,
+        topic,
+    )
+    current_level = int(existing["mastery_level"] or 0) if existing else 0
+
+    recent_row = await conn.fetchrow(
+        """
+        SELECT COUNT(*) AS total,
+               COALESCE(SUM(CASE WHEN is_correct THEN 1 ELSE 0 END), 0) AS correct
+        FROM (
+            SELECT is_correct
+            FROM adaptive_quiz_attempts
+            WHERE user_id = $1
+              AND subject = $2
+              AND topic = $3
+              AND is_correct IS NOT NULL
+            ORDER BY created_at DESC
+            LIMIT 20
+        ) recent
+        """,
+        user_id,
+        subject,
+        topic,
+    )
+    total = int(recent_row["total"] or 0) if recent_row else 0
+    correct = int(recent_row["correct"] or 0) if recent_row else 0
+    accuracy = (correct / total) if total > 0 else None
+
+    next_level = next_mastery_level(
+        current_level=current_level,
+        is_correct=is_correct,
+        recent_accuracy=accuracy,
+    )
+    reasoning_quality = estimate_reasoning_quality(
+        is_correct=is_correct,
+        used_explain_my_answer=used_explain_my_answer,
+    )
+    await conn.execute(
+        """
+        INSERT INTO student_mastery (student_id, subject, topic, mastery_level, reasoning_quality, last_assessed_at)
+        VALUES ($1, $2, $3, $4, $5, NOW())
+        ON CONFLICT (student_id, subject, topic)
+        DO UPDATE
+        SET mastery_level = EXCLUDED.mastery_level,
+            reasoning_quality = EXCLUDED.reasoning_quality,
+            last_assessed_at = EXCLUDED.last_assessed_at
+        """,
+        user_id,
+        subject,
+        topic,
+        next_level,
+        reasoning_quality,
+    )
 
 
 @router.post("/generate")
@@ -219,6 +294,14 @@ async def submit_quiz_answer(request: Request, quiz_id: int):
                 is_correct,
                 feedback,
                 tutor_user_id,
+            )
+            await _update_mastery_for_quiz_result(
+                conn,
+                user_id=tutor_user_id,
+                subject=row["subject"],
+                topic=row["topic"],
+                is_correct=is_correct,
+                used_explain_my_answer=False,
             )
 
             recent_rows = await conn.fetch(

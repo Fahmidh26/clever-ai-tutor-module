@@ -110,6 +110,15 @@ type DueFlashcard = {
   review_count?: number;
 };
 
+type MasteryRecord = {
+  id: number;
+  subject: string;
+  topic: string;
+  mastery_level: number;
+  reasoning_quality?: number | null;
+  last_assessed_at?: string | null;
+};
+
 type GradeBand = "k2" | "g35" | "g68" | "g912";
 
 function extractGradeLevel(user: Record<string, unknown> | null): number | null {
@@ -213,6 +222,9 @@ export default function HomePage() {
   const [flashcardsError, setFlashcardsError] = useState("");
   const [flashDeckTitleInput, setFlashDeckTitleInput] = useState("");
   const [flashcardPromptInput, setFlashcardPromptInput] = useState("");
+  const [masteryRecords, setMasteryRecords] = useState<MasteryRecord[]>([]);
+  const [masteryLoading, setMasteryLoading] = useState(false);
+  const [masteryError, setMasteryError] = useState("");
   const [isOnline, setIsOnline] = useState(true);
   const [subjectInput, setSubjectInput] = useState("");
   const [topicInput, setTopicInput] = useState("");
@@ -427,6 +439,39 @@ export default function HomePage() {
     }
   };
 
+  const loadMasteryRecords = async () => {
+    try {
+      setMasteryLoading(true);
+      setMasteryError("");
+      const data = await apiClient.get<{ mastery?: MasteryRecord[] }>("/api/tutor/mastery?limit=50");
+      setMasteryRecords(Array.isArray(data.mastery) ? data.mastery : []);
+    } catch (err) {
+      setMasteryError(err instanceof Error ? err.message : "Could not load mastery data");
+      setMasteryRecords([]);
+    } finally {
+      setMasteryLoading(false);
+    }
+  };
+
+  const recomputeMasteryFromSelection = async () => {
+    const subject = subjectInput.trim();
+    const topic = topicInput.trim();
+    if (!subject || !topic) {
+      setMasteryError("Enter subject and topic to recompute mastery");
+      return;
+    }
+    try {
+      setMasteryLoading(true);
+      setMasteryError("");
+      await apiClient.post("/api/tutor/mastery/recompute", { subject, topic });
+      await loadMasteryRecords();
+    } catch (err) {
+      setMasteryError(err instanceof Error ? err.message : "Failed to recompute mastery");
+    } finally {
+      setMasteryLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (isAuthenticated) {
       void loadExperts();
@@ -434,6 +479,7 @@ export default function HomePage() {
       void loadSessions();
       void loadFlashcardDecks();
       void loadDueFlashcards();
+      void loadMasteryRecords();
       void loadKnowledgeBases();
       void loadClasses();
       return;
@@ -450,6 +496,7 @@ export default function HomePage() {
     setFlashDecks([]);
     setSelectedFlashDeckId(null);
     setDueFlashcards([]);
+    setMasteryRecords([]);
   }, [isAuthenticated]);
 
   useEffect(() => {
@@ -1130,6 +1177,7 @@ export default function HomePage() {
       loadSessions(),
       loadFlashcardDecks(),
       loadDueFlashcards(),
+      loadMasteryRecords(),
       isTeacherRole ? loadKnowledgeBases() : Promise.resolve(),
       isTeacherRole ? loadClasses() : Promise.resolve(),
       selectedKbId ? loadDocuments(selectedKbId) : Promise.resolve(),
@@ -1144,6 +1192,7 @@ export default function HomePage() {
     docsLoading,
     classBusy,
     flashcardsLoading,
+    masteryLoading,
   };
   const anyLoading = Object.values(loadingFlags).some(Boolean);
   const activeErrors = [error, expertsError, chatError, kbError, docsError, classesError].filter(Boolean);
@@ -1531,6 +1580,43 @@ export default function HomePage() {
                 </div>
               </div>
               {flashcardsError ? <p className="error">Error: {flashcardsError}</p> : null}
+            </section>
+
+            <section className="card">
+              <h2>Mastery Tracking</h2>
+              <p style={{ marginBottom: "8px" }}>Topic mastery is tracked on a 0-5 scale.</p>
+              <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginBottom: "8px" }}>
+                <Button variant="secondary" onClick={loadMasteryRecords} disabled={masteryLoading}>
+                  {masteryLoading ? "Loading..." : "Refresh Mastery"}
+                </Button>
+                <Button onClick={recomputeMasteryFromSelection} disabled={masteryLoading}>
+                  Recompute From Subject/Topic
+                </Button>
+              </div>
+              {masteryError ? <p className="error">Error: {masteryError}</p> : null}
+              {masteryRecords.length === 0 ? <p>No mastery records yet.</p> : null}
+              {masteryRecords.length > 0 ? (
+                <div style={{ display: "grid", gap: "8px" }}>
+                  {masteryRecords.map((record) => (
+                    <div
+                      key={record.id}
+                      style={{
+                        border: "1px solid var(--border)",
+                        borderRadius: "8px",
+                        padding: "10px",
+                        display: "grid",
+                        gap: "4px",
+                      }}
+                    >
+                      <strong>
+                        {record.subject} - {record.topic}
+                      </strong>
+                      <div>Mastery: {record.mastery_level}/5</div>
+                      <div>Reasoning quality: {record.reasoning_quality ?? "-"}/5</div>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
             </section>
 
             <section className="card">

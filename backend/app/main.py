@@ -18,6 +18,7 @@ from app.routers.experts import router as experts_router
 from app.routers.flashcards import router as flashcards_router
 from app.routers.health import router as health_router
 from app.routers.hints import router as hints_router
+from app.routers.mastery import router as mastery_router
 from app.routers.proxy import router as proxy_router
 from app.routers.quizzes import router as quizzes_router
 from app.routers.modes import router as modes_router
@@ -65,6 +66,7 @@ app.include_router(flashcards_router)
 app.include_router(modes_router)
 app.include_router(sessions_router)
 app.include_router(hints_router)
+app.include_router(mastery_router)
 app.include_router(quizzes_router)
 app.include_router(teacher_classes_router)
 app.include_router(teacher_kb_router)
