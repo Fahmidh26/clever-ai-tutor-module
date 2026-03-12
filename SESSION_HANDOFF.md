@@ -14,9 +14,9 @@ After each task: implement, validate, and update checklist + worklog.
 
 ## Current Status Snapshot
 
-- Completed: Phase 1 Sprint 1.1 and Sprint 1.2 (`1.1.x`, `1.2.x`)
-- Current: Architecture clarified — main site only for auth/billing/credits; experts/chat/sessions are local
-- Suggested next task: Migrate experts/chat to local tutor APIs (see `ARCHITECTURE.md`)
+- Completed: Phase 1.1 (100%), Phase 1.2 (100%)
+- Current: Experts/chat still proxy to main site. Per ARCHITECTURE.md, target is local tutor APIs.
+- Suggested next task: Implement local tutor APIs (experts, sessions, chat) in `D:\USA\clever-ai-tutor` backend, then switch frontend from `/api/main-site/*` to local routes.
 
 ## Rules For Continuation
 

@@ -40,7 +40,7 @@ export default function HomePage() {
     try {
       setExpertsError("");
       const data = await apiClient.get<{ experts?: Expert[] } | Expert[]>(
-        "/api/main-site/api/experts?domain=expert-chat"
+        "/api/experts?domain=expert-chat"
       );
       const list = Array.isArray((data as { experts?: Expert[] }).experts)
         ? (data as { experts: Expert[] }).experts
@@ -87,7 +87,7 @@ export default function HomePage() {
         message?: string;
         error?: string;
         response?: string;
-      }>("/api/main-site/api/expert-chat", {
+      }>("/api/expert-chat", {
         message: chatPrompt.trim(),
         expert_id: expertId,
         domain: "expert-chat",

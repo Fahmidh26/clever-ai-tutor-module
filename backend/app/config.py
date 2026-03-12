@@ -37,6 +37,9 @@ class Settings(BaseSettings):
     rate_limit_requests_per_window: int = 120
     rate_limit_window_seconds: int = 60
     ai_execution_mode: str = "main_site_proxy_only"
+    openai_api_key: str | None = None
+    openai_base_url: str = "https://api.openai.com/v1"
+    openai_default_model: str = "gpt-4o-mini"
 
     @field_validator(
         "aisite_oauth_base_url",

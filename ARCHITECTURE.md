@@ -83,4 +83,4 @@
 
 ## Implementation Status
 
-> As of the architecture clarification, the codebase may still use the old proxy pattern for experts/chat. Migration to local APIs is required. See `AI_TUTOR_PROGRESS_CHECKLIST.md` for migration tasks.
+> Experts and chat now run locally (`/api/experts`, `/api/expert-chat`). Set `OPENAI_API_KEY` for local chat. Sessions API (`/api/tutor/sessions*`) pending.

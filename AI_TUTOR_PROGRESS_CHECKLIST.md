@@ -10,17 +10,33 @@
 
 ---
 
+## Implementation vs Architecture (Audit 2026-03)
+
+| Area | Architecture (target) | Current code | Status |
+|------|------------------------|--------------|--------|
+| Auth | Main site | Main site OAuth + tutor session | ✅ Aligned |
+| Credits | Main site | Main site deduct | ✅ Aligned |
+| Experts | Local tutor | Local `/api/experts` from tutor_personas | ✅ Aligned |
+| Chat | Local tutor | Local `/api/expert-chat` with OpenAI + credit deduct | ✅ Aligned |
+| Sessions | Local tutor | Not yet implemented | ⚠️ Pending |
+
+Frontend calls `/api/experts` and `/api/expert-chat` (local). Proxy blocked for experts/chat paths.
+
+---
+
 ## Overall Progress Snapshot (Estimated)
 
 - Foundation setup: **100%**
 - Main-site auth/API integration: **100%**
-- Core tutoring engine: **92%**
+- Core tutoring engine (local per ARCHITECTURE): **~50%** — experts + chat local; sessions pending
 - RAG + teacher knowledge base: **5%**
 - UX polish + adaptive UI: **20%**
 - Intelligence (mastery/quiz/hints): **0%**
 - Gamification/interactive tools/test prep: **0%**
 
-**Estimated overall completion (MVP path): 22%**
+**Estimated overall completion (MVP path): ~22%**
+
+> **Current working state**: Experts and chat run locally (`/api/experts`, `/api/expert-chat`). Set `OPENAI_API_KEY` for local chat. Sessions API pending.
 
 ---
 
@@ -64,17 +80,17 @@
 > **Architecture note**: Experts, chat, sessions run locally. Main site only for auth + credit deduction. See `ARCHITECTURE.md`.
 
 - [x] Provider abstraction layer (`1.3.1`)
-- [ ] At least one production LLM provider wired end-to-end **locally** (tutor has own API keys; main site only for credit deduct)
+- [x] At least one production LLM provider wired end-to-end **locally** (OpenAI; main site only for credit deduct)
 - [ ] Session create/list/get APIs **local** (`/api/tutor/sessions*`)
 - [ ] Message persistence **local** (tutor DB)
 - [ ] SSE streaming chat endpoint (`1.3.7`) **local**
 - [ ] 7 interaction modes (or MVP subset first)
 - [ ] Safety/guardrail middleware
 - [ ] Retry/fallback/timeout strategy (`1.3.8`)
-- [ ] Token usage metering + credit reconciliation (call main site for deduct only)
+- [x] Token usage metering + credit reconciliation (call main site for deduct only)
 
 Phase 1.3 provider subtask status (to implement locally in tutor):
-- [ ] `1.3.2` OpenAI — tutor backend direct API calls
+- [x] `1.3.2` OpenAI — tutor backend direct API calls
 - [ ] `1.3.3` Anthropic — tutor backend direct API calls
 - [ ] `1.3.4` Gemini — tutor backend direct API calls
 - [ ] `1.3.5` xAI Grok — tutor backend direct API calls
@@ -132,9 +148,10 @@ Phase 1.3 provider subtask status (to implement locally in tutor):
 
 ## Current Week Focus (Recommended)
 
-- [ ] Finalize Phase 1.1 hardening tasks
-- [ ] Complete remaining Phase 1.2 security/testing tasks
-- [ ] Start Phase 1.3 session + streaming backend
+- [x] Phase 1.1 complete
+- [x] Phase 1.2 complete
+- [x] Local experts + chat APIs implemented
+- [ ] Implement local `/api/tutor/sessions*` (create, list, get, message persistence)
 
 ---
 

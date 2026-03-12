@@ -12,9 +12,25 @@ from app.services.rbac import evaluate_access, required_roles_for_proxy_path
 
 router = APIRouter(tags=["proxy"])
 
+_PROXY_BLOCKED_PREFIXES = ("api/experts", "api/expert-chat", "api/tutor/sessions")
+
+
+def _is_proxy_blocked(path: str) -> bool:
+    normalized = path.lstrip("/")
+    return any(normalized.startswith(p) for p in _PROXY_BLOCKED_PREFIXES)
+
 
 @router.api_route("/api/main-site/{path:path}", methods=["GET", "POST", "PUT", "PATCH", "DELETE"])
 async def call_main_site(path: str, request: Request):
+    if _is_proxy_blocked(path):
+        return JSONResponse(
+            status_code=400,
+            content={
+                "error": "Use local tutor APIs for experts/chat/sessions. See ARCHITECTURE.md.",
+                "hint": "Call /api/experts and /api/expert-chat directly (no main-site proxy).",
+            },
+        )
+
     rate_limit_response = await enforce_user_rate_limit(
         request,
         endpoint_key=f"{request.method}:/api/main-site/{path}",

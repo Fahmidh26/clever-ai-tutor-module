@@ -731,3 +731,13 @@ Notes:
   - `AI_TUTOR_PROGRESS_CHECKLIST.md`: Phase 1.3 items reset to reflect local implementation; main site header updated
   - `AI_TUTOR_NEXT_STEPS_GUIDE.md`: Main-site integration pattern updated; experts/chat/sessions do NOT proxy
 - **Migration required**: Current code still proxies experts/chat to main site. Need to implement local tutor APIs and update frontend to call them. See `ARCHITECTURE.md`.
+
+## 2026-03-12 - Local experts + chat (architecture alignment)
+
+- **Local experts API**: Added `backend/app/routers/experts.py` — `GET /api/experts` reads from `tutor_personas` table.
+- **Local chat API**: Added `backend/app/routers/chat.py` — `POST /api/expert-chat` calls OpenAI directly, deducts credits via main site.
+- **OpenAI provider**: Added `backend/app/services/ai_providers/openai_provider.py` for local LLM execution.
+- **Config**: Added `OPENAI_API_KEY`, `OPENAI_BASE_URL`, `OPENAI_DEFAULT_MODEL` to backend config and `.env.example`.
+- **Frontend**: Switched from `/api/main-site/api/experts` and `/api/main-site/api/expert-chat` to local `/api/experts` and `/api/expert-chat`.
+- **Proxy blocklist**: Proxy now rejects requests for `api/experts`, `api/expert-chat`, `api/tutor/sessions` — enforces architecture.
+- **Validation**: Backend compile and frontend build pass.
