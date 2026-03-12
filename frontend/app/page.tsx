@@ -92,6 +92,24 @@ type ActiveQuizState = {
   options: string[];
 };
 
+type FlashcardDeck = {
+  id: number;
+  title: string;
+  subject?: string | null;
+  topic?: string | null;
+  card_count?: number;
+};
+
+type DueFlashcard = {
+  id: number;
+  deck_id: number;
+  deck_title?: string;
+  front: string;
+  back: string;
+  interval_days?: number;
+  review_count?: number;
+};
+
 type GradeBand = "k2" | "g35" | "g68" | "g912";
 
 function extractGradeLevel(user: Record<string, unknown> | null): number | null {
@@ -188,6 +206,13 @@ export default function HomePage() {
   const [activeQuiz, setActiveQuiz] = useState<ActiveQuizState | null>(null);
   const [lastSubmittedQuizId, setLastSubmittedQuizId] = useState<number | null>(null);
   const [explainReasoningInput, setExplainReasoningInput] = useState("");
+  const [flashDecks, setFlashDecks] = useState<FlashcardDeck[]>([]);
+  const [selectedFlashDeckId, setSelectedFlashDeckId] = useState<number | null>(null);
+  const [dueFlashcards, setDueFlashcards] = useState<DueFlashcard[]>([]);
+  const [flashcardsLoading, setFlashcardsLoading] = useState(false);
+  const [flashcardsError, setFlashcardsError] = useState("");
+  const [flashDeckTitleInput, setFlashDeckTitleInput] = useState("");
+  const [flashcardPromptInput, setFlashcardPromptInput] = useState("");
   const [isOnline, setIsOnline] = useState(true);
   const [subjectInput, setSubjectInput] = useState("");
   const [topicInput, setTopicInput] = useState("");
@@ -369,11 +394,46 @@ export default function HomePage() {
     }
   };
 
+  const loadFlashcardDecks = async () => {
+    try {
+      setFlashcardsLoading(true);
+      setFlashcardsError("");
+      const data = await apiClient.get<{ decks?: FlashcardDeck[] }>("/api/tutor/flashcards/decks");
+      const decks = Array.isArray(data.decks) ? data.decks : [];
+      setFlashDecks(decks);
+      if (decks.length > 0 && (selectedFlashDeckId === null || !decks.some((d) => d.id === selectedFlashDeckId))) {
+        setSelectedFlashDeckId(decks[0].id);
+      }
+    } catch (err) {
+      setFlashcardsError(err instanceof Error ? err.message : "Could not load flashcard decks");
+      setFlashDecks([]);
+      setSelectedFlashDeckId(null);
+    } finally {
+      setFlashcardsLoading(false);
+    }
+  };
+
+  const loadDueFlashcards = async () => {
+    try {
+      setFlashcardsLoading(true);
+      setFlashcardsError("");
+      const data = await apiClient.get<{ cards?: DueFlashcard[] }>("/api/tutor/flashcards/review?limit=20");
+      setDueFlashcards(Array.isArray(data.cards) ? data.cards : []);
+    } catch (err) {
+      setFlashcardsError(err instanceof Error ? err.message : "Could not load due flashcards");
+      setDueFlashcards([]);
+    } finally {
+      setFlashcardsLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (isAuthenticated) {
       void loadExperts();
       void loadModes();
       void loadSessions();
+      void loadFlashcardDecks();
+      void loadDueFlashcards();
       void loadKnowledgeBases();
       void loadClasses();
       return;
@@ -387,6 +447,9 @@ export default function HomePage() {
     setSessions([]);
     setSelectedSessionId(null);
     setChatMessages([]);
+    setFlashDecks([]);
+    setSelectedFlashDeckId(null);
+    setDueFlashcards([]);
   }, [isAuthenticated]);
 
   useEffect(() => {
@@ -833,6 +896,71 @@ export default function HomePage() {
     }
   };
 
+  const createFlashcardDeck = async () => {
+    if (!flashDeckTitleInput.trim()) {
+      setFlashcardsError("Deck title is required");
+      return;
+    }
+    try {
+      setFlashcardsLoading(true);
+      setFlashcardsError("");
+      const data = await apiClient.post<{ deck?: { id?: number } }>("/api/tutor/flashcards/decks", {
+        title: flashDeckTitleInput.trim(),
+        subject: subjectInput.trim() || undefined,
+        topic: topicInput.trim() || undefined,
+      });
+      setFlashDeckTitleInput("");
+      await loadFlashcardDecks();
+      const id = Number(data.deck?.id);
+      if (Number.isInteger(id) && id > 0) {
+        setSelectedFlashDeckId(id);
+      }
+    } catch (err) {
+      setFlashcardsError(err instanceof Error ? err.message : "Failed to create deck");
+    } finally {
+      setFlashcardsLoading(false);
+    }
+  };
+
+  const generateFlashcardsFromPrompt = async () => {
+    if (!flashcardPromptInput.trim()) {
+      setFlashcardsError("Prompt is required to generate flashcards");
+      return;
+    }
+    try {
+      setFlashcardsLoading(true);
+      setFlashcardsError("");
+      await apiClient.post("/api/tutor/flashcards/generate", {
+        deck_id: selectedFlashDeckId ?? undefined,
+        title: selectedFlashDeckId ? undefined : "Generated Deck",
+        prompt: flashcardPromptInput.trim(),
+        subject: subjectInput.trim() || undefined,
+        topic: topicInput.trim() || undefined,
+        session_id: selectedSessionId ?? undefined,
+        count: 5,
+      });
+      setFlashcardPromptInput("");
+      await Promise.all([loadFlashcardDecks(), loadDueFlashcards()]);
+    } catch (err) {
+      setFlashcardsError(err instanceof Error ? err.message : "Failed to generate flashcards");
+    } finally {
+      setFlashcardsLoading(false);
+    }
+  };
+
+  const reviewDueFlashcard = async (cardId: number, quality: number) => {
+    try {
+      setFlashcardsLoading(true);
+      setFlashcardsError("");
+      await apiClient.post(`/api/tutor/flashcards/${cardId}/review`, { quality });
+      await loadDueFlashcards();
+    } catch (err) {
+      setFlashcardsError(err instanceof Error ? err.message : "Failed to review flashcard");
+    } finally {
+      setFlashcardsLoading(false);
+    }
+  };
+
   const createKnowledgeBase = async () => {
     if (!kbName.trim()) {
       setKbError("KB name is required");
@@ -1000,6 +1128,8 @@ export default function HomePage() {
       loadExperts(),
       loadModes(),
       loadSessions(),
+      loadFlashcardDecks(),
+      loadDueFlashcards(),
       isTeacherRole ? loadKnowledgeBases() : Promise.resolve(),
       isTeacherRole ? loadClasses() : Promise.resolve(),
       selectedKbId ? loadDocuments(selectedKbId) : Promise.resolve(),
@@ -1013,6 +1143,7 @@ export default function HomePage() {
     kbLoading,
     docsLoading,
     classBusy,
+    flashcardsLoading,
   };
   const anyLoading = Object.values(loadingFlags).some(Boolean);
   const activeErrors = [error, expertsError, chatError, kbError, docsError, classesError].filter(Boolean);
@@ -1311,6 +1442,95 @@ export default function HomePage() {
                   ) : null}
                 </div>
               </div>
+            </section>
+
+            <section className="card">
+              <h2>Flashcards & Spaced Review</h2>
+              <div style={{ display: "grid", gap: "8px", marginBottom: "10px" }}>
+                <input
+                  value={flashDeckTitleInput}
+                  onChange={(event) => setFlashDeckTitleInput(event.target.value)}
+                  placeholder="New deck title"
+                />
+                <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                  <Button onClick={createFlashcardDeck} disabled={flashcardsLoading || !flashDeckTitleInput.trim()}>
+                    {flashcardsLoading ? "Working..." : "Create Deck"}
+                  </Button>
+                  <Button variant="secondary" onClick={loadFlashcardDecks} disabled={flashcardsLoading}>
+                    Refresh Decks
+                  </Button>
+                </div>
+              </div>
+
+              {flashDecks.length > 0 ? (
+                <select
+                  value={selectedFlashDeckId ?? ""}
+                  onChange={(event) => setSelectedFlashDeckId(Number(event.target.value))}
+                  style={{ width: "100%", padding: "8px", marginBottom: "10px" }}
+                >
+                  {flashDecks.map((deck) => (
+                    <option key={deck.id} value={deck.id}>
+                      {deck.title} ({deck.card_count ?? 0} cards)
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <p>No decks yet.</p>
+              )}
+
+              <div style={{ display: "grid", gap: "8px", marginBottom: "10px" }}>
+                <textarea
+                  rows={2}
+                  value={flashcardPromptInput}
+                  onChange={(event) => setFlashcardPromptInput(event.target.value)}
+                  placeholder="Paste notes or topic summary to auto-generate flashcards..."
+                />
+                <Button
+                  variant="secondary"
+                  onClick={generateFlashcardsFromPrompt}
+                  disabled={flashcardsLoading || !flashcardPromptInput.trim()}
+                >
+                  {flashcardsLoading ? "Generating..." : "Generate 5 Flashcards"}
+                </Button>
+              </div>
+
+              <div>
+                <strong>Due For Review</strong>
+                <div style={{ marginTop: "8px", display: "grid", gap: "8px" }}>
+                  {dueFlashcards.length === 0 ? <p>No cards due right now.</p> : null}
+                  {dueFlashcards.map((card) => (
+                    <div
+                      key={card.id}
+                      style={{
+                        border: "1px solid var(--border)",
+                        borderRadius: "8px",
+                        padding: "10px",
+                        display: "grid",
+                        gap: "6px",
+                      }}
+                    >
+                      <div style={{ fontSize: "12px", opacity: 0.8 }}>{card.deck_title || `Deck #${card.deck_id}`}</div>
+                      <div><strong>Front:</strong> {card.front}</div>
+                      <div><strong>Back:</strong> {card.back}</div>
+                      <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+                        <Button variant="outline" onClick={() => reviewDueFlashcard(card.id, 1)} disabled={flashcardsLoading}>
+                          Again
+                        </Button>
+                        <Button variant="outline" onClick={() => reviewDueFlashcard(card.id, 3)} disabled={flashcardsLoading}>
+                          Hard
+                        </Button>
+                        <Button variant="secondary" onClick={() => reviewDueFlashcard(card.id, 4)} disabled={flashcardsLoading}>
+                          Good
+                        </Button>
+                        <Button onClick={() => reviewDueFlashcard(card.id, 5)} disabled={flashcardsLoading}>
+                          Easy
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              {flashcardsError ? <p className="error">Error: {flashcardsError}</p> : null}
             </section>
 
             <section className="card">

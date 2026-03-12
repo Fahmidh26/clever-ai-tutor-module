@@ -15,6 +15,7 @@ from app.middleware.tutor_guardrail import tutor_guardrail_middleware
 from app.routers.auth import router as auth_router
 from app.routers.chat import router as chat_router
 from app.routers.experts import router as experts_router
+from app.routers.flashcards import router as flashcards_router
 from app.routers.health import router as health_router
 from app.routers.hints import router as hints_router
 from app.routers.proxy import router as proxy_router
@@ -60,6 +61,7 @@ app.middleware("http")(request_logging_middleware)
 app.include_router(auth_router)
 app.include_router(experts_router)
 app.include_router(chat_router)
+app.include_router(flashcards_router)
 app.include_router(modes_router)
 app.include_router(sessions_router)
 app.include_router(hints_router)

@@ -31,10 +31,10 @@ Frontend calls `/api/experts` and `/api/expert-chat` (local). Proxy blocked for 
 - Core tutoring engine (local per ARCHITECTURE): **~85%** - experts + chat + sessions + streaming + 7 modes; multi-provider local wiring pending
 - RAG + teacher knowledge base: **100%**
 - UX polish + adaptive UI: **100%**
-- Intelligence (mastery/quiz/hints): **~45%** (hint progression + adaptive quiz + explain-my-answer implemented)
+- Intelligence (mastery/quiz/hints): **~60%** (hint progression + adaptive quiz + explain-my-answer + flashcards implemented)
 - Gamification/interactive tools/test prep: **0%**
 
-**Estimated overall completion (MVP path): ~56%**
+**Estimated overall completion (MVP path): ~60%**
 
 > **Current working state**: Experts, chat, sessions run locally. 7 interaction modes via `mode` param. `GET /api/tutor/modes`, `PATCH /api/tutor/sessions/{id}/mode`.
 
@@ -127,7 +127,7 @@ Phase 1.3 provider subtask status (to implement locally in tutor):
 - [x] Hint progression engine (3 levels)
 - [x] Adaptive quiz generation
 - [x] Explain-my-answer workflow
-- [ ] Flashcards + spaced repetition
+- [x] Flashcards + spaced repetition
 - [ ] Mastery tracking per topic
 - [ ] Misconception detection
 - [ ] Student + teacher progress dashboards
@@ -229,6 +229,7 @@ Phase 1.3 provider subtask status (to implement locally in tutor):
 - 2026-03-12: Wired frontend Hint mode to Phase 2 endpoints in chat workspace (`/api/tutor/hints/start` + `/api/tutor/hints/{id}/next`) with level-aware UI controls and progression state handling.
 - 2026-03-12: Implemented adaptive quiz generation baseline with backend APIs (`POST /api/tutor/quiz/generate`, `POST /api/tutor/quiz/{id}/submit`, `GET /api/tutor/quiz/history`), persistence in `adaptive_quiz_attempts`, and frontend `Quiz Me` mode wiring for question generation, option selection, and adaptive feedback.
 - 2026-03-12: Implemented explain-my-answer workflow with backend endpoint (`POST /api/tutor/quiz/{id}/explain-my-answer`) and frontend `Quiz Me` integration for student reasoning submission and personalized diagnostic feedback; logs wrong answers to `mistake_journal`.
+- 2026-03-12: Implemented flashcards + spaced repetition with backend APIs (`/api/tutor/flashcards/decks*`, `/api/tutor/flashcards/generate`, `/api/tutor/flashcards/review`, `/api/tutor/flashcards/{id}/review`) using SM-2 scheduling and frontend flashcard deck/generation/review UI.
 
 > Update this file daily by checking completed tasks and adjusting percentage estimates.
 
