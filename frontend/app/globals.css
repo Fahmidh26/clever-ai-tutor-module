@@ -84,6 +84,18 @@ body {
   margin-bottom: 16px;
 }
 
+.band-chip {
+  display: inline-block;
+  margin-bottom: 14px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  background: color-mix(in oklab, var(--secondary) 72%, transparent);
+}
+
 .shell-nav {
   display: flex;
   flex-direction: column;
@@ -174,6 +186,20 @@ button:disabled {
   cursor: not-allowed;
 }
 
+.chip {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--background);
+  color: var(--foreground);
+  padding: 5px 10px;
+  font-size: 0.78rem;
+  line-height: 1.2;
+}
+
+.chip:hover {
+  background: var(--secondary);
+}
+
 pre {
   overflow: auto;
   background: oklch(0.21 0.02 262);
@@ -249,6 +275,31 @@ pre {
   overflow: auto;
   white-space: pre-wrap;
   font-family: "Times New Roman", Cambria, serif;
+}
+
+.age-band-k2 .shell-content {
+  font-size: 1.03rem;
+}
+
+.age-band-k2 .card h2 {
+  font-size: 1.22rem;
+}
+
+.age-band-k2 .shell-nav-item {
+  padding: 12px 14px;
+  border-radius: 12px;
+}
+
+.age-band-g35 .shell-content {
+  font-size: 1rem;
+}
+
+.age-band-g68 .shell-content {
+  font-size: 0.98rem;
+}
+
+.age-band-g912 .shell-content {
+  font-size: 0.96rem;
 }
 
 @media (max-width: 900px) {

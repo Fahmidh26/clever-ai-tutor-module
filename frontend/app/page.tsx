@@ -78,6 +78,64 @@ type TutorSessionMessage = {
   mode?: string;
 };
 
+type GradeBand = "k2" | "g35" | "g68" | "g912";
+
+function extractGradeLevel(user: Record<string, unknown> | null): number | null {
+  if (!user || typeof user !== "object") return null;
+  const tutorUser = user.tutor_user;
+  if (!tutorUser || typeof tutorUser !== "object") return null;
+  const raw = (tutorUser as Record<string, unknown>).grade_level;
+  if (typeof raw === "number" && Number.isFinite(raw)) return raw;
+  if (typeof raw === "string") {
+    const n = Number(raw);
+    if (Number.isFinite(n)) return n;
+  }
+  return null;
+}
+
+function resolveGradeBand(grade: number | null): GradeBand {
+  if (grade !== null && grade <= 2) return "k2";
+  if (grade !== null && grade <= 5) return "g35";
+  if (grade !== null && grade <= 8) return "g68";
+  return "g912";
+}
+
+function gradeBandLabel(band: GradeBand): string {
+  if (band === "k2") return "K-2";
+  if (band === "g35") return "3-5";
+  if (band === "g68") return "6-8";
+  return "9-12";
+}
+
+function promptSuggestionsForBand(band: GradeBand): string[] {
+  if (band === "k2") {
+    return [
+      "Can you explain with a short story?",
+      "Give me one tiny step first.",
+      "Use easy words and one example.",
+    ];
+  }
+  if (band === "g35") {
+    return [
+      "Quiz me with one medium question.",
+      "Give me two hints before the answer.",
+      "Show me an easy visual way.",
+    ];
+  }
+  if (band === "g68") {
+    return [
+      "Teach this like exam prep.",
+      "Give me a challenge after explanation.",
+      "Find my likely misconception.",
+    ];
+  }
+  return [
+    "Give me a rigorous explanation.",
+    "Compare two solution strategies.",
+    "Challenge my assumptions here.",
+  ];
+}
+
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8003";
 export default function HomePage() {
   const [experts, setExperts] = useState<Expert[]>([]);
@@ -130,6 +188,8 @@ export default function HomePage() {
 
   const theme = useUIStore((state) => state.theme);
   const toggleTheme = useUIStore((state) => state.toggleTheme);
+  const gradeBand = resolveGradeBand(extractGradeLevel(user));
+  const gradeSuggestions = promptSuggestionsForBand(gradeBand);
 
   const apiClient = useMemo(() => createApiClient({ baseUrl: apiBaseUrl }), []);
   const isTeacherRole = role === "teacher" || role === "admin";
@@ -666,12 +726,13 @@ export default function HomePage() {
   };
 
   return (
-    <main className="page">
+    <main className={`page age-band-${gradeBand}`}>
       <aside className="shell-sidebar">
         <div className="shell-brand">Clever AI Tutor</div>
+        <div className="band-chip">Band {gradeBandLabel(gradeBand)}</div>
         <nav className="shell-nav">
           <button className="shell-nav-item" type="button">
-            Dashboard
+            {gradeBand === "k2" ? "Home" : "Dashboard"}
           </button>
           <button className="shell-nav-item" type="button">
             Sessions
@@ -700,7 +761,11 @@ export default function HomePage() {
             <header className="header">
               <div>
                 <h1>Clever AI Tutor</h1>
-                <p>Next.js + FastAPI. Auth via main site; experts and chat run locally. See ARCHITECTURE.md.</p>
+                <p>
+                  {gradeBand === "k2"
+                    ? "Friendly tutoring with short, clear steps."
+                    : "Next.js + FastAPI. Auth via main site; experts and chat run locally. See ARCHITECTURE.md."}
+                </p>
               </div>
             </header>
 
@@ -838,9 +903,22 @@ export default function HomePage() {
                     value={chatPrompt}
                     onChange={(event) => setChatPrompt(event.target.value)}
                     rows={3}
-                    placeholder="Ask your tutor..."
+                    placeholder={gradeBand === "k2" ? "Ask your tutor in simple words..." : "Ask your tutor..."}
                     disabled={!isAuthenticated || chatLoading}
                   />
+                  <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginBottom: "8px" }}>
+                    {gradeSuggestions.map((suggestion) => (
+                      <button
+                        key={suggestion}
+                        type="button"
+                        className="chip"
+                        onClick={() => setChatPrompt(suggestion)}
+                        disabled={chatLoading}
+                      >
+                        {suggestion}
+                      </button>
+                    ))}
+                  </div>
                   <Button onClick={sendStreamChat} disabled={!isAuthenticated || chatLoading || !chatPrompt.trim()}>
                     {chatLoading ? "Streaming..." : "Send Message"}
                   </Button>
