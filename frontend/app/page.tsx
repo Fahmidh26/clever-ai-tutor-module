@@ -14,12 +14,49 @@ type Expert = {
   expert_name?: string;
 };
 
+type KnowledgeBase = {
+  id: number;
+  name: string;
+  description?: string | null;
+  subject?: string | null;
+  grade_level?: number | null;
+  visibility?: string;
+  status?: string;
+  document_count?: number;
+};
+
+type KBDocument = {
+  id: number;
+  kb_id: number;
+  filename: string;
+  file_type?: string | null;
+  file_size?: number;
+  status?: string;
+  error_message?: string | null;
+  created_at?: string | null;
+};
+
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8003";
 export default function HomePage() {
   const [experts, setExperts] = useState<Expert[]>([]);
   const [expertsError, setExpertsError] = useState("");
+  const [knowledgeBases, setKnowledgeBases] = useState<KnowledgeBase[]>([]);
+  const [kbLoading, setKbLoading] = useState(false);
+  const [kbError, setKbError] = useState("");
+  const [kbName, setKbName] = useState("");
+  const [kbSubject, setKbSubject] = useState("");
+  const [kbDescription, setKbDescription] = useState("");
+  const [selectedKbId, setSelectedKbId] = useState<number | null>(null);
+  const [documents, setDocuments] = useState<KBDocument[]>([]);
+  const [docsLoading, setDocsLoading] = useState(false);
+  const [docsError, setDocsError] = useState("");
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [processingQueued, setProcessingQueued] = useState(false);
+  const [previewDocId, setPreviewDocId] = useState<number | null>(null);
+  const [previewText, setPreviewText] = useState("");
 
-  const { user, isAuthenticated, loading, error, startLogin, logout } = useAuthContext();
+  const { user, role, isAuthenticated, loading, error, startLogin, logout } = useAuthContext();
 
   const chatPrompt = useChatStore((state) => state.prompt);
   const chatResult = useChatStore((state) => state.result);
@@ -35,6 +72,7 @@ export default function HomePage() {
   const toggleTheme = useUIStore((state) => state.toggleTheme);
 
   const apiClient = useMemo(() => createApiClient({ baseUrl: apiBaseUrl }), []);
+  const isTeacherRole = role === "teacher" || role === "admin";
 
   const loadExperts = async () => {
     try {
@@ -54,13 +92,72 @@ export default function HomePage() {
     }
   };
 
+  const loadKnowledgeBases = async () => {
+    if (!isTeacherRole) {
+      setKnowledgeBases([]);
+      setSelectedKbId(null);
+      return;
+    }
+    try {
+      setKbLoading(true);
+      setKbError("");
+      const data = await apiClient.get<{ knowledge_bases?: KnowledgeBase[] }>("/api/teacher/kb");
+      const list = Array.isArray(data.knowledge_bases) ? data.knowledge_bases : [];
+      setKnowledgeBases(list);
+      if (!selectedKbId && list.length > 0) {
+        setSelectedKbId(list[0].id);
+      }
+      if (selectedKbId && !list.some((kb) => kb.id === selectedKbId)) {
+        setSelectedKbId(list.length > 0 ? list[0].id : null);
+      }
+    } catch (err) {
+      setKbError(err instanceof Error ? err.message : "Could not fetch knowledge bases");
+      setKnowledgeBases([]);
+    } finally {
+      setKbLoading(false);
+    }
+  };
+
+  const loadDocuments = async (kbId: number) => {
+    try {
+      setDocsLoading(true);
+      setDocsError("");
+      const data = await apiClient.get<{ documents?: KBDocument[] }>(`/api/teacher/kb/${kbId}/documents`);
+      setDocuments(Array.isArray(data.documents) ? data.documents : []);
+    } catch (err) {
+      setDocsError(err instanceof Error ? err.message : "Could not fetch documents");
+      setDocuments([]);
+    } finally {
+      setDocsLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (isAuthenticated) {
       void loadExperts();
+      void loadKnowledgeBases();
       return;
     }
     setExperts([]);
+    setKnowledgeBases([]);
+    setSelectedKbId(null);
   }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (isAuthenticated && isTeacherRole) {
+      void loadKnowledgeBases();
+    }
+  }, [isAuthenticated, isTeacherRole]);
+
+  useEffect(() => {
+    if (selectedKbId && isAuthenticated && isTeacherRole) {
+      void loadDocuments(selectedKbId);
+      setPreviewDocId(null);
+      setPreviewText("");
+      return;
+    }
+    setDocuments([]);
+  }, [selectedKbId, isAuthenticated, isTeacherRole]);
 
   useEffect(() => {
     if (typeof document !== "undefined") {
@@ -99,6 +196,106 @@ export default function HomePage() {
       setChatResult("");
     } finally {
       setChatLoading(false);
+    }
+  };
+
+  const createKnowledgeBase = async () => {
+    if (!kbName.trim()) {
+      setKbError("KB name is required");
+      return;
+    }
+    try {
+      setKbError("");
+      await apiClient.post("/api/teacher/kb", {
+        name: kbName.trim(),
+        subject: kbSubject.trim() || undefined,
+        description: kbDescription.trim() || undefined,
+        visibility: "private",
+      });
+      setKbName("");
+      setKbSubject("");
+      setKbDescription("");
+      await loadKnowledgeBases();
+    } catch (err) {
+      setKbError(err instanceof Error ? err.message : "Failed to create knowledge base");
+    }
+  };
+
+  const uploadDocument = async () => {
+    if (!selectedKbId || !uploadFile) {
+      setDocsError("Select a KB and file first");
+      return;
+    }
+    try {
+      setUploading(true);
+      setDocsError("");
+      const form = new FormData();
+      form.append("file", uploadFile);
+      const response = await fetch(`${apiBaseUrl}/api/teacher/kb/${selectedKbId}/documents/upload`, {
+        method: "POST",
+        credentials: "include",
+        body: form,
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(payload?.error || payload?.message || `Upload failed (${response.status})`);
+      }
+      setUploadFile(null);
+      await loadDocuments(selectedKbId);
+      await loadKnowledgeBases();
+    } catch (err) {
+      setDocsError(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const processQueuedDocuments = async () => {
+    if (!selectedKbId) {
+      return;
+    }
+    try {
+      setProcessingQueued(true);
+      setDocsError("");
+      await apiClient.post(`/api/teacher/kb/${selectedKbId}/documents/process-queued?limit=10`);
+      await loadDocuments(selectedKbId);
+      await loadKnowledgeBases();
+    } catch (err) {
+      setDocsError(err instanceof Error ? err.message : "Failed to process queued documents");
+    } finally {
+      setProcessingQueued(false);
+    }
+  };
+
+  const previewDocument = async (docId: number) => {
+    if (!selectedKbId) {
+      return;
+    }
+    try {
+      setPreviewDocId(docId);
+      const data = await apiClient.get<{ document?: { preview?: string | null } }>(
+        `/api/teacher/kb/${selectedKbId}/documents/${docId}/preview`
+      );
+      setPreviewText(data.document?.preview || "No preview available.");
+    } catch (err) {
+      setPreviewText(err instanceof Error ? err.message : "Failed to load preview");
+    }
+  };
+
+  const deleteDocument = async (docId: number) => {
+    if (!selectedKbId) {
+      return;
+    }
+    try {
+      await apiClient.del(`/api/teacher/kb/${selectedKbId}/documents/${docId}`);
+      if (previewDocId === docId) {
+        setPreviewDocId(null);
+        setPreviewText("");
+      }
+      await loadDocuments(selectedKbId);
+      await loadKnowledgeBases();
+    } catch (err) {
+      setDocsError(err instanceof Error ? err.message : "Failed to delete document");
     }
   };
 
@@ -178,6 +375,110 @@ export default function HomePage() {
               </Button>
               {chatError ? <p className="error">Error: {chatError}</p> : null}
               {chatResult ? <pre>{chatResult}</pre> : null}
+            </section>
+
+            <section className="card">
+              <h2>Knowledge Base Manager</h2>
+              {!isTeacherRole ? <p>Teacher/admin role required for KB management.</p> : null}
+              {isTeacherRole ? (
+                <>
+                  <div style={{ display: "grid", gap: "8px", marginBottom: "12px" }}>
+                    <input
+                      value={kbName}
+                      onChange={(event) => setKbName(event.target.value)}
+                      placeholder="Knowledge base name"
+                    />
+                    <input
+                      value={kbSubject}
+                      onChange={(event) => setKbSubject(event.target.value)}
+                      placeholder="Subject (optional)"
+                    />
+                    <textarea
+                      value={kbDescription}
+                      onChange={(event) => setKbDescription(event.target.value)}
+                      rows={2}
+                      placeholder="Description (optional)"
+                    />
+                    <Button onClick={createKnowledgeBase} disabled={!kbName.trim() || kbLoading}>
+                      {kbLoading ? "Working..." : "Create Knowledge Base"}
+                    </Button>
+                  </div>
+
+                  {kbError ? <p className="error">Error: {kbError}</p> : null}
+                  <p>My KBs: {knowledgeBases.length}</p>
+                  {knowledgeBases.length > 0 ? (
+                    <select
+                      value={selectedKbId ?? ""}
+                      onChange={(event) => setSelectedKbId(Number(event.target.value))}
+                      style={{ width: "100%", padding: "8px", marginBottom: "10px" }}
+                    >
+                      {knowledgeBases.map((kb) => (
+                        <option key={kb.id} value={kb.id}>
+                          {kb.name} ({kb.document_count ?? 0} docs)
+                        </option>
+                      ))}
+                    </select>
+                  ) : null}
+
+                  <div style={{ display: "flex", gap: "8px", marginBottom: "10px", flexWrap: "wrap" }}>
+                    <input
+                      type="file"
+                      accept=".pdf,.docx,.pptx,.txt,.md"
+                      onChange={(event) => setUploadFile(event.target.files?.[0] ?? null)}
+                    />
+                    <Button onClick={uploadDocument} disabled={!selectedKbId || !uploadFile || uploading}>
+                      {uploading ? "Uploading..." : "Upload Document"}
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      onClick={processQueuedDocuments}
+                      disabled={!selectedKbId || processingQueued}
+                    >
+                      {processingQueued ? "Processing..." : "Process Queued"}
+                    </Button>
+                  </div>
+
+                  {docsError ? <p className="error">Error: {docsError}</p> : null}
+                  {docsLoading ? <p>Loading documents...</p> : null}
+                  {!docsLoading && documents.length === 0 ? <p>No documents yet.</p> : null}
+                  {documents.length > 0 ? (
+                    <div style={{ display: "grid", gap: "8px" }}>
+                      {documents.map((doc) => (
+                        <div
+                          key={doc.id}
+                          style={{
+                            border: "1px solid var(--border)",
+                            borderRadius: "8px",
+                            padding: "10px",
+                            display: "grid",
+                            gap: "8px",
+                          }}
+                        >
+                          <div>
+                            <strong>{doc.filename}</strong> - {doc.status ?? "unknown"}
+                            {doc.error_message ? <p className="error">Error: {doc.error_message}</p> : null}
+                          </div>
+                          <div style={{ display: "flex", gap: "8px" }}>
+                            <Button variant="secondary" onClick={() => previewDocument(doc.id)}>
+                              Preview
+                            </Button>
+                            <Button variant="outline" onClick={() => deleteDocument(doc.id)}>
+                              Delete
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
+
+                  {previewDocId ? (
+                    <div style={{ marginTop: "12px" }}>
+                      <h3>Preview (Doc #{previewDocId})</h3>
+                      <pre>{previewText || "Loading preview..."}</pre>
+                    </div>
+                  ) : null}
+                </>
+              ) : null}
             </section>
           </ProtectedRoute>
         </div>
