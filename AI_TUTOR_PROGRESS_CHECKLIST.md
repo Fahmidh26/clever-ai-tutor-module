@@ -101,9 +101,9 @@ Phase 1.3 provider subtask status (to implement locally in tutor):
 ## 4) RAG + Teacher Dashboard (Phase 1.4)
 
 - [x] Teacher document upload
-- [ ] Extraction/chunking/embedding pipeline
-- [ ] Vector retrieval and rerank
-- [ ] Citation rendering in responses
+- [x] Extraction/chunking/embedding pipeline
+- [x] Vector retrieval and rerank
+- [x] Citation rendering in responses
 - [ ] KB management UI (upload/status/delete/preview)
 - [ ] Teacher class/roster basics
 
@@ -204,5 +204,11 @@ Phase 1.3 provider subtask status (to implement locally in tutor):
 - 2026-03-12: Completed local retry/fallback/timeout strategy (1.3.8) for /api/expert-chat and /api/expert-chat/stream with model fallback candidates, transient retries with backoff, per-attempt timeout enforcement, and execution-attempt metadata in responses/events.
 
 - 2026-03-12: Completed Phase 1.4 teacher KB upload/list/delete/preview APIs (/api/teacher/kb*) with teacher/admin RBAC, local file persistence, and KB/document metadata storage in knowledge_bases + kb_documents tables.
+
+- 2026-03-12: Completed Phase 1.4 extraction/chunking/embedding pipeline with local document text extraction (txt/md native, optional pdf/docx/pptx via installed libs), configurable chunking, OpenAI embeddings, and kb_chunks persistence via new process endpoints (/api/teacher/kb/{kb_id}/documents/{document_id}/process, /api/teacher/kb/{kb_id}/documents/process-queued).
+
+- 2026-03-12: Completed Phase 1.4 vector retrieval + rerank by adding /api/teacher/kb/{kb_id}/retrieve (query embedding, pgvector nearest-neighbor search on kb_chunks.embedding, lexical overlap rerank, citation labels per chunk).
+
+- 2026-03-12: Completed Phase 1.4 citation rendering in chat responses by injecting retrieved KB context into prompt when kb_id is provided and returning citation metadata in both /api/expert-chat JSON and /api/expert-chat/stream SSE lifecycle events.
 
 > Update this file daily by checking completed tasks and adjusting percentage estimates.

@@ -46,6 +46,11 @@ class Settings(BaseSettings):
     llm_fallback_models: str = "gpt-4o,gpt-4"
     kb_upload_dir: str = "backend/storage/kb_uploads"
     kb_upload_max_bytes: int = 26214400
+    kb_chunk_size_chars: int = 1200
+    kb_chunk_overlap_chars: int = 180
+    kb_max_chunks_per_document: int = 300
+    embedding_model: str = "text-embedding-3-small"
+    embedding_timeout_seconds: float = 60.0
 
     @field_validator(
         "aisite_oauth_base_url",

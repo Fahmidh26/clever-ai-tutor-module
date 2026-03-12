@@ -20,6 +20,7 @@ from app.services.chat_execution import (
 )
 from app.services.mode_prompts import MODE_IDS, build_system_prompt, normalize_mode
 from app.services.rate_limiter import enforce_user_rate_limit
+from app.services.rag_retrieval import retrieve_kb_context
 from app.services.safety_guardrails import sanitize_assistant_output
 
 router = APIRouter(prefix="/api", tags=["chat"])
@@ -60,6 +61,7 @@ async def expert_chat(request: Request):
     message = (body.get("message") or "").strip()
     expert_id = body.get("expert_id")
     session_id = body.get("session_id")
+    kb_id = body.get("kb_id")
     mode = (body.get("mode") or "").strip().lower() or "teach_me"
     hint_level = body.get("hint_level")
     conversation = body.get("conversation") or []
@@ -79,6 +81,7 @@ async def expert_chat(request: Request):
 
     session_mode = mode
     grade_level = None
+    rag_citations: list[dict[str, object]] = []
 
     # If session_id provided, verify ownership and get session mode/grade
     if session_id is not None:
@@ -123,6 +126,39 @@ async def expert_chat(request: Request):
                 base_prompt = row["system_prompt"] or base_prompt
 
     system_prompt = build_system_prompt(base_prompt, mode=session_mode, hint_level=hint_level, grade_level=grade_level)
+
+    if kb_id is not None:
+        tutor_user_for_kb = _get_tutor_user_id(request)
+        if tutor_user_for_kb is None:
+            return JSONResponse(status_code=401, content={"error": "Tutor user not synced for KB retrieval"})
+        try:
+            kb_id = int(kb_id)
+        except (TypeError, ValueError):
+            return JSONResponse(status_code=400, content={"error": "kb_id must be an integer"})
+
+        async with db_pool.acquire() as conn:
+            kb_row = await conn.fetchrow(
+                """
+                SELECT id, owner_id, visibility
+                FROM knowledge_bases
+                WHERE id = $1 AND status = 'active' AND (owner_id = $2 OR visibility = 'public')
+                """,
+                kb_id,
+                tutor_user_for_kb,
+            )
+            if not kb_row:
+                return JSONResponse(status_code=404, content={"error": "Knowledge base not found or not accessible"})
+            rag_citations = await retrieve_kb_context(conn=conn, kb_id=kb_id, query=message, top_k=4)
+
+        if rag_citations:
+            context_block = "\n\n".join(
+                f"[{idx + 1}] {item['content']}" for idx, item in enumerate(rag_citations)
+            )
+            system_prompt = (
+                f"{system_prompt}\n\n"
+                f"RAG CONTEXT (teacher knowledge base id={kb_id}):\n{context_block}\n\n"
+                "When using RAG context, cite source chunks inline like [1], [2]."
+            )
 
     messages: list[ChatMessage] = [ChatMessage(role="system", content=system_prompt)]
     for item in conversation:
@@ -219,6 +255,15 @@ async def expert_chat(request: Request):
         "session_id": session_id,
         "model_used": selected_model,
         "execution_attempts": attempts,
+        "citations": [
+            {
+                "citation": item["citation"],
+                "filename": item["filename"],
+                "document_id": item["document_id"],
+                "chunk_index": item["chunk_index"],
+            }
+            for item in rag_citations
+        ],
     }
 
 
@@ -246,6 +291,7 @@ async def expert_chat_stream(request: Request):
     message = (body.get("message") or "").strip()
     expert_id = body.get("expert_id")
     session_id = body.get("session_id")
+    kb_id = body.get("kb_id")
     mode = (body.get("mode") or "").strip().lower() or "teach_me"
     hint_level = body.get("hint_level")
     conversation = body.get("conversation") or []
@@ -265,6 +311,7 @@ async def expert_chat_stream(request: Request):
 
     session_mode = mode
     grade_level = None
+    rag_citations: list[dict[str, object]] = []
 
     if session_id is not None:
         try:
@@ -309,6 +356,39 @@ async def expert_chat_stream(request: Request):
 
     system_prompt = build_system_prompt(base_prompt, mode=session_mode, hint_level=hint_level, grade_level=grade_level)
 
+    if kb_id is not None:
+        tutor_user_for_kb = _get_tutor_user_id(request)
+        if tutor_user_for_kb is None:
+            return JSONResponse(status_code=401, content={"error": "Tutor user not synced for KB retrieval"})
+        try:
+            kb_id = int(kb_id)
+        except (TypeError, ValueError):
+            return JSONResponse(status_code=400, content={"error": "kb_id must be an integer"})
+
+        async with db_pool.acquire() as conn:
+            kb_row = await conn.fetchrow(
+                """
+                SELECT id, owner_id, visibility
+                FROM knowledge_bases
+                WHERE id = $1 AND status = 'active' AND (owner_id = $2 OR visibility = 'public')
+                """,
+                kb_id,
+                tutor_user_for_kb,
+            )
+            if not kb_row:
+                return JSONResponse(status_code=404, content={"error": "Knowledge base not found or not accessible"})
+            rag_citations = await retrieve_kb_context(conn=conn, kb_id=kb_id, query=message, top_k=4)
+
+        if rag_citations:
+            context_block = "\n\n".join(
+                f"[{idx + 1}] {item['content']}" for idx, item in enumerate(rag_citations)
+            )
+            system_prompt = (
+                f"{system_prompt}\n\n"
+                f"RAG CONTEXT (teacher knowledge base id={kb_id}):\n{context_block}\n\n"
+                "When using RAG context, cite source chunks inline like [1], [2]."
+            )
+
     messages: list[ChatMessage] = [ChatMessage(role="system", content=system_prompt)]
     for item in conversation:
         if isinstance(item, dict):
@@ -345,7 +425,20 @@ async def expert_chat_stream(request: Request):
 
             yield _sse_event(
                 "stream_start",
-                {"session_id": session_id, "model_used": selected_model, "execution_attempts": attempts},
+                {
+                    "session_id": session_id,
+                    "model_used": selected_model,
+                    "execution_attempts": attempts,
+                    "citations": [
+                        {
+                            "citation": item["citation"],
+                            "filename": item["filename"],
+                            "document_id": item["document_id"],
+                            "chunk_index": item["chunk_index"],
+                        }
+                        for item in rag_citations
+                    ],
+                },
             )
 
             if selection.first_chunk:
@@ -429,6 +522,15 @@ async def expert_chat_stream(request: Request):
                 "session_id": session_id,
                 "model_used": selected_model,
                 "execution_attempts": attempts,
+                "citations": [
+                    {
+                        "citation": item["citation"],
+                        "filename": item["filename"],
+                        "document_id": item["document_id"],
+                        "chunk_index": item["chunk_index"],
+                    }
+                    for item in rag_citations
+                ],
             },
         )
 
