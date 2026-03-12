@@ -83,4 +83,4 @@
 
 ## Implementation Status
 
-> Experts and chat now run locally (`/api/experts`, `/api/expert-chat`). Set `OPENAI_API_KEY` for local chat. Sessions API (`/api/tutor/sessions*`) pending.
+> Experts, chat, and sessions run locally. Set `OPENAI_API_KEY` for local chat. Pass `session_id` to `/api/expert-chat` for message persistence.

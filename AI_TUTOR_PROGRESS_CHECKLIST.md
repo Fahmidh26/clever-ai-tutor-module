@@ -18,7 +18,7 @@
 | Credits | Main site | Main site deduct | ✅ Aligned |
 | Experts | Local tutor | Local `/api/experts` from tutor_personas | ✅ Aligned |
 | Chat | Local tutor | Local `/api/expert-chat` with OpenAI + credit deduct | ✅ Aligned |
-| Sessions | Local tutor | Not yet implemented | ⚠️ Pending |
+| Sessions | Local tutor | Local `/api/tutor/sessions*` + message persistence | ✅ Aligned |
 
 Frontend calls `/api/experts` and `/api/expert-chat` (local). Proxy blocked for experts/chat paths.
 
@@ -28,7 +28,7 @@ Frontend calls `/api/experts` and `/api/expert-chat` (local). Proxy blocked for 
 
 - Foundation setup: **100%**
 - Main-site auth/API integration: **100%**
-- Core tutoring engine (local per ARCHITECTURE): **~50%** — experts + chat local; sessions pending
+- Core tutoring engine (local per ARCHITECTURE): **~65%** — experts + chat + sessions local
 - RAG + teacher knowledge base: **5%**
 - UX polish + adaptive UI: **20%**
 - Intelligence (mastery/quiz/hints): **0%**
@@ -36,7 +36,7 @@ Frontend calls `/api/experts` and `/api/expert-chat` (local). Proxy blocked for 
 
 **Estimated overall completion (MVP path): ~22%**
 
-> **Current working state**: Experts and chat run locally (`/api/experts`, `/api/expert-chat`). Set `OPENAI_API_KEY` for local chat. Sessions API pending.
+> **Current working state**: Experts, chat, and sessions run locally. Set `OPENAI_API_KEY` for local chat. Pass `session_id` to chat for message persistence.
 
 ---
 
@@ -81,8 +81,8 @@ Frontend calls `/api/experts` and `/api/expert-chat` (local). Proxy blocked for 
 
 - [x] Provider abstraction layer (`1.3.1`)
 - [x] At least one production LLM provider wired end-to-end **locally** (OpenAI; main site only for credit deduct)
-- [ ] Session create/list/get APIs **local** (`/api/tutor/sessions*`)
-- [ ] Message persistence **local** (tutor DB)
+- [x] Session create/list/get APIs **local** (`/api/tutor/sessions*`)
+- [x] Message persistence **local** (tutor DB)
 - [ ] SSE streaming chat endpoint (`1.3.7`) **local**
 - [ ] 7 interaction modes (or MVP subset first)
 - [ ] Safety/guardrail middleware
@@ -151,7 +151,7 @@ Phase 1.3 provider subtask status (to implement locally in tutor):
 - [x] Phase 1.1 complete
 - [x] Phase 1.2 complete
 - [x] Local experts + chat APIs implemented
-- [ ] Implement local `/api/tutor/sessions*` (create, list, get, message persistence)
+- [x] Implement local `/api/tutor/sessions*` (create, list, get, message persistence)
 
 ---
 
@@ -193,5 +193,6 @@ Phase 1.3 provider subtask status (to implement locally in tutor):
 - 2026-03-11: Completed `1.3.5` xAI Grok provider routing in main-site tutor gateway by making retry/fallback provider-aware (`openai` + `grok`), resolving active model/provider candidates from `AISettings`, and executing Grok via `services.xai` API credentials while preserving tutor proxy consumption flow.
 - 2026-03-11: Completed `1.3.6` provider/model catalog sync by adding main-site `GET /api/catalog` endpoint returning model metadata (provider, cost, tier, context_window, supports_web_search, modules) from `AISettings` with ETag caching; tutor app consumes via existing `RootSiteClient.get_model_catalog()`.
 - 2026-03-12: **Architecture clarification**: Main site only for auth, billing, credit deduction. Experts, chat, sessions run locally in tutor. See `ARCHITECTURE.md`. Phase 1.3 checklist items updated to reflect local implementation; migration from proxy pattern required.
+- 2026-03-12: Completed local sessions API (`POST/GET /api/tutor/sessions`, `GET /api/tutor/sessions/{id}`) and message persistence in chat when `session_id` provided.
 
 > Update this file daily by checking completed tasks and adjusting percentage estimates.

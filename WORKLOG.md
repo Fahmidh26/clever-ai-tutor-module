@@ -741,3 +741,11 @@ Notes:
 - **Frontend**: Switched from `/api/main-site/api/experts` and `/api/main-site/api/expert-chat` to local `/api/experts` and `/api/expert-chat`.
 - **Proxy blocklist**: Proxy now rejects requests for `api/experts`, `api/expert-chat`, `api/tutor/sessions` — enforces architecture.
 - **Validation**: Backend compile and frontend build pass.
+
+## 2026-03-12 - Local sessions API + message persistence
+
+- **Sessions router**: Added `backend/app/routers/sessions.py`:
+  - `POST /api/tutor/sessions` — create session (persona_id required; subject, topic, mode optional)
+  - `GET /api/tutor/sessions` — list user sessions (limit, offset)
+  - `GET /api/tutor/sessions/{id}` — get session with messages (owner check)
+- **Message persistence**: Chat endpoint accepts optional `session_id`; when provided, persists user + assistant messages to `tutor_messages` and updates `tutor_sessions.tokens_used`.

@@ -1,6 +1,7 @@
 """
 Local expert chat API — per ARCHITECTURE.md, chat runs on tutor site.
 Calls LLM directly, deducts credits via main site.
+Optionally persists messages to tutor_messages when session_id is provided.
 """
 from __future__ import annotations
 
@@ -15,9 +16,26 @@ from app.services.rate_limiter import enforce_user_rate_limit
 router = APIRouter(prefix="/api", tags=["chat"])
 
 
+def _get_tutor_user_id(request: Request) -> int | None:
+    user = request.session.get("user")
+    if not user:
+        return None
+    tutor_user = user.get("tutor_user")
+    if not isinstance(tutor_user, dict):
+        return None
+    tid = tutor_user.get("tutor_user_id")
+    if tid is None:
+        return None
+    try:
+        return int(tid)
+    except (TypeError, ValueError):
+        return None
+
+
 @router.post("/expert-chat")
 async def expert_chat(request: Request):
-    """Local chat: uses tutor LLM provider, deducts credits via main site."""
+    """Local chat: uses tutor LLM provider, deducts credits via main site.
+    If session_id is provided, persists user + assistant messages to tutor_messages."""
     rate_limit_response = await enforce_user_rate_limit(
         request,
         endpoint_key=f"{request.method}:{request.url.path}",
@@ -32,6 +50,7 @@ async def expert_chat(request: Request):
     body = await request.json()
     message = (body.get("message") or "").strip()
     expert_id = body.get("expert_id")
+    session_id = body.get("session_id")
     conversation = body.get("conversation") or []
 
     if not message:
@@ -40,6 +59,25 @@ async def expert_chat(request: Request):
     db_pool = getattr(request.app.state, "db_pool", None)
     if db_pool is None:
         return JSONResponse(status_code=503, content={"error": "Database not configured"})
+
+    tutor_user_id = _get_tutor_user_id(request) if session_id else None
+    if session_id and tutor_user_id is None:
+        return JSONResponse(status_code=401, content={"error": "Tutor user not synced for session persistence"})
+
+    # If session_id provided, verify ownership
+    if session_id is not None:
+        try:
+            session_id = int(session_id)
+        except (TypeError, ValueError):
+            return JSONResponse(status_code=400, content={"error": "session_id must be an integer"})
+        async with db_pool.acquire() as conn:
+            row = await conn.fetchrow(
+                "SELECT id FROM tutor_sessions WHERE id = $1 AND user_id = $2",
+                session_id,
+                tutor_user_id,
+            )
+            if not row:
+                return JSONResponse(status_code=404, content={"error": "Session not found"})
 
     from app.services import provider_registry
 
@@ -104,4 +142,41 @@ async def expert_chat(request: Request):
     except Exception:
         pass
 
-    return {"response": full_response, "tokens_used": tokens_used}
+    # Persist messages when session_id provided
+    if session_id is not None and db_pool:
+        try:
+            async with db_pool.acquire() as conn:
+                await conn.execute(
+                    """
+                    INSERT INTO tutor_messages (session_id, role, content, tokens_used, model_used)
+                    VALUES ($1, 'user', $2, $3, $4)
+                    """,
+                    session_id,
+                    message,
+                    provider.count_tokens(message),
+                    model_config.model,
+                )
+                await conn.execute(
+                    """
+                    INSERT INTO tutor_messages (session_id, role, content, tokens_used, model_used)
+                    VALUES ($1, 'assistant', $2, $3, $4)
+                    """,
+                    session_id,
+                    full_response,
+                    provider.count_tokens(full_response),
+                    model_config.model,
+                )
+                await conn.execute(
+                    """
+                    UPDATE tutor_sessions
+                    SET tokens_used = COALESCE(tokens_used, 0) + $2, model_used = $3
+                    WHERE id = $1
+                    """,
+                    session_id,
+                    tokens_used,
+                    model_config.model,
+                )
+        except Exception:
+            pass
+
+    return {"response": full_response, "tokens_used": tokens_used, "session_id": session_id}
