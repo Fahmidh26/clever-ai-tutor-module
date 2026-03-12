@@ -224,6 +224,7 @@ Phase 1.3 provider subtask status (to implement locally in tutor):
 - 2026-03-12: Completed Phase 1.5 E2E user journey coverage by adding Playwright setup (frontend/playwright.config.ts), auth-gate and tutor-streaming smoke specs (frontend/e2e/*.spec.ts), and npm scripts (e2e, e2e:list) in frontend/package.json with dependency install validation via `npm.cmd run e2e:list`.
 - 2026-03-12: Refreshed checklist estimates and Current Week Focus to match implemented Phase 1.4/1.5 work and remaining open items (`1.1.1`, `1.3.3`-`1.3.6`, Phase 2 kickoff).
 - 2026-03-12: Started Phase 2 by implementing backend hint progression baseline (`/api/tutor/hints/start`, `/api/tutor/hints/{id}/next`, `/api/tutor/hints/{id}`) with enforced 3-level sequence and persistence in `hint_progressions`.
+- 2026-03-12: Wired frontend Hint mode to Phase 2 endpoints in chat workspace (`/api/tutor/hints/start` + `/api/tutor/hints/{id}/next`) with level-aware UI controls and progression state handling.
 
 > Update this file daily by checking completed tasks and adjusting percentage estimates.
 

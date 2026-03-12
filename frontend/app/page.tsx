@@ -78,6 +78,13 @@ type TutorSessionMessage = {
   mode?: string;
 };
 
+type HintProgressionState = {
+  id: number;
+  current_level: number;
+  can_request_next: boolean;
+  problem_text: string;
+};
+
 type GradeBand = "k2" | "g35" | "g68" | "g912";
 
 function extractGradeLevel(user: Record<string, unknown> | null): number | null {
@@ -170,6 +177,7 @@ export default function HomePage() {
   const [selectedSessionId, setSelectedSessionId] = useState<number | null>(null);
   const [chatMessages, setChatMessages] = useState<TutorSessionMessage[]>([]);
   const [sessionLoading, setSessionLoading] = useState(false);
+  const [hintState, setHintState] = useState<HintProgressionState | null>(null);
   const [isOnline, setIsOnline] = useState(true);
   const [subjectInput, setSubjectInput] = useState("");
   const [topicInput, setTopicInput] = useState("");
@@ -400,8 +408,15 @@ export default function HomePage() {
     if (!isAuthenticated || selectedSessionId === null) {
       return;
     }
+    setHintState(null);
     void loadSessionDetail(selectedSessionId);
   }, [selectedSessionId, isAuthenticated]);
+
+  useEffect(() => {
+    if (selectedMode !== "hint") {
+      setHintState(null);
+    }
+  }, [selectedMode]);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -464,6 +479,57 @@ export default function HomePage() {
       setChatError("You are offline. Reconnect and try again.");
       return;
     }
+
+    if (selectedMode === "hint") {
+      setChatLoading(true);
+      setChatError("");
+      setChatResult("");
+      const userContent = chatPrompt.trim();
+      setChatMessages((prev) => [...prev, { role: "user", content: userContent }]);
+      const sessionId = await startSessionIfNeeded();
+      if (sessionId === null) {
+        setChatLoading(false);
+        return;
+      }
+      try {
+        const data = await apiClient.post<{
+          progression?: { id?: number; current_level?: number; problem_text?: string };
+          hint?: string;
+          can_request_next?: boolean;
+        }>("/api/tutor/hints/start", {
+          session_id: sessionId,
+          subject: subjectInput.trim() || undefined,
+          topic: topicInput.trim() || undefined,
+          problem_text: userContent,
+        });
+        const hint = String(data.hint || "").trim();
+        if (hint) {
+          setChatMessages((prev) => [...prev, { role: "assistant", content: hint, mode: "hint" }]);
+          setChatResult(hint);
+        }
+        const progressionId = Number(data.progression?.id);
+        const currentLevel = Number(data.progression?.current_level ?? 1);
+        setHintState(
+          Number.isInteger(progressionId) && progressionId > 0
+            ? {
+                id: progressionId,
+                current_level: Number.isFinite(currentLevel) ? currentLevel : 1,
+                can_request_next: Boolean(data.can_request_next),
+                problem_text: String(data.progression?.problem_text || userContent),
+              }
+            : null
+        );
+        setChatPrompt("");
+        await loadSessions();
+      } catch (err) {
+        setChatError(err instanceof Error ? err.message : "Hint request failed");
+        setChatResult("");
+      } finally {
+        setChatLoading(false);
+      }
+      return;
+    }
+
     setChatLoading(true);
     setChatError("");
     setChatResult("");
@@ -558,6 +624,42 @@ export default function HomePage() {
     } catch (err) {
       setChatError(err instanceof Error ? err.message : "Chat request failed");
       setChatResult("");
+    } finally {
+      setChatLoading(false);
+    }
+  };
+
+  const requestNextHintLevel = async () => {
+    if (!hintState || !hintState.can_request_next) {
+      return;
+    }
+    if (!isOnline) {
+      setChatError("You are offline. Reconnect and try again.");
+      return;
+    }
+    setChatLoading(true);
+    setChatError("");
+    try {
+      const data = await apiClient.post<{
+        progression?: { id?: number; current_level?: number; problem_text?: string };
+        hint?: string;
+        can_request_next?: boolean;
+      }>(`/api/tutor/hints/${hintState.id}/next`);
+      const hint = String(data.hint || "").trim();
+      if (hint) {
+        setChatMessages((prev) => [...prev, { role: "assistant", content: hint, mode: "hint" }]);
+        setChatResult(hint);
+      }
+      const currentLevel = Number(data.progression?.current_level ?? hintState.current_level);
+      setHintState({
+        id: hintState.id,
+        current_level: Number.isFinite(currentLevel) ? currentLevel : hintState.current_level,
+        can_request_next: Boolean(data.can_request_next),
+        problem_text: String(data.progression?.problem_text || hintState.problem_text),
+      });
+      await loadSessions();
+    } catch (err) {
+      setChatError(err instanceof Error ? err.message : "Failed to request next hint");
     } finally {
       setChatLoading(false);
     }
@@ -886,6 +988,7 @@ export default function HomePage() {
                     onClick={() => {
                       setSelectedSessionId(null);
                       setChatMessages([]);
+                      setHintState(null);
                       setChatError("");
                     }}
                     disabled={chatLoading}
@@ -962,10 +1065,31 @@ export default function HomePage() {
                     ))}
                   </div>
                   <Button onClick={sendStreamChat} disabled={!isAuthenticated || chatLoading || !chatPrompt.trim()}>
-                    {chatLoading ? "Streaming..." : "Send Message"}
+                    {chatLoading
+                      ? selectedMode === "hint"
+                        ? "Getting Hint..."
+                        : "Streaming..."
+                      : selectedMode === "hint"
+                        ? "Get Hint (Level 1)"
+                        : "Send Message"}
                   </Button>
+                  {selectedMode === "hint" && hintState && hintState.can_request_next ? (
+                    <Button
+                      variant="secondary"
+                      onClick={requestNextHintLevel}
+                      disabled={!isAuthenticated || chatLoading}
+                      style={{ marginLeft: "8px" }}
+                    >
+                      {chatLoading ? "Loading..." : `Next Hint (Level ${Math.min(3, hintState.current_level + 1)})`}
+                    </Button>
+                  ) : null}
                   {chatError ? <p className="error">Error: {chatError}</p> : null}
                   {chatResult ? <p style={{ marginTop: "6px", fontSize: "12px", opacity: 0.8 }}>Latest response captured.</p> : null}
+                  {selectedMode === "hint" && hintState ? (
+                    <p style={{ marginTop: "6px", fontSize: "12px", opacity: 0.8 }}>
+                      Hint progression active: level {hintState.current_level}/3
+                    </p>
+                  ) : null}
                 </div>
               </div>
             </section>
