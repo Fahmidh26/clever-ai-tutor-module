@@ -28,7 +28,7 @@ Frontend calls `/api/experts` and `/api/expert-chat` (local). Proxy blocked for 
 
 - Foundation setup: **100%**
 - Main-site auth/API integration: **100%**
-- Core tutoring engine (local per ARCHITECTURE): **~65%** — experts + chat + sessions local
+- Core tutoring engine (local per ARCHITECTURE): **~70%** — experts + chat + sessions + streaming
 - RAG + teacher knowledge base: **5%**
 - UX polish + adaptive UI: **20%**
 - Intelligence (mastery/quiz/hints): **0%**
@@ -36,7 +36,7 @@ Frontend calls `/api/experts` and `/api/expert-chat` (local). Proxy blocked for 
 
 **Estimated overall completion (MVP path): ~22%**
 
-> **Current working state**: Experts, chat, and sessions run locally. Set `OPENAI_API_KEY` for local chat. Pass `session_id` to chat for message persistence.
+> **Current working state**: Experts, chat, and sessions run locally. Use `POST /api/expert-chat/stream` for SSE streaming. Pass `session_id` for message persistence.
 
 ---
 
@@ -83,7 +83,7 @@ Frontend calls `/api/experts` and `/api/expert-chat` (local). Proxy blocked for 
 - [x] At least one production LLM provider wired end-to-end **locally** (OpenAI; main site only for credit deduct)
 - [x] Session create/list/get APIs **local** (`/api/tutor/sessions*`)
 - [x] Message persistence **local** (tutor DB)
-- [ ] SSE streaming chat endpoint (`1.3.7`) **local**
+- [x] SSE streaming chat endpoint (`1.3.7`) **local**
 - [ ] 7 interaction modes (or MVP subset first)
 - [ ] Safety/guardrail middleware
 - [ ] Retry/fallback/timeout strategy (`1.3.8`)
@@ -152,6 +152,7 @@ Phase 1.3 provider subtask status (to implement locally in tutor):
 - [x] Phase 1.2 complete
 - [x] Local experts + chat APIs implemented
 - [x] Implement local `/api/tutor/sessions*` (create, list, get, message persistence)
+- [x] SSE streaming chat (`POST /api/expert-chat/stream`)
 
 ---
 
@@ -194,5 +195,6 @@ Phase 1.3 provider subtask status (to implement locally in tutor):
 - 2026-03-11: Completed `1.3.6` provider/model catalog sync by adding main-site `GET /api/catalog` endpoint returning model metadata (provider, cost, tier, context_window, supports_web_search, modules) from `AISettings` with ETag caching; tutor app consumes via existing `RootSiteClient.get_model_catalog()`.
 - 2026-03-12: **Architecture clarification**: Main site only for auth, billing, credit deduction. Experts, chat, sessions run locally in tutor. See `ARCHITECTURE.md`. Phase 1.3 checklist items updated to reflect local implementation; migration from proxy pattern required.
 - 2026-03-12: Completed local sessions API (`POST/GET /api/tutor/sessions`, `GET /api/tutor/sessions/{id}`) and message persistence in chat when `session_id` provided.
+- 2026-03-12: Completed SSE streaming chat endpoint `POST /api/expert-chat/stream` — streams `stream_start`, `token`, `stream_end` (or `error`) events.
 
 > Update this file daily by checking completed tasks and adjusting percentage estimates.

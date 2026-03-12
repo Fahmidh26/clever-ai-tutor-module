@@ -749,3 +749,11 @@ Notes:
   - `GET /api/tutor/sessions` — list user sessions (limit, offset)
   - `GET /api/tutor/sessions/{id}` — get session with messages (owner check)
 - **Message persistence**: Chat endpoint accepts optional `session_id`; when provided, persists user + assistant messages to `tutor_messages` and updates `tutor_sessions.tokens_used`.
+
+## 2026-03-12 - SSE streaming chat endpoint
+
+- **Streaming endpoint**: Added `POST /api/expert-chat/stream` in `backend/app/routers/chat.py`:
+  - Same request body as non-streaming (message, expert_id, session_id, conversation)
+  - Returns `text/event-stream` with SSE events: `stream_start`, `token`, `stream_end` (or `error` on failure)
+  - Deducts credits and persists messages after stream completes
+  - Supports `session_id` for message persistence
