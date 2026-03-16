@@ -8,3 +8,4 @@ structlog
 asyncpg
 celery[redis]
 PyJWT[crypto]
+python-multipart
