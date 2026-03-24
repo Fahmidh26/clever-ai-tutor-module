@@ -4,9 +4,10 @@
 > - Tutor app: `D:\USA\clever-ai-tutor`
 > - Main site (auth/billing/credits only): `C:\AISITENEW`
 
-> **Architecture**: Main site = auth, billing, credit deduction. Experts, chat, sessions = local tutor APIs. See `ARCHITECTURE.md`.
-> Tracking against `AI_TUTOR_MODULE (1).md` roadmap  
-> Baseline estimate uses current `WORKLOG.md` state
+> **Architecture**: Main site = auth, billing, credit deduction. Experts, chat, sessions = local tutor APIs. See `tech-docs/phase-1/ARCHITECTURE.md`.
+> Tracking against `tech-docs/phase-1/AI_TUTOR_MODULE.md` roadmap
+> Baseline estimate uses current `tech-docs/phase-1/WORKLOG.md` state
+> **Master Rules**: See `AGENTS.md` in project root for all conventions and guidelines.
 
 ---
 
@@ -32,9 +33,16 @@ Frontend calls `/api/experts` and `/api/expert-chat` (local). Proxy blocked for 
 - RAG + teacher knowledge base: **100%**
 - UX polish + adaptive UI: **100%**
 - Intelligence (mastery/quiz/hints): **100%** (Phase 2 core complete)
-- Gamification/interactive tools/test prep: **0%**
+- Grand Phase 3 — FP 3.1 Gamification: **0%**
+- Grand Phase 3 — FP 3.2 Parent Dashboard: **0%**
+- Grand Phase 3 — FP 3.3 Interactive Tools: **0%**
+- Grand Phase 3 — FP 3.4 Audio/Mind Maps/Memory: **0%**
+- Grand Phase 3 — FP 3.5 Gaming Engine: **0%**
+- Grand Phase 3 — FP 3.6 Test Prep: **0%**
+- Grand Phase 3 — FP 3.7 Compliance/A11y/i18n: **0%**
 
 **Estimated overall completion (MVP path): ~72%**
+**Estimated Phase 3 duration: ~17 weeks**
 
 > **Current working state**: Experts, chat, sessions run locally. 7 interaction modes via `mode` param. `GET /api/tutor/modes`, `PATCH /api/tutor/sessions/{id}/mode`.
 
@@ -134,15 +142,87 @@ Phase 1.3 provider subtask status (to implement locally in tutor):
 
 ---
 
-## 7) Advanced Phases (3+)
+## 7) Grand Phase 3: Advanced Features
 
-- [ ] Gamification and streak systems
-- [ ] Parent dashboard and co-learning
-- [ ] Whiteboard, code sandbox, math editor
-- [ ] Audio lessons, mind maps, memory score
-- [ ] Educational gaming engine
-- [ ] Test prep framework (IELTS/SAT/ACT/AP)
-- [ ] Compliance, accessibility, i18n
+> **Phase Terminology**: Grand Phase = top-level milestone; Functional Phase (FP) = sub-phase within a Grand Phase.
+> **Full specs**: See `tech-docs/phase-3/PHASE_3_OVERVIEW.md` for summary and links.
+
+### FP 3.1: Gamification & Streak Systems (`tech-docs/phase-3/PHASE_3.1_GAMIFICATION.md`)
+- [ ] `3.1.1` XP system (8 action types, multipliers, history)
+- [ ] `3.1.2` Level system (age-themed, 5 levels per band)
+- [ ] `3.1.3` Daily streaks (freeze tokens, shield, calendar heatmap)
+- [ ] `3.1.4` Badge system (achievement, subject, effort, social badges)
+- [ ] `3.1.5` Leaderboard (opt-in, class-scoped, weekly reset, anonymous mode)
+- [ ] `3.1.6` XP multipliers & bonus events
+- [ ] `3.1.7` Celebrations & animations (age-adaptive, reduced-motion)
+- [ ] `3.1.8` Gamification dashboard widget + full dashboard page
+- [ ] `3.1.9` Challenge modes (daily, weekly class, 1v1 friend)
+- [ ] `3.1.10` Reward marketplace (cosmetics, persona unlocks)
+- [ ] `3.1.T` Teacher gamification settings + challenge management
+
+### FP 3.2: Parent Dashboard & Co-Learning (`tech-docs/phase-3/PHASE_3.2_PARENT_DASHBOARD.md`)
+- [ ] `3.2.1` Child progress overview (mastery radar, time charts, stats)
+- [ ] `3.2.2` Activity feed + AI daily summary
+- [ ] `3.2.3` Report generation (weekly/monthly PDF, email delivery)
+- [ ] `3.2.4` Content controls (subject restrictions, time limits, quiet hours)
+- [ ] `3.2.5` COPPA consent flow (under-13, verifiable consent, data deletion)
+- [ ] `3.2.6` Multi-child support (per-child drill-down, aggregate family view)
+- [ ] `3.2.7` Co-learning mode (observer/participant, WebSocket, dual-audience AI)
+- [ ] `3.2.8` Parent guide sidebar (contextual tips, age-appropriate guidance)
+- [ ] `3.2.9` Teacher communication (in-app messaging, alerts, broadcast)
+- [ ] `3.2.10` Session history, bookmarks, conversation starters
+
+### FP 3.3: Whiteboard, Code Sandbox, Math Editor (`tech-docs/phase-3/PHASE_3.3_INTERACTIVE_TOOLS.md`)
+- [ ] `3.3.1` Digital whiteboard (tldraw, drawing tools, AI interpretation, AI drawing, templates)
+- [ ] `3.3.2` Code sandbox (Monaco editor, Docker execution, AI review, debugging, challenges)
+- [ ] `3.3.3` Math editor (MathLive, MathJSON, step-by-step solving, graphing)
+- [ ] `3.3.4` Annotation tools (highlight, underline, sticky notes)
+- [ ] `3.3.5` Unified tool panel (tabs, resize, keyboard shortcuts, responsive)
+
+### FP 3.4: Audio Lessons, Mind Maps, Memory Score (`tech-docs/phase-3/PHASE_3.4_AUDIO_MINDMAPS_MEMORY.md`)
+- [ ] `3.4.1` Audio lesson generator (AI scripts, TTS, 4 formats, player, teacher management)
+- [ ] `3.4.2` Mind map generation (react-flow, mastery colors, click-to-learn, export)
+- [ ] `3.4.3` Memory score (forgetting curve, predictions, proactive reminders, SM-2 enhancement)
+- [ ] `3.4.4` Roleplay scenarios (character personas, rubric evaluation, subject-specific)
+
+### FP 3.5: Educational Gaming Engine (`tech-docs/phase-3/PHASE_3.5_GAMING_ENGINE.md`)
+- [ ] `3.5.1` Game framework (template registry, session management, adaptive difficulty)
+- [ ] `3.5.2` K-2 games (Story Adventure, Matching, Virtual Pet, Treasure Hunt)
+- [ ] `3.5.3` 3-5 games (RPG Quest, Building, Mystery Detective, Fraction Pizza)
+- [ ] `3.5.4` 6-8 games (Escape Room, Civilization Builder, Coding Maze, Speed Challenge)
+- [ ] `3.5.5` 9-12 games (Business Sim, Debate Tournament, Case Study, Stock Market)
+- [ ] `3.5.6` Multiplayer (class challenge, paired learning, friend challenge, AI opponent)
+- [ ] `3.5.7` Teacher game management + analytics dashboard
+- [ ] `3.5.8` AI game recommendations + pathway selector
+
+### FP 3.6: Test Prep Framework (`tech-docs/phase-3/PHASE_3.6_TEST_PREP.md`)
+- [ ] `3.6.1` Test prep infrastructure (profiles, enrollment, scoring engine)
+- [ ] `3.6.2` Mock test generator (full-length, timed, auto-submit)
+- [ ] `3.6.3` Score prediction model (trend, confidence interval)
+- [ ] `3.6.4` Gap analysis (per-section weakness, heatmap)
+- [ ] `3.6.5` Personalized study plan (AI week-by-week roadmap)
+- [ ] `3.6.6` IELTS Speaking (AI examiner, Whisper STT, band scoring)
+- [ ] `3.6.7` IELTS Writing (Task 1/2, band scoring, paragraph feedback)
+- [ ] `3.6.8` IELTS Reading (passages, 6 question types, timed mode)
+- [ ] `3.6.9` IELTS Listening (TTS with accents, 4 sections)
+- [ ] `3.6.10` SAT module (adaptive, scaled scoring, college benchmarks)
+- [ ] `3.6.11` ACT module (4 sections, composite score)
+- [ ] `3.6.12` AP module (10 initial subjects, free response, rubric scoring)
+
+### FP 3.7: Compliance, Accessibility, i18n (`tech-docs/phase-3/PHASE_3.7_COMPLIANCE_A11Y_I18N.md`)
+- [ ] `3.7.1` COPPA compliance (parental consent, data minimization, deletion)
+- [ ] `3.7.2` FERPA compliance (access control, audit logging, data portability)
+- [ ] `3.7.3` GDPR compliance (consent management, right to erasure, export)
+- [ ] `3.7.4` Audit system (middleware, audit_log table, admin dashboard)
+- [ ] `3.7.5` Data retention policies (configurable, automated cleanup)
+- [ ] `3.7.6` Keyboard navigation (tab order, arrow keys, shortcuts, focus)
+- [ ] `3.7.7` Screen reader compatibility (semantic HTML, ARIA, live regions)
+- [ ] `3.7.8` Visual accessibility (contrast, dyslexia font, high contrast, font size, reduced motion)
+- [ ] `3.7.9` Automated accessibility testing (axe-core in CI, Lighthouse)
+- [ ] `3.7.10` i18n (next-intl, 6 languages, RTL, AI localization)
+- [ ] `3.7.11` ESL/ELL bilingual mode
+- [ ] `3.7.12` Wellness guardian (session limits, breaks, quiet hours, cooldown)
+- [ ] `3.7.13` Micro-tutoring (quick quiz, daily review, bus-stop audio)
 
 ---
 

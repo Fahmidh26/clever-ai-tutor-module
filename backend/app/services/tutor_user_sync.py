@@ -5,6 +5,8 @@ from typing import Any
 
 from fastapi import FastAPI
 
+from app.config import settings
+
 
 @dataclass
 class TutorUserSyncError(Exception):
@@ -53,7 +55,7 @@ def _to_int(value: Any) -> int | None:
 
 
 def _extract_root_user_id(provider_user: dict[str, Any]) -> int | None:
-    for key in ("root_user_id", "id", "user_id", "uid"):
+    for key in ("root_user_id", "id", "user_id", "uid", "sub", "userId", "user-id"):
         candidate = _to_int(provider_user.get(key))
         if candidate is not None and candidate > 0:
             return candidate
@@ -118,11 +120,23 @@ async def sync_tutor_user_on_login(app: FastAPI, provider_user: dict[str, Any]) 
         )
 
     root_user_id = _extract_root_user_id(provider_user)
+    print(f"DEBUG: provider_user keys: {list(provider_user.keys())}")
+    print(f"DEBUG: root_user_id extracted: {root_user_id}")
+
+    # NOTE: In local dev mode we may not have a proper root user id coming from the main site.
+    # To keep the tutor app functioning for dev/testing, default to a stable fallback id.
+    if root_user_id is None and settings.app_env == "development":
+        root_user_id = 1
+        print("DEBUG: defaulting root_user_id to 1 (development fallback)")
+
     if root_user_id is None:
+        details = "Expected one of: root_user_id, id, user_id, uid"
+        if settings.app_env == "development":
+            details = f"{details}; got keys: {list(provider_user.keys())}; sample: {dict(list(provider_user.items())[:10])}"
         raise TutorUserSyncError(
             message="Tutor user sync failed because root user id is missing",
             status_code=502,
-            details="Expected one of: root_user_id, id, user_id, uid",
+            details=details,
         )
 
     display_name = _extract_display_name(provider_user)
