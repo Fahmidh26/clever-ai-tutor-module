@@ -7,6 +7,14 @@ from fastapi import FastAPI
 
 from app.config import settings
 
+VALID_TUTOR_ROLES = {"student", "teacher", "parent", "admin"}
+ROLE_PRIORITY = {
+    "student": 1,
+    "parent": 2,
+    "teacher": 3,
+    "admin": 4,
+}
+
 
 @dataclass
 class TutorUserSyncError(Exception):
@@ -54,60 +62,119 @@ def _to_int(value: Any) -> int | None:
     return None
 
 
+def _candidate_objects(provider_user: dict[str, Any]) -> list[dict[str, Any]]:
+    candidates: list[dict[str, Any]] = [provider_user]
+    for key in ("user", "data", "profile", "result"):
+        nested = provider_user.get(key)
+        if isinstance(nested, dict):
+            candidates.append(nested)
+            nested_user = nested.get("user")
+            if isinstance(nested_user, dict):
+                candidates.append(nested_user)
+    return candidates
+
+
 def _extract_root_user_id(provider_user: dict[str, Any]) -> int | None:
-    for key in ("root_user_id", "id", "user_id", "uid", "sub", "userId", "user-id"):
-        candidate = _to_int(provider_user.get(key))
-        if candidate is not None and candidate > 0:
-            return candidate
+    for obj in _candidate_objects(provider_user):
+        for key in ("root_user_id", "id", "user_id", "uid", "sub", "userId", "user-id"):
+            candidate = _to_int(obj.get(key))
+            if candidate is not None and candidate > 0:
+                return candidate
     return None
 
 
 def _extract_display_name(provider_user: dict[str, Any]) -> str | None:
-    for key in ("display_name", "name", "full_name", "username"):
-        value = provider_user.get(key)
-        if isinstance(value, str) and value.strip():
-            return value.strip()
+    for obj in _candidate_objects(provider_user):
+        for key in ("display_name", "name", "full_name", "username"):
+            value = obj.get(key)
+            if isinstance(value, str) and value.strip():
+                return value.strip()
 
-    email = provider_user.get("email")
-    if isinstance(email, str) and email.strip():
-        return email.split("@", maxsplit=1)[0].strip() or None
+    for obj in _candidate_objects(provider_user):
+        email = obj.get("email")
+        if isinstance(email, str) and email.strip():
+            return email.split("@", maxsplit=1)[0].strip() or None
     return None
 
 
-def _extract_role(provider_user: dict[str, Any]) -> str:
-    raw_role = provider_user.get("role")
-    if not isinstance(raw_role, str):
-        return "student"
-    normalized = raw_role.strip().lower()
-    if normalized in {"student", "teacher", "parent", "admin"}:
+def _extract_role(provider_user: dict[str, Any]) -> str | None:
+    role_aliases = {
+        "admin": "admin",
+        "administrator": "admin",
+        "superadmin": "admin",
+        "super_admin": "admin",
+        "teacher": "teacher",
+        "instructor": "teacher",
+        "educator": "teacher",
+        "parent": "parent",
+        "guardian": "parent",
+        "student": "student",
+        "learner": "student",
+        "member": "student",
+        "user": "student",
+    }
+    for obj in _candidate_objects(provider_user):
+        if obj.get("is_admin") is True or obj.get("is_superuser") is True:
+            return "admin"
+        for key in ("role", "user_role", "account_role", "type"):
+            raw_role = obj.get(key)
+            if not isinstance(raw_role, str):
+                continue
+            normalized = raw_role.strip().lower()
+            mapped = role_aliases.get(normalized, normalized)
+            if mapped in VALID_TUTOR_ROLES:
+                return mapped
+    return None
+
+
+def _normalize_existing_role(value: Any) -> str | None:
+    if not isinstance(value, str):
+        return None
+    normalized = value.strip().lower()
+    if normalized in VALID_TUTOR_ROLES:
         return normalized
-    return "student"
+    return None
+
+
+def _resolve_role_to_persist(provider_role: str | None, existing_role: str | None) -> str:
+    if provider_role is None and existing_role is None:
+        return "student"
+    if provider_role is None:
+        return existing_role or "student"
+    if existing_role is None:
+        return provider_role
+    if ROLE_PRIORITY[provider_role] >= ROLE_PRIORITY[existing_role]:
+        return provider_role
+    return existing_role
 
 
 def _extract_grade_level(provider_user: dict[str, Any]) -> int | None:
-    for key in ("grade_level", "grade", "class_level"):
-        grade_level = _to_int(provider_user.get(key))
-        if grade_level is not None and 0 <= grade_level <= 12:
-            return grade_level
+    for obj in _candidate_objects(provider_user):
+        for key in ("grade_level", "grade", "class_level"):
+            grade_level = _to_int(obj.get(key))
+            if grade_level is not None and 0 <= grade_level <= 12:
+                return grade_level
     return None
 
 
 def _extract_preferred_language(provider_user: dict[str, Any]) -> str:
-    for key in ("preferred_language", "language", "locale"):
-        value = provider_user.get(key)
-        if isinstance(value, str):
-            normalized = value.strip().lower()
-            if normalized:
-                return normalized[:10]
+    for obj in _candidate_objects(provider_user):
+        for key in ("preferred_language", "language", "locale"):
+            value = obj.get(key)
+            if isinstance(value, str):
+                normalized = value.strip().lower()
+                if normalized:
+                    return normalized[:10]
     return "en"
 
 
 def _extract_interests(provider_user: dict[str, Any]) -> Any:
-    interests = provider_user.get("interests")
-    if isinstance(interests, (dict, list)):
-        return interests
-    if isinstance(interests, str) and interests.strip():
-        return [interests.strip()]
+    for obj in _candidate_objects(provider_user):
+        interests = obj.get("interests")
+        if isinstance(interests, (dict, list)):
+            return interests
+        if isinstance(interests, str) and interests.strip():
+            return [interests.strip()]
     return None
 
 
@@ -140,17 +207,20 @@ async def sync_tutor_user_on_login(app: FastAPI, provider_user: dict[str, Any]) 
         )
 
     display_name = _extract_display_name(provider_user)
-    role = _extract_role(provider_user)
+    provider_role = _extract_role(provider_user)
     grade_level = _extract_grade_level(provider_user)
     preferred_language = _extract_preferred_language(provider_user)
     interests_json = _extract_interests(provider_user)
 
     async with db_pool.acquire() as connection:
         async with connection.transaction():
-            existing_id = await connection.fetchval(
-                "SELECT id FROM tutor_users WHERE root_user_id = $1",
+            existing_user = await connection.fetchrow(
+                "SELECT id, role FROM tutor_users WHERE root_user_id = $1",
                 root_user_id,
             )
+            existing_id = int(existing_user["id"]) if existing_user else None
+            existing_role = _normalize_existing_role(existing_user["role"]) if existing_user else None
+            role = _resolve_role_to_persist(provider_role, existing_role)
 
             record = await connection.fetchrow(
                 """

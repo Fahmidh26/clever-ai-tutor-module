@@ -55,7 +55,10 @@ async def oauth_callback(request: Request, code: str | None = None, state: str |
         access_token = token_data.get("access_token")
         if not access_token:
             return JSONResponse(status_code=500, content={"error": "No access_token in token response"})
-        provider_user = await root_site_client.fetch_user_profile(access_token)
+        provider_user_raw = await root_site_client.fetch_user_profile(access_token)
+        provider_user = provider_user_raw
+        if isinstance(provider_user_raw.get("data"), dict):
+            provider_user = provider_user_raw["data"]
 
         # If the profile doesn't include a numeric ID field, try to extract one from the access token.
         if not any(k in provider_user for k in ("root_user_id", "id", "user_id", "uid")):
