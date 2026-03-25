@@ -265,7 +265,7 @@ export default function HomePage() {
   const [subjectInput, setSubjectInput] = useState("");
   const [topicInput, setTopicInput] = useState("");
 
-  const { user, role, isAuthenticated, loading, error, startLogin, logout } = useAuthContext();
+  const { user, role, isAuthenticated, loading, error, startLogin, logout, authMode } = useAuthContext();
 
   const chatPrompt = useChatStore((state) => state.prompt);
   const chatResult = useChatStore((state) => state.result);
@@ -1332,7 +1332,7 @@ export default function HomePage() {
             <Button variant="secondary" onClick={toggleTheme}>
               {theme === "dark" ? "Light mode" : "Dark mode"}
             </Button>
-            {isAuthenticated ? <Button onClick={handleLogout}>Logout</Button> : <Button onClick={startLogin}>Login with Main Site</Button>}
+            {isAuthenticated ? <Button onClick={handleLogout}>Logout</Button> : <Button onClick={startLogin}>{authMode === "local_dev" ? "Login with Local Dev Account" : "Login with Main Site"}</Button>}
           </div>
         </header>
 

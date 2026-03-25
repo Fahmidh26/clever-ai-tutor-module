@@ -9,7 +9,7 @@ type ProtectedRouteProps = {
 };
 
 export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
-  const { isAuthenticated, role, loading, error, startLogin } = useAuthContext();
+  const { isAuthenticated, role, loading, error, startLogin, authMode } = useAuthContext();
 
   if (loading) {
     return <p>Loading session...</p>;
@@ -19,9 +19,9 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
     return (
       <section className="card">
         <h2>Authentication Required</h2>
-        <p>Login with the main site to access this page.</p>
+        <p>{authMode === "local_dev" ? "Login with a local dev account to access this page." : "Login with the main site to access this page."}</p>
         {error ? <p className="error">Error: {error}</p> : null}
-        <Button onClick={startLogin}>Login with Main Site</Button>
+        <Button onClick={startLogin}>{authMode === "local_dev" ? "Login with Local Dev Account" : "Login with Main Site"}</Button>
       </section>
     );
   }

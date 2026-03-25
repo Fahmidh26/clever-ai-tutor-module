@@ -19,12 +19,14 @@ type AuthContextValue = {
   loading: boolean;
   error: string;
   apiBaseUrl: string;
+  authMode: string;
   startLogin: () => void;
   logout: () => Promise<void>;
   refreshSession: () => Promise<void>;
 };
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8003";
+const authMode = process.env.NEXT_PUBLIC_AUTH_MODE || "external_oauth";
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -85,6 +87,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [refreshSession]);
 
   const startLogin = useCallback(() => {
+    if (authMode === "local_dev") {
+      window.location.href = "/auth/local-login";
+      return;
+    }
     window.location.href = `${apiBaseUrl}/oauth/login`;
   }, []);
 
@@ -105,6 +111,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       loading,
       error,
       apiBaseUrl,
+      authMode,
       startLogin,
       logout,
       refreshSession,

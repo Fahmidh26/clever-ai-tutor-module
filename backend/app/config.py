@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -9,13 +11,14 @@ class Settings(BaseSettings):
 
     app_name: str = "Clever AI Tutor Backend"
     app_env: str = "development"
+    auth_mode: str = "external_oauth"
 
     session_secret_key: str
 
-    aisite_oauth_base_url: str
-    aisite_oauth_internal_url: str
-    aisite_oauth_client_id: str
-    aisite_oauth_client_secret: str
+    aisite_oauth_base_url: str = "http://localhost:3000"
+    aisite_oauth_internal_url: str = "http://localhost:3000"
+    aisite_oauth_client_id: str = ""
+    aisite_oauth_client_secret: str = ""
     aisite_oauth_redirect_uri: str = "http://localhost:8003/oauth/callback"
 
     frontend_url: str = "http://localhost:5174"
@@ -51,6 +54,14 @@ class Settings(BaseSettings):
     kb_max_chunks_per_document: int = 300
     embedding_model: str = "text-embedding-3-small"
     embedding_timeout_seconds: float = 60.0
+    local_dev_login_path: str = "/auth/local-login"
+    local_dev_password: str = "devpass123"
+    local_dev_accounts_json: str = (
+        '[{"root_user_id":101,"email":"student@local.dev","display_name":"Student Demo","role":"student","grade_level":8},'
+        '{"root_user_id":102,"email":"teacher@local.dev","display_name":"Teacher Demo","role":"teacher"},'
+        '{"root_user_id":103,"email":"parent@local.dev","display_name":"Parent Demo","role":"parent"},'
+        '{"root_user_id":104,"email":"admin@local.dev","display_name":"Admin Demo","role":"admin"}]'
+    )
 
     @field_validator(
         "aisite_oauth_base_url",
@@ -73,6 +84,12 @@ class Settings(BaseSettings):
         return f"/{self.frontend_post_login_path}"
 
     @property
+    def normalized_local_dev_login_path(self) -> str:
+        if self.local_dev_login_path.startswith("/"):
+            return self.local_dev_login_path
+        return f"/{self.local_dev_login_path}"
+
+    @property
     def resolved_root_site_jwks_url(self) -> str:
         if self.root_site_jwks_url:
             return self.root_site_jwks_url
@@ -87,6 +104,21 @@ class Settings(BaseSettings):
     @property
     def llm_fallback_models_list(self) -> list[str]:
         return [m.strip() for m in self.llm_fallback_models.split(",") if m.strip()]
+
+    @property
+    def local_dev_accounts(self) -> list[dict[str, object]]:
+        try:
+            payload = json.loads(self.local_dev_accounts_json)
+        except json.JSONDecodeError:
+            return []
+        if not isinstance(payload, list):
+            return []
+        accounts: list[dict[str, object]] = []
+        for item in payload:
+            if not isinstance(item, dict):
+                continue
+            accounts.append(item)
+        return accounts
 
 
 settings = Settings()
