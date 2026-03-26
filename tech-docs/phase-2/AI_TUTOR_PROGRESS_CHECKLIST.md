@@ -8,6 +8,7 @@
 > Tracking against `tech-docs/phase-1/AI_TUTOR_MODULE.md` roadmap
 > Baseline estimate uses current `tech-docs/phase-1/WORKLOG.md` state
 > **Master Rules**: See `AGENTS.md` in project root for all conventions and guidelines.
+> **Teacher planning follow-up**: See `tech-docs/phase-2/PHASE_2_TEACHER_SECTION_PLAN.md` and `tech-docs/phase-2/PHASE_2_TEACHER_TRACKER.md`.
 
 ---
 
@@ -45,6 +46,21 @@ Frontend calls `/api/experts` and `/api/expert-chat` (local). Proxy blocked for 
 **Estimated Phase 3 duration: ~17 weeks**
 
 > **Current working state**: Experts, chat, sessions run locally. 7 interaction modes via `mode` param. `GET /api/tutor/modes`, `PATCH /api/tutor/sessions/{id}/mode`.
+
+---
+
+## Teacher Section Follow-Up
+
+- [x] Teacher ecosystem architecture mapped inside the same RBAC-driven app shell
+- [x] Teacher workflow diagrams and student handoff points documented
+- [x] Teacher implementation tracker created
+- [x] Agent testing workflow updated for teacher/RBAC validation
+- [x] Browser smoke coverage added for teacher dashboard and role routing
+- [ ] Teacher roster handshake and invite-code model implementation
+- [ ] Teacher class cockpit refinement
+- [ ] Class-level persona policy
+- [ ] Session replay and at-risk monitoring
+- [ ] Parent handoff summary objects
 
 ---
 

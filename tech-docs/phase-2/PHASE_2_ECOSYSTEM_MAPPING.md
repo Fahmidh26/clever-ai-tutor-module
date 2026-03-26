@@ -5,6 +5,11 @@
 
 ---
 
+## Planning References
+
+- Teacher section architecture and workflows: [PHASE_2_TEACHER_SECTION_PLAN.md](./PHASE_2_TEACHER_SECTION_PLAN.md)
+- Teacher implementation tracker: [PHASE_2_TEACHER_TRACKER.md](./PHASE_2_TEACHER_TRACKER.md)
+
 ## 1. Core Principle
 
 Keep these responsibilities separate:
@@ -392,6 +397,11 @@ These rules should remain true:
 - class-aware KB retrieval during chat
 - citation display in tutor workspace
 - expanded teacher dashboard activity metrics
+
+Teacher planning follow-up:
+
+- use [PHASE_2_TEACHER_SECTION_PLAN.md](./PHASE_2_TEACHER_SECTION_PLAN.md) for the granular teacher workflows, role-scope model, and student-profile handoff points
+- use [PHASE_2_TEACHER_TRACKER.md](./PHASE_2_TEACHER_TRACKER.md) for execution order, status, and validation requirements
 
 ---
 

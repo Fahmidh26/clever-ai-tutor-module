@@ -87,6 +87,11 @@ Use [PHASE_2_ECOSYSTEM_MAPPING.md](./PHASE_2_ECOSYSTEM_MAPPING.md) as the canoni
 - session and KB-backed activity linkage
 - dashboard aggregation boundaries
 
+For teacher-specific implementation planning inside the same RBAC-driven app shell, use:
+
+- [PHASE_2_TEACHER_SECTION_PLAN.md](./PHASE_2_TEACHER_SECTION_PLAN.md)
+- [PHASE_2_TEACHER_TRACKER.md](./PHASE_2_TEACHER_TRACKER.md)
+
 ---
 
 ## 4. Chart Pack
@@ -126,6 +131,7 @@ flowchart TD
 Implementation note:
 
 - This workflow now assumes class-linked KB usage, student-visible class context, and teacher dashboard activity metrics as defined in `PHASE_2_ECOSYSTEM_MAPPING.md`.
+- Detailed teacher-facing workflow breakdown, join model, and student-profile handoff points live in `PHASE_2_TEACHER_SECTION_PLAN.md`.
 
 ### 4.1A Ecosystem Diagram
 

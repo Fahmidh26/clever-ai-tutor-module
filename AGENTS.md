@@ -1,7 +1,7 @@
 # AGENTS.md — Clever AI Tutor Master Rules & Guidelines
 
 > **Purpose**: Single source of truth for all AI agents (Claude Code, Cursor, Copilot) and developers working on this codebase.
-> **Last Updated**: 2026-03-18
+> **Last Updated**: 2026-03-26
 
 ---
 
@@ -91,8 +91,12 @@ tech-docs/
 │   ├── ARCHITECTURE.md                Core architecture (READ FIRST)
 │   └── WORKLOG.md                     Development history
 │
-├── phase-2/                           (Intelligence Layer — completed)
+├── phase-2/                           (Intelligence Layer + role ecosystem follow-up)
 │   ├── AI_TUTOR_PROGRESS_CHECKLIST.md Master progress tracker
+│   ├── LOCAL_FIRST_PHASE_2_PLAN.md    Local-first execution plan
+│   ├── PHASE_2_ECOSYSTEM_MAPPING.md   Canonical role/class/persona/KB map
+│   ├── PHASE_2_TEACHER_SECTION_PLAN.md Teacher section architecture + workflows
+│   ├── PHASE_2_TEACHER_TRACKER.md     Teacher implementation tracker
 │   ├── SESSION_HANDOFF.md             Session resume template
 │   └── USER_FLOWS_DIAGRAMS.md         UX flow reference
 │
@@ -220,6 +224,80 @@ tech-docs/
 - **Unit**: Vitest (when added)
 - **Config**: `frontend/playwright.config.ts`
 - **Scripts**: `npm run e2e`, `npm run e2e:list`
+
+### 8.1 Testing Workflow For Agents
+
+Every non-trivial feature change must be validated in this order:
+
+1. **Static validation**
+   - Frontend: `cmd /c npm run lint` from `frontend`
+   - Backend: `python -m compileall backend/app`
+   - Confirm changed docs still point to the correct files and phase references
+2. **API validation**
+   - Verify changed endpoints or payload contracts directly
+   - Validate RBAC for affected roles
+   - Confirm teacher scope is limited to explicitly linked or enrolled students
+3. **Browser validation**
+   - Run mocked Playwright coverage for the changed UI flow
+   - If the change depends on real DB or Docker state, run an end-to-end browser pass against the local stack too
+
+### 8.2 Role-Boundary Checks
+
+When a change affects auth, classes, KBs, dashboards, sessions, or reporting, agents must validate:
+
+- student lands in student workspace, not teacher or admin scope
+- teacher lands in teacher workspace inside the same app shell
+- parent remains role-gated or scaffolded appropriately
+- admin can access global tooling, while teacher stays scoped
+- teacher cannot browse unrelated students from the database
+- student sees only their own class context, sessions, and progress
+
+### 8.3 Teacher Feature Test Order
+
+For teacher-facing changes, test the workflow in this sequence:
+
+1. teacher setup
+   - login / `/api/me`
+   - class creation or selection
+   - KB creation / assignment if relevant
+2. student downstream use
+   - class context
+   - assigned materials
+   - session / chat / tool activity
+3. teacher monitoring result
+   - dashboard metrics
+   - replay / report / roster updates
+
+### 8.4 Browser-Based Validation Workflow
+
+Preferred Playwright coverage split:
+
+- mocked-browser smoke tests for RBAC and UI branching
+- real-backend browser tests for flows that depend on database state
+
+Minimum browser checks to keep current:
+
+- `frontend/e2e/auth-gate.spec.ts`
+- `frontend/e2e/tutor-workspace.spec.ts`
+- `frontend/e2e/role-routing-rbac.spec.ts`
+- `frontend/e2e/teacher-dashboard.spec.ts`
+
+### 8.5 Command Reference
+
+- Frontend type-check: `cmd /c npm run lint`
+- Playwright spec listing: `cmd /c npm run e2e:list`
+- Playwright run: `cmd /c npm run e2e`
+- Backend import/syntax sanity: `python -m compileall backend/app`
+
+### 8.6 Teacher Docs To Keep In Sync
+
+If the teacher workflow changes, update:
+
+- `tech-docs/phase-2/PHASE_2_TEACHER_SECTION_PLAN.md`
+- `tech-docs/phase-2/PHASE_2_TEACHER_TRACKER.md`
+- `tech-docs/phase-2/PHASE_2_ECOSYSTEM_MAPPING.md`
+- `tech-docs/phase-2/LOCAL_FIRST_PHASE_2_PLAN.md`
+- `tech-docs/phase-2/AI_TUTOR_PROGRESS_CHECKLIST.md`
 
 ---
 
