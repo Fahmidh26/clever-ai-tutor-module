@@ -61,9 +61,15 @@ async def create_session(request: Request):
 
     subject = body.get("subject")
     topic = body.get("topic")
+    class_id = body.get("class_id")
     mode = (body.get("mode") or "teach_me").strip().lower()
     if mode not in MODE_IDS:
         mode = "teach_me"
+    if class_id is not None:
+        try:
+            class_id = int(class_id)
+        except (TypeError, ValueError):
+            return JSONResponse(status_code=400, content={"error": "class_id must be an integer"})
 
     db_pool = getattr(request.app.state, "db_pool", None)
     if db_pool is None:
@@ -79,14 +85,29 @@ async def create_session(request: Request):
             if not persona_row:
                 return JSONResponse(status_code=404, content={"error": "Persona not found"})
 
+            if class_id is not None:
+                class_row = await conn.fetchrow(
+                    """
+                    SELECT c.id
+                    FROM classes c
+                    JOIN class_enrollments e ON e.class_id = c.id
+                    WHERE c.id = $1 AND e.student_id = $2 AND e.status = 'active'
+                    """,
+                    class_id,
+                    tutor_user_id,
+                )
+                if not class_row:
+                    return JSONResponse(status_code=404, content={"error": "Class not found or not accessible"})
+
             row = await conn.fetchrow(
                 """
-                INSERT INTO tutor_sessions (user_id, persona_id, subject, topic, mode, status)
-                VALUES ($1, $2, $3, $4, $5, 'active')
-                RETURNING id, user_id, persona_id, subject, topic, mode, status, started_at, created_at
+                INSERT INTO tutor_sessions (user_id, persona_id, class_id, subject, topic, mode, status)
+                VALUES ($1, $2, $3, $4, $5, $6, 'active')
+                RETURNING id, user_id, persona_id, class_id, subject, topic, mode, status, started_at, created_at
                 """,
                 tutor_user_id,
                 persona_id,
+                class_id,
                 subject,
                 topic,
                 mode,
@@ -99,6 +120,7 @@ async def create_session(request: Request):
             "id": row["id"],
             "user_id": row["user_id"],
             "persona_id": row["persona_id"],
+            "class_id": row["class_id"],
             "subject": row["subject"],
             "topic": row["topic"],
             "mode": row["mode"],
@@ -138,11 +160,13 @@ async def list_sessions(request: Request, limit: int = 50, offset: int = 0):
         async with db_pool.acquire() as conn:
             rows = await conn.fetch(
                 """
-                SELECT s.id, s.user_id, s.persona_id, s.subject, s.topic, s.mode, s.status,
+                SELECT s.id, s.user_id, s.persona_id, s.class_id, s.subject, s.topic, s.mode, s.status,
                        s.tokens_used, s.started_at, s.ended_at, s.created_at,
-                       p.name AS persona_name, p.slug AS persona_slug
+                       p.name AS persona_name, p.slug AS persona_slug,
+                       c.name AS class_name
                 FROM tutor_sessions s
                 JOIN tutor_personas p ON p.id = s.persona_id
+                LEFT JOIN classes c ON c.id = s.class_id
                 WHERE s.user_id = $1
                 ORDER BY s.started_at DESC NULLS LAST, s.id DESC
                 LIMIT $2 OFFSET $3
@@ -166,6 +190,8 @@ async def list_sessions(request: Request, limit: int = 50, offset: int = 0):
             "persona_id": row["persona_id"],
             "persona_name": row["persona_name"],
             "persona_slug": row["persona_slug"],
+            "class_id": row["class_id"],
+            "class_name": row["class_name"],
             "subject": row["subject"],
             "topic": row["topic"],
             "mode": row["mode"],
@@ -206,11 +232,13 @@ async def get_session(request: Request, session_id: int):
         async with db_pool.acquire() as conn:
             session_row = await conn.fetchrow(
                 """
-                SELECT s.id, s.user_id, s.persona_id, s.subject, s.topic, s.mode, s.status,
+                SELECT s.id, s.user_id, s.persona_id, s.class_id, s.subject, s.topic, s.mode, s.status,
                        s.tokens_used, s.model_used, s.started_at, s.ended_at, s.created_at,
-                       p.name AS persona_name, p.slug AS persona_slug, p.system_prompt
+                       p.name AS persona_name, p.slug AS persona_slug, p.system_prompt,
+                       c.name AS class_name
                 FROM tutor_sessions s
                 JOIN tutor_personas p ON p.id = s.persona_id
+                LEFT JOIN classes c ON c.id = s.class_id
                 WHERE s.id = $1 AND s.user_id = $2
                 """,
                 session_id,
@@ -249,6 +277,8 @@ async def get_session(request: Request, session_id: int):
             "persona_id": session_row["persona_id"],
             "persona_name": session_row["persona_name"],
             "persona_slug": session_row["persona_slug"],
+            "class_id": session_row["class_id"],
+            "class_name": session_row["class_name"],
             "subject": session_row["subject"],
             "topic": session_row["topic"],
             "mode": session_row["mode"],

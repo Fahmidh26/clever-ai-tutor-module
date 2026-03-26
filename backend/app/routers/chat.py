@@ -20,7 +20,7 @@ from app.services.chat_execution import (
 )
 from app.services.mode_prompts import MODE_IDS, build_system_prompt, normalize_mode
 from app.services.rate_limiter import enforce_user_rate_limit
-from app.services.rag_retrieval import retrieve_kb_context
+from app.services.rag_retrieval import retrieve_kb_context, retrieve_multi_kb_context
 from app.services.safety_guardrails import sanitize_assistant_output
 
 router = APIRouter(prefix="/api", tags=["chat"])
@@ -30,6 +30,67 @@ def _get_tutor_user_id(request: Request) -> int | None:
     user = request.session.get("user")
     if not user:
         return None
+
+
+async def _resolve_rag_context(
+    *,
+    conn,
+    tutor_user_id: int,
+    message: str,
+    requested_kb_id: int | None,
+    session_class_id: int | None,
+) -> tuple[int | None, list[dict[str, object]], str | None]:
+    if requested_kb_id is not None:
+        kb_row = await conn.fetchrow(
+            """
+            SELECT kb.id
+            FROM knowledge_bases kb
+            LEFT JOIN kb_class_assignments a ON a.kb_id = kb.id
+            LEFT JOIN class_enrollments e
+                   ON e.class_id = a.class_id
+                  AND e.student_id = $2
+                  AND e.status = 'active'
+            WHERE kb.id = $1
+              AND kb.status = 'active'
+              AND (
+                    kb.owner_id = $2
+                    OR kb.visibility = 'public'
+                    OR e.student_id IS NOT NULL
+                  )
+            LIMIT 1
+            """,
+            requested_kb_id,
+            tutor_user_id,
+        )
+        if not kb_row:
+            return None, [], "Knowledge base not found or not accessible"
+        return requested_kb_id, await retrieve_kb_context(conn=conn, kb_id=requested_kb_id, query=message, top_k=4), None
+
+    if session_class_id is None:
+        return None, [], None
+
+    class_kb_rows = await conn.fetch(
+        """
+        SELECT kb.id
+        FROM kb_class_assignments a
+        JOIN knowledge_bases kb ON kb.id = a.kb_id
+        JOIN class_enrollments e ON e.class_id = a.class_id
+        WHERE a.class_id = $1
+          AND e.student_id = $2
+          AND e.status = 'active'
+          AND kb.status = 'active'
+        ORDER BY kb.id ASC
+        """,
+        session_class_id,
+        tutor_user_id,
+    )
+    class_kb_ids = [int(row["id"]) for row in class_kb_rows]
+    if not class_kb_ids:
+        return None, [], None
+
+    citations = await retrieve_multi_kb_context(conn=conn, kb_ids=class_kb_ids, query=message, top_k=4)
+    kb_id = int(citations[0]["kb_id"]) if citations else class_kb_ids[0]
+    return kb_id, citations, None
     tutor_user = user.get("tutor_user")
     if not isinstance(tutor_user, dict):
         return None
@@ -84,6 +145,7 @@ async def expert_chat(request: Request):
     rag_citations: list[dict[str, object]] = []
 
     # If session_id provided, verify ownership and get session mode/grade
+    session_class_id = None
     if session_id is not None:
         try:
             session_id = int(session_id)
@@ -91,7 +153,7 @@ async def expert_chat(request: Request):
             return JSONResponse(status_code=400, content={"error": "session_id must be an integer"})
         async with db_pool.acquire() as conn:
             row = await conn.fetchrow(
-                "SELECT id, mode, grade_level FROM tutor_sessions WHERE id = $1 AND user_id = $2",
+                "SELECT id, mode, grade_level, class_id FROM tutor_sessions WHERE id = $1 AND user_id = $2",
                 session_id,
                 tutor_user_id,
             )
@@ -100,6 +162,7 @@ async def expert_chat(request: Request):
             if not body.get("mode"):
                 session_mode = normalize_mode(row["mode"])
             grade_level = row["grade_level"]
+            session_class_id = row["class_id"]
 
     if hint_level is not None:
         try:
@@ -127,8 +190,8 @@ async def expert_chat(request: Request):
 
     system_prompt = build_system_prompt(base_prompt, mode=session_mode, hint_level=hint_level, grade_level=grade_level)
 
+    tutor_user_for_kb = _get_tutor_user_id(request)
     if kb_id is not None:
-        tutor_user_for_kb = _get_tutor_user_id(request)
         if tutor_user_for_kb is None:
             return JSONResponse(status_code=401, content={"error": "Tutor user not synced for KB retrieval"})
         try:
@@ -136,19 +199,18 @@ async def expert_chat(request: Request):
         except (TypeError, ValueError):
             return JSONResponse(status_code=400, content={"error": "kb_id must be an integer"})
 
+    if tutor_user_for_kb is not None:
         async with db_pool.acquire() as conn:
-            kb_row = await conn.fetchrow(
-                """
-                SELECT id, owner_id, visibility
-                FROM knowledge_bases
-                WHERE id = $1 AND status = 'active' AND (owner_id = $2 OR visibility = 'public')
-                """,
-                kb_id,
-                tutor_user_for_kb,
+            resolved_kb_id, rag_citations, rag_error = await _resolve_rag_context(
+                conn=conn,
+                tutor_user_id=tutor_user_for_kb,
+                message=message,
+                requested_kb_id=kb_id,
+                session_class_id=session_class_id,
             )
-            if not kb_row:
-                return JSONResponse(status_code=404, content={"error": "Knowledge base not found or not accessible"})
-            rag_citations = await retrieve_kb_context(conn=conn, kb_id=kb_id, query=message, top_k=4)
+        if rag_error:
+            return JSONResponse(status_code=404, content={"error": rag_error})
+        kb_id = resolved_kb_id
 
         if rag_citations:
             context_block = "\n\n".join(
@@ -214,10 +276,11 @@ async def expert_chat(request: Request):
             async with db_pool.acquire() as conn:
                 await conn.execute(
                     """
-                    INSERT INTO tutor_messages (session_id, role, content, mode, hint_level, tokens_used, model_used)
-                    VALUES ($1, 'user', $2, $3, $4, $5, $6)
+                    INSERT INTO tutor_messages (session_id, kb_id, role, content, mode, hint_level, tokens_used, model_used)
+                    VALUES ($1, $2, 'user', $3, $4, $5, $6, $7)
                     """,
                     session_id,
+                    kb_id,
                     message,
                     session_mode,
                     hint_level,
@@ -226,10 +289,11 @@ async def expert_chat(request: Request):
                 )
                 await conn.execute(
                     """
-                    INSERT INTO tutor_messages (session_id, role, content, mode, hint_level, tokens_used, model_used)
-                    VALUES ($1, 'assistant', $2, $3, $4, $5, $6)
+                    INSERT INTO tutor_messages (session_id, kb_id, role, content, mode, hint_level, tokens_used, model_used)
+                    VALUES ($1, $2, 'assistant', $3, $4, $5, $6, $7)
                     """,
                     session_id,
+                    kb_id,
                     full_response,
                     session_mode,
                     hint_level,
@@ -313,6 +377,7 @@ async def expert_chat_stream(request: Request):
     grade_level = None
     rag_citations: list[dict[str, object]] = []
 
+    session_class_id = None
     if session_id is not None:
         try:
             session_id = int(session_id)
@@ -320,7 +385,7 @@ async def expert_chat_stream(request: Request):
             return JSONResponse(status_code=400, content={"error": "session_id must be an integer"})
         async with db_pool.acquire() as conn:
             row = await conn.fetchrow(
-                "SELECT id, mode, grade_level FROM tutor_sessions WHERE id = $1 AND user_id = $2",
+                "SELECT id, mode, grade_level, class_id FROM tutor_sessions WHERE id = $1 AND user_id = $2",
                 session_id,
                 tutor_user_id,
             )
@@ -329,6 +394,7 @@ async def expert_chat_stream(request: Request):
             if not body.get("mode"):
                 session_mode = normalize_mode(row["mode"])
             grade_level = row["grade_level"]
+            session_class_id = row["class_id"]
 
     if hint_level is not None:
         try:
@@ -356,8 +422,8 @@ async def expert_chat_stream(request: Request):
 
     system_prompt = build_system_prompt(base_prompt, mode=session_mode, hint_level=hint_level, grade_level=grade_level)
 
+    tutor_user_for_kb = _get_tutor_user_id(request)
     if kb_id is not None:
-        tutor_user_for_kb = _get_tutor_user_id(request)
         if tutor_user_for_kb is None:
             return JSONResponse(status_code=401, content={"error": "Tutor user not synced for KB retrieval"})
         try:
@@ -365,19 +431,18 @@ async def expert_chat_stream(request: Request):
         except (TypeError, ValueError):
             return JSONResponse(status_code=400, content={"error": "kb_id must be an integer"})
 
+    if tutor_user_for_kb is not None:
         async with db_pool.acquire() as conn:
-            kb_row = await conn.fetchrow(
-                """
-                SELECT id, owner_id, visibility
-                FROM knowledge_bases
-                WHERE id = $1 AND status = 'active' AND (owner_id = $2 OR visibility = 'public')
-                """,
-                kb_id,
-                tutor_user_for_kb,
+            resolved_kb_id, rag_citations, rag_error = await _resolve_rag_context(
+                conn=conn,
+                tutor_user_id=tutor_user_for_kb,
+                message=message,
+                requested_kb_id=kb_id,
+                session_class_id=session_class_id,
             )
-            if not kb_row:
-                return JSONResponse(status_code=404, content={"error": "Knowledge base not found or not accessible"})
-            rag_citations = await retrieve_kb_context(conn=conn, kb_id=kb_id, query=message, top_k=4)
+        if rag_error:
+            return JSONResponse(status_code=404, content={"error": rag_error})
+        kb_id = resolved_kb_id
 
         if rag_citations:
             context_block = "\n\n".join(
@@ -480,10 +545,11 @@ async def expert_chat_stream(request: Request):
                 async with db_pool.acquire() as conn:
                     await conn.execute(
                         """
-                        INSERT INTO tutor_messages (session_id, role, content, mode, hint_level, tokens_used, model_used)
-                        VALUES ($1, 'user', $2, $3, $4, $5, $6)
+                        INSERT INTO tutor_messages (session_id, kb_id, role, content, mode, hint_level, tokens_used, model_used)
+                        VALUES ($1, $2, 'user', $3, $4, $5, $6, $7)
                         """,
                         session_id,
+                        kb_id,
                         message,
                         session_mode,
                         hint_level,
@@ -492,10 +558,11 @@ async def expert_chat_stream(request: Request):
                     )
                     await conn.execute(
                         """
-                        INSERT INTO tutor_messages (session_id, role, content, mode, hint_level, tokens_used, model_used)
-                        VALUES ($1, 'assistant', $2, $3, $4, $5, $6)
+                        INSERT INTO tutor_messages (session_id, kb_id, role, content, mode, hint_level, tokens_used, model_used)
+                        VALUES ($1, $2, 'assistant', $3, $4, $5, $6, $7)
                         """,
                         session_id,
+                        kb_id,
                         full_response,
                         session_mode,
                         hint_level,

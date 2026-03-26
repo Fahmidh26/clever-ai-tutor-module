@@ -14,6 +14,7 @@ type Expert = {
   name?: string;
   expert_name?: string;
   tagline?: string;
+  teaching_style?: string;
   subject_expertise?: unknown;
 };
 
@@ -65,6 +66,8 @@ type TutorSessionSummary = {
   id: number;
   persona_id: number;
   persona_name?: string;
+  class_id?: number | null;
+  class_name?: string | null;
   subject?: string | null;
   topic?: string | null;
   mode?: string;
@@ -143,9 +146,31 @@ type StudentProgressSummary = {
 
 type TeacherProgressSummary = {
   student_count: number;
+  active_students?: number;
   avg_mastery: number;
   quiz_accuracy: number;
   active_misconceptions: number;
+  total_sessions?: number;
+  total_messages?: number;
+  kb_messages?: number;
+  assigned_kb_count?: number;
+};
+
+type AssignedClassSummary = {
+  id: number;
+  name: string;
+  subject?: string | null;
+  grade_level?: number | null;
+  teacher_name?: string | null;
+  assigned_kb_count?: number;
+  assigned_kbs?: KnowledgeBase[];
+};
+
+type Citation = {
+  citation?: string;
+  filename?: string;
+  document_id?: number;
+  chunk_index?: number;
 };
 
 type GradeBand = "k2" | "g35" | "g68" | "g912";
@@ -217,6 +242,7 @@ export default function HomePage() {
   const [kbSubject, setKbSubject] = useState("");
   const [kbDescription, setKbDescription] = useState("");
   const [selectedKbId, setSelectedKbId] = useState<number | null>(null);
+  const [kbAssignments, setKbAssignments] = useState<TeacherClass[]>([]);
   const [documents, setDocuments] = useState<KBDocument[]>([]);
   const [docsLoading, setDocsLoading] = useState(false);
   const [docsError, setDocsError] = useState("");
@@ -230,6 +256,9 @@ export default function HomePage() {
   const [className, setClassName] = useState("");
   const [classSubject, setClassSubject] = useState("");
   const [selectedClassId, setSelectedClassId] = useState<number | null>(null);
+  const [studentClasses, setStudentClasses] = useState<AssignedClassSummary[]>([]);
+  const [studentClassesError, setStudentClassesError] = useState("");
+  const [selectedStudentClassId, setSelectedStudentClassId] = useState<number | null>(null);
   const [roster, setRoster] = useState<RosterEntry[]>([]);
   const [studentIdInput, setStudentIdInput] = useState("");
   const [classBusy, setClassBusy] = useState(false);
@@ -239,6 +268,7 @@ export default function HomePage() {
   const [sessions, setSessions] = useState<TutorSessionSummary[]>([]);
   const [selectedSessionId, setSelectedSessionId] = useState<number | null>(null);
   const [chatMessages, setChatMessages] = useState<TutorSessionMessage[]>([]);
+  const [chatCitations, setChatCitations] = useState<Citation[]>([]);
   const [sessionLoading, setSessionLoading] = useState(false);
   const [hintState, setHintState] = useState<HintProgressionState | null>(null);
   const [activeQuiz, setActiveQuiz] = useState<ActiveQuizState | null>(null);
@@ -284,6 +314,9 @@ export default function HomePage() {
 
   const apiClient = useMemo(() => createApiClient({ baseUrl: apiBaseUrl }), []);
   const isTeacherRole = role === "teacher" || role === "admin";
+  const isStudentRole = role === "student";
+  const selectedStudentClass = studentClasses.find((cls) => cls.id === selectedStudentClassId) || null;
+  const availableStudentKbs = selectedStudentClass?.assigned_kbs || [];
 
   const loadExperts = async () => {
     try {
@@ -346,6 +379,7 @@ export default function HomePage() {
         `/api/tutor/sessions/${sessionId}`
       );
       const messages = Array.isArray(data.messages) ? data.messages : [];
+      setChatCitations([]);
       setChatMessages(
         messages.map((m) => ({
           id: m.id,
@@ -359,6 +393,9 @@ export default function HomePage() {
       }
       if (data.session?.mode) {
         setSelectedMode(data.session.mode);
+      }
+      if (isStudentRole && data.session?.class_id) {
+        setSelectedStudentClassId(Number(data.session.class_id));
       }
     } catch (err) {
       setChatError(err instanceof Error ? err.message : "Could not load session messages");
@@ -417,6 +454,30 @@ export default function HomePage() {
     }
   };
 
+  const loadStudentClasses = async () => {
+    if (!isStudentRole) {
+      setStudentClasses([]);
+      setSelectedStudentClassId(null);
+      return;
+    }
+    try {
+      setStudentClassesError("");
+      const data = await apiClient.get<{ classes?: AssignedClassSummary[] }>("/api/tutor/classes");
+      const list = Array.isArray(data.classes) ? data.classes : [];
+      setStudentClasses(list);
+      if (!selectedStudentClassId && list.length > 0) {
+        setSelectedStudentClassId(list[0].id);
+      }
+      if (selectedStudentClassId && !list.some((cls) => cls.id === selectedStudentClassId)) {
+        setSelectedStudentClassId(list.length > 0 ? list[0].id : null);
+      }
+    } catch (err) {
+      setStudentClassesError(err instanceof Error ? err.message : "Could not load your classes");
+      setStudentClasses([]);
+      setSelectedStudentClassId(null);
+    }
+  };
+
   const loadRoster = async (classId: number) => {
     try {
       setClassesError("");
@@ -439,6 +500,19 @@ export default function HomePage() {
       setDocuments([]);
     } finally {
       setDocsLoading(false);
+    }
+  };
+
+  const loadKbAssignments = async (kbId: number) => {
+    if (!isTeacherRole) {
+      setKbAssignments([]);
+      return;
+    }
+    try {
+      const data = await apiClient.get<{ classes?: TeacherClass[] }>(`/api/teacher/kb/${kbId}/assignments`);
+      setKbAssignments(Array.isArray(data.classes) ? data.classes : []);
+    } catch {
+      setKbAssignments([]);
     }
   };
 
@@ -577,6 +651,7 @@ export default function HomePage() {
       void loadMasteryRecords();
       void loadMisconceptions();
       void loadStudentProgress();
+      void loadStudentClasses();
       void loadKnowledgeBases();
       void loadClasses();
       return;
@@ -584,6 +659,8 @@ export default function HomePage() {
     setExperts([]);
     setKnowledgeBases([]);
     setSelectedKbId(null);
+    setStudentClasses([]);
+    setSelectedStudentClassId(null);
     setClasses([]);
     setSelectedClassId(null);
     setRoster([]);
@@ -607,13 +684,21 @@ export default function HomePage() {
   }, [isAuthenticated, isTeacherRole]);
 
   useEffect(() => {
+    if (isAuthenticated && isStudentRole) {
+      void loadStudentClasses();
+    }
+  }, [isAuthenticated, isStudentRole]);
+
+  useEffect(() => {
     if (selectedKbId && isAuthenticated && isTeacherRole) {
       void loadDocuments(selectedKbId);
+      void loadKbAssignments(selectedKbId);
       setPreviewDocId(null);
       setPreviewText("");
       return;
     }
     setDocuments([]);
+    setKbAssignments([]);
   }, [selectedKbId, isAuthenticated, isTeacherRole]);
 
   useEffect(() => {
@@ -635,6 +720,19 @@ export default function HomePage() {
     setExplainReasoningInput("");
     void loadSessionDetail(selectedSessionId);
   }, [selectedSessionId, isAuthenticated]);
+
+  useEffect(() => {
+    if (!isStudentRole) {
+      return;
+    }
+    if (availableStudentKbs.length === 0) {
+      setSelectedKbId(null);
+      return;
+    }
+    if (!selectedKbId || !availableStudentKbs.some((kb) => kb.id === selectedKbId)) {
+      setSelectedKbId(availableStudentKbs[0].id);
+    }
+  }, [availableStudentKbs, isStudentRole, selectedKbId]);
 
   useEffect(() => {
     if (selectedMode !== "hint") {
@@ -671,6 +769,7 @@ export default function HomePage() {
     await logout();
     setExperts([]);
     resetChat();
+    setChatCitations([]);
   };
 
   const startSessionIfNeeded = async (): Promise<number | null> => {
@@ -682,8 +781,10 @@ export default function HomePage() {
       return null;
     }
     try {
+      const classIdForSession = isStudentRole ? selectedStudentClassId ?? undefined : undefined;
       const created = await apiClient.post<{ session?: { id: number } }>("/api/tutor/sessions", {
         persona_id: selectedExpertId,
+        class_id: classIdForSession,
         subject: subjectInput.trim() || undefined,
         topic: topicInput.trim() || undefined,
         mode: selectedMode,
@@ -840,6 +941,7 @@ export default function HomePage() {
     setChatLoading(true);
     setChatError("");
     setChatResult("");
+    setChatCitations([]);
     const userContent = chatPrompt.trim();
     const nextMessages = [...chatMessages, { role: "user" as const, content: userContent }];
     setChatMessages([...nextMessages, { role: "assistant" as const, content: "" }]);
@@ -916,7 +1018,14 @@ export default function HomePage() {
           } else if (event === "error") {
             const message = String(payload.message || "Streaming error");
             throw new Error(message);
+          } else if (event === "stream_start") {
+            const citations = Array.isArray(payload.citations) ? (payload.citations as Citation[]) : [];
+            setChatCitations(citations);
           } else if (event === "stream_end") {
+            const citations = Array.isArray(payload.citations) ? (payload.citations as Citation[]) : [];
+            if (citations.length > 0) {
+              setChatCitations(citations);
+            }
             const assistantText = String(
               (chatMessages.length > 0 ? chatMessages[chatMessages.length - 1]?.content : "") || ""
             );
@@ -1178,6 +1287,39 @@ export default function HomePage() {
     }
   };
 
+  const assignSelectedKbToClass = async () => {
+    if (!selectedKbId || !selectedClassId) {
+      setKbError("Select both a knowledge base and a class");
+      return;
+    }
+    try {
+      setKbError("");
+      await apiClient.post(`/api/teacher/kb/${selectedKbId}/assignments`, { class_id: selectedClassId });
+      await loadKbAssignments(selectedKbId);
+      await loadStudentClasses();
+      await loadTeacherProgress(selectedClassId);
+    } catch (err) {
+      setKbError(err instanceof Error ? err.message : "Failed to assign KB to class");
+    }
+  };
+
+  const removeKbAssignment = async (classId: number) => {
+    if (!selectedKbId) {
+      return;
+    }
+    try {
+      setKbError("");
+      await apiClient.del(`/api/teacher/kb/${selectedKbId}/assignments/${classId}`);
+      await loadKbAssignments(selectedKbId);
+      await loadStudentClasses();
+      if (selectedClassId === classId) {
+        await loadTeacherProgress(classId);
+      }
+    } catch (err) {
+      setKbError(err instanceof Error ? err.message : "Failed to remove KB assignment");
+    }
+  };
+
   const previewDocument = async (docId: number) => {
     if (!selectedKbId) {
       return;
@@ -1282,10 +1424,12 @@ export default function HomePage() {
       loadMasteryRecords(),
       loadMisconceptions(),
       loadStudentProgress(),
+      isStudentRole ? loadStudentClasses() : Promise.resolve(),
       selectedClassId && isTeacherRole ? loadTeacherProgress(selectedClassId) : Promise.resolve(),
       isTeacherRole ? loadKnowledgeBases() : Promise.resolve(),
       isTeacherRole ? loadClasses() : Promise.resolve(),
-      selectedKbId ? loadDocuments(selectedKbId) : Promise.resolve(),
+      selectedKbId && isTeacherRole ? loadDocuments(selectedKbId) : Promise.resolve(),
+      selectedKbId && isTeacherRole ? loadKbAssignments(selectedKbId) : Promise.resolve(),
       selectedClassId ? loadRoster(selectedClassId) : Promise.resolve(),
     ]);
   };
@@ -1377,19 +1521,62 @@ export default function HomePage() {
             </section>
 
             <section className="card">
-              <h2>Experts (local API)</h2>
+              <h2>Tutor Personas</h2>
               {expertsError ? <p className="error">Error: {expertsError}</p> : null}
-              {!expertsError ? <p>Loaded experts: {experts.length}</p> : null}
+              {!expertsError ? <p>These are tutor styles and subject tutors, not classroom teachers. Loaded personas: {experts.length}</p> : null}
               {experts.length > 0 ? (
                 <ul>
                   {experts.slice(0, 5).map((expert) => (
                     <li key={String(expert.id ?? expert.name ?? expert.expert_name)}>
                       {expert.name || expert.expert_name || "Unnamed expert"}
+                      {expert.tagline ? ` - ${expert.tagline}` : ""}
                     </li>
                   ))}
                 </ul>
               ) : null}
             </section>
+
+            {isStudentRole ? (
+              <section className="card">
+                <h2>My Class Context</h2>
+                {studentClassesError ? <p className="error">Error: {studentClassesError}</p> : null}
+                {studentClasses.length === 0 ? <p>You are not enrolled in any class yet.</p> : null}
+                {studentClasses.length > 0 ? (
+                  <>
+                    <select
+                      value={selectedStudentClassId ?? ""}
+                      onChange={(event) => setSelectedStudentClassId(Number(event.target.value))}
+                    >
+                      {studentClasses.map((cls) => (
+                        <option key={cls.id} value={cls.id}>
+                          {cls.name} {cls.teacher_name ? `- ${cls.teacher_name}` : ""}
+                        </option>
+                      ))}
+                    </select>
+                    {selectedStudentClass ? (
+                      <div style={{ display: "grid", gap: "8px", marginTop: "10px" }}>
+                        <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                          <div className="chip">Class: {selectedStudentClass.name}</div>
+                          <div className="chip">Teacher: {selectedStudentClass.teacher_name || "Unknown"}</div>
+                          <div className="chip">Materials: {selectedStudentClass.assigned_kb_count ?? 0}</div>
+                        </div>
+                        {availableStudentKbs.length > 0 ? (
+                          <select value={selectedKbId ?? ""} onChange={(event) => setSelectedKbId(Number(event.target.value))}>
+                            {availableStudentKbs.map((kb) => (
+                              <option key={kb.id} value={kb.id}>
+                                {kb.name} ({kb.document_count ?? 0} docs)
+                              </option>
+                            ))}
+                          </select>
+                        ) : (
+                          <p>No class materials assigned yet.</p>
+                        )}
+                      </div>
+                    ) : null}
+                  </>
+                ) : null}
+              </section>
+            ) : null}
 
             <section className="card">
               <h2>Tutor Workspace</h2>
@@ -1406,6 +1593,22 @@ export default function HomePage() {
                     </option>
                   ))}
                 </select>
+                {selectedExpertId ? (
+                  <div style={{ display: "grid", gap: "4px" }}>
+                    {experts
+                      .filter((expert) => Number(expert.id) === selectedExpertId)
+                      .map((expert) => (
+                        <div key={`expert-${expert.id}`}>
+                          <strong>{expert.name || expert.expert_name || "Tutor"}</strong>
+                          {expert.tagline ? <div>{expert.tagline}</div> : null}
+                          {expert.teaching_style ? <div>Style: {expert.teaching_style}</div> : null}
+                          {Array.isArray(expert.subject_expertise) && expert.subject_expertise.length > 0 ? (
+                            <div>Subjects: {expert.subject_expertise.map((item) => String(item)).join(", ")}</div>
+                          ) : null}
+                        </div>
+                      ))}
+                  </div>
+                ) : null}
                 <select value={selectedMode} onChange={(event) => setSelectedMode(event.target.value)}>
                   {modes.map((mode) => (
                     <option key={mode.id} value={mode.id}>
@@ -1443,6 +1646,7 @@ export default function HomePage() {
                     onClick={() => {
                       setSelectedSessionId(null);
                       setChatMessages([]);
+                      setChatCitations([]);
                       setHintState(null);
                       setActiveQuiz(null);
                       setLastSubmittedQuizId(null);
@@ -1475,7 +1679,7 @@ export default function HomePage() {
                       >
                         <div>#{session.id} {session.persona_name || "Tutor"}</div>
                         <div style={{ fontSize: "12px", opacity: 0.8 }}>
-                          {session.subject || "General"} {session.topic ? `· ${session.topic}` : ""}
+                          {session.class_name ? `${session.class_name} · ` : ""}{session.subject || "General"} {session.topic ? `· ${session.topic}` : ""}
                         </div>
                       </button>
                     ))}
@@ -1502,6 +1706,16 @@ export default function HomePage() {
                       </div>
                     ))}
                   </div>
+                  {chatCitations.length > 0 ? (
+                    <div style={{ marginBottom: "10px", display: "grid", gap: "4px" }}>
+                      <strong>Sources</strong>
+                      {chatCitations.map((citation, index) => (
+                        <div key={`${citation.citation || citation.filename}-${index}`} style={{ fontSize: "12px", opacity: 0.85 }}>
+                          {citation.citation || citation.filename || "KB source"}
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
                   <textarea
                     value={chatPrompt}
                     onChange={(event) => setChatPrompt(event.target.value)}
@@ -1801,9 +2015,14 @@ export default function HomePage() {
                   {teacherProgress ? (
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))", gap: "8px" }}>
                       <div className="chip">Students: {teacherProgress.student_count}</div>
+                      <div className="chip">Active Students: {teacherProgress.active_students ?? 0}</div>
                       <div className="chip">Class Avg Mastery: {teacherProgress.avg_mastery}/5</div>
                       <div className="chip">Class Quiz Accuracy: {(teacherProgress.quiz_accuracy * 100).toFixed(1)}%</div>
                       <div className="chip">Class Misconceptions: {teacherProgress.active_misconceptions}</div>
+                      <div className="chip">Sessions: {teacherProgress.total_sessions ?? 0}</div>
+                      <div className="chip">Messages: {teacherProgress.total_messages ?? 0}</div>
+                      <div className="chip">KB-backed Messages: {teacherProgress.kb_messages ?? 0}</div>
+                      <div className="chip">Assigned KBs: {teacherProgress.assigned_kb_count ?? 0}</div>
                     </div>
                   ) : null}
                 </div>
@@ -1851,6 +2070,34 @@ export default function HomePage() {
                         </option>
                       ))}
                     </select>
+                  ) : null}
+
+                  {selectedKbId ? (
+                    <div style={{ display: "grid", gap: "8px", marginBottom: "10px" }}>
+                      <strong>Class Assignment</strong>
+                      <p>Attach this KB to a class so enrolled students can use it in tutor sessions.</p>
+                      <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                        <Button variant="secondary" onClick={assignSelectedKbToClass} disabled={!selectedClassId}>
+                          Assign to Selected Class
+                        </Button>
+                      </div>
+                      {kbAssignments.length === 0 ? <p>No classes assigned to this KB yet.</p> : null}
+                      {kbAssignments.length > 0 ? (
+                        <div style={{ display: "grid", gap: "8px" }}>
+                          {kbAssignments.map((cls) => (
+                            <div key={`kb-assignment-${cls.id}`} style={{ display: "flex", justifyContent: "space-between", gap: "8px", border: "1px solid var(--border)", borderRadius: "8px", padding: "10px" }}>
+                              <div>
+                                <strong>{cls.name}</strong>
+                                <div>{cls.subject || "General"} · {cls.roster_count ?? 0} students</div>
+                              </div>
+                              <Button variant="outline" onClick={() => removeKbAssignment(cls.id)}>
+                                Remove
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      ) : null}
+                    </div>
                   ) : null}
 
                   <div style={{ display: "flex", gap: "8px", marginBottom: "10px", flexWrap: "wrap" }}>

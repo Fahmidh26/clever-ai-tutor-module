@@ -25,6 +25,7 @@ from app.routers.proxy import router as proxy_router
 from app.routers.quizzes import router as quizzes_router
 from app.routers.modes import router as modes_router
 from app.routers.sessions import router as sessions_router
+from app.routers.student_classes import router as student_classes_router
 from app.routers.teacher_classes import router as teacher_classes_router
 from app.routers.teacher_kb import router as teacher_kb_router
 from app.services.rate_limiter import close_rate_limiter, init_rate_limiter
@@ -67,6 +68,7 @@ app.include_router(chat_router)
 app.include_router(flashcards_router)
 app.include_router(modes_router)
 app.include_router(sessions_router)
+app.include_router(student_classes_router)
 app.include_router(hints_router)
 app.include_router(mastery_router)
 app.include_router(misconceptions_router)

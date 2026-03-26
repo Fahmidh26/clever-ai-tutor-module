@@ -75,6 +75,18 @@ flowchart TD
 - Tutor DB is the source of truth for classes, sessions, messages, KBs, progress, flashcards, and dashboards.
 - External integration concerns must remain adapter-level only.
 
+### Canonical Ecosystem Reference
+
+Use [PHASE_2_ECOSYSTEM_MAPPING.md](./PHASE_2_ECOSYSTEM_MAPPING.md) as the canonical relationship map for:
+
+- role and tutor user identity
+- class ownership and roster scope
+- tutor personas vs classroom teachers
+- KB assignment to classes
+- student class context
+- session and KB-backed activity linkage
+- dashboard aggregation boundaries
+
 ---
 
 ## 4. Chart Pack
@@ -109,6 +121,141 @@ flowchart TD
   C --> Q[Student asks question with optional KB context]
   Q --> R[LLM response + session/message persistence]
   R --> S[Teacher dashboard updates from student activity]
+```
+
+Implementation note:
+
+- This workflow now assumes class-linked KB usage, student-visible class context, and teacher dashboard activity metrics as defined in `PHASE_2_ECOSYSTEM_MAPPING.md`.
+
+### 4.1A Ecosystem Diagram
+
+```mermaid
+flowchart TD
+  A[Login / Auth] --> B[tutor_users + role]
+
+  B --> C[Teacher/Admin]
+  B --> D[Student]
+  B --> E[Parent Future]
+
+  C --> F[Create Class]
+  F --> G[classes]
+  C --> H[Enroll Students]
+  H --> I[class_enrollments]
+  C --> J[Create Knowledge Base]
+  J --> K[knowledge_bases]
+  C --> L[Upload Documents]
+  L --> M[kb_documents]
+  C --> N[Process Documents]
+  N --> O[kb_chunks]
+  C --> P[Assign KB to Class]
+  P --> Q[kb_class_assignments]
+
+  D --> R[Open My Class Context]
+  R --> S[See enrolled classes]
+  R --> T[See assigned materials]
+
+  D --> U[Pick Tutor Persona]
+  U --> V[tutor_personas]
+  D --> W[Start Session]
+  W --> X[tutor_sessions]
+  X --> Y[Session carries class context]
+
+  D --> Z[Chat / Hint / Quiz / Flashcards]
+  Z --> AA[tutor_messages]
+  Z --> AB[hint_progressions]
+  Z --> AC[adaptive_quiz_attempts]
+  Z --> AD[flashcard_decks + flashcards]
+
+  Y --> AE[Use class-assigned KBs in chat]
+  Q --> AE
+  O --> AE
+
+  Z --> AF[student_mastery]
+  Z --> AG[misconception_log]
+  Z --> AH[mistake_journal]
+
+  AF --> AI[Student Dashboard]
+  AG --> AI
+  AA --> AJ[Teacher Dashboard]
+  AC --> AJ
+  AF --> AJ
+  AG --> AJ
+  Q --> AJ
+```
+
+### 4.1B Runtime Meaning Diagram
+
+```mermaid
+flowchart LR
+  A[Class] -->|organizes| B[Students]
+  A -->|receives| C[Assigned KBs]
+  B -->|starts| D[Session]
+  D -->|uses| E[Persona / Expert]
+  D -->|uses| C
+  D -->|produces| F[Messages]
+  D -->|produces| G[Hints / Quizzes / Flashcards]
+  G -->|updates| H[Mastery / Misconceptions]
+  B -->|sees| I[Student Dashboard]
+  A -->|scopes| J[Teacher Dashboard]
+```
+
+### 4.1C Sequence Workflow
+
+```mermaid
+sequenceDiagram
+  participant T as Teacher/Admin
+  participant S as Student
+  participant FE as Frontend
+  participant API as Tutor Backend
+  participant DB as Tutor DB
+  participant AI as Persona + RAG
+
+  T->>FE: Login
+  FE->>API: local auth / api/me
+  API->>DB: sync tutor_user
+
+  T->>FE: Create class
+  FE->>API: POST /api/teacher/classes
+  API->>DB: insert classes
+
+  T->>FE: Enroll student
+  FE->>API: POST /api/teacher/classes/{class_id}/enroll
+  API->>DB: insert class_enrollments
+
+  T->>FE: Create KB + upload + process
+  FE->>API: /api/teacher/kb*
+  API->>DB: insert knowledge_bases / kb_documents / kb_chunks
+
+  T->>FE: Assign KB to class
+  FE->>API: POST /api/teacher/kb/{kb_id}/assignments
+  API->>DB: insert kb_class_assignments
+
+  S->>FE: Login
+  FE->>API: local auth / api/me
+  API->>DB: sync tutor_user
+
+  S->>FE: Open My Class Context
+  FE->>API: GET /api/tutor/classes
+  API->>DB: load enrollments + assigned KBs
+  API->>FE: classes + assigned materials
+
+  S->>FE: Pick persona and start session
+  FE->>API: POST /api/tutor/sessions
+  API->>DB: insert tutor_sessions with class_id
+
+  S->>FE: Chat / Hint / Quiz / Flashcards
+  FE->>API: tutor endpoints
+  API->>DB: load session + class context
+  API->>AI: persona prompt + KB retrieval
+  API->>DB: save messages + learning data
+
+  S->>FE: Open student dashboard
+  FE->>API: GET /api/tutor/progress/student
+  API->>DB: aggregate student activity
+
+  T->>FE: Open teacher dashboard
+  FE->>API: GET /api/tutor/progress/teacher?class_id=...
+  API->>DB: aggregate class activity + KB-backed usage
 ```
 
 ### 4.2 Role-to-Capability Map

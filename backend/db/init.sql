@@ -40,6 +40,7 @@ CREATE TABLE IF NOT EXISTS tutor_sessions (
     id                  SERIAL PRIMARY KEY,
     user_id             INTEGER NOT NULL REFERENCES tutor_users(id),
     persona_id          INTEGER NOT NULL REFERENCES tutor_personas(id),
+    class_id            INTEGER,
     subject             VARCHAR(255),
     topic               VARCHAR(255),
     subtopic            VARCHAR(255),
@@ -58,6 +59,7 @@ CREATE TABLE IF NOT EXISTS tutor_sessions (
 CREATE TABLE IF NOT EXISTS tutor_messages (
     id                  SERIAL PRIMARY KEY,
     session_id          INTEGER NOT NULL REFERENCES tutor_sessions(id) ON DELETE CASCADE,
+    kb_id               INTEGER REFERENCES knowledge_bases(id) ON DELETE SET NULL,
     role                VARCHAR(20) NOT NULL,
     content             TEXT NOT NULL,
     mode                VARCHAR(20) DEFAULT 'chat',
@@ -90,6 +92,20 @@ CREATE TABLE IF NOT EXISTS class_enrollments (
     status              VARCHAR(20) DEFAULT 'active',
     UNIQUE(class_id, student_id)
 );
+
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1
+        FROM information_schema.table_constraints
+        WHERE constraint_name = 'tutor_sessions_class_id_fkey'
+          AND table_name = 'tutor_sessions'
+    ) THEN
+        ALTER TABLE tutor_sessions
+        ADD CONSTRAINT tutor_sessions_class_id_fkey
+        FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE SET NULL;
+    END IF;
+END $$;
 
 CREATE TABLE IF NOT EXISTS parent_student_links (
     id                  SERIAL PRIMARY KEY,
@@ -473,6 +489,8 @@ CREATE INDEX IF NOT EXISTS idx_chunks_embedding ON kb_chunks USING hnsw (embeddi
 CREATE INDEX IF NOT EXISTS idx_classes_teacher ON classes(teacher_id);
 CREATE INDEX IF NOT EXISTS idx_enrollments_class ON class_enrollments(class_id);
 CREATE INDEX IF NOT EXISTS idx_enrollments_student ON class_enrollments(student_id);
+CREATE INDEX IF NOT EXISTS idx_tutor_sessions_class ON tutor_sessions(class_id);
+CREATE INDEX IF NOT EXISTS idx_tutor_messages_kb ON tutor_messages(kb_id);
 CREATE INDEX IF NOT EXISTS idx_mastery_student ON student_mastery(student_id);
 CREATE INDEX IF NOT EXISTS idx_misconception_student ON misconception_log(student_id);
 CREATE INDEX IF NOT EXISTS idx_hint_progressions_user ON hint_progressions(user_id, created_at DESC);

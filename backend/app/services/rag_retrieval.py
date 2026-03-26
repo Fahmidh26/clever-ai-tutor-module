@@ -72,3 +72,56 @@ async def retrieve_kb_context(
 
     return sorted(scored, key=lambda item: float(item["score"]), reverse=True)[: max(1, top_k)]
 
+
+async def retrieve_multi_kb_context(
+    *,
+    conn: Any,
+    kb_ids: list[int],
+    query: str,
+    top_k: int = 4,
+) -> list[dict[str, Any]]:
+    normalized_ids = [int(kb_id) for kb_id in kb_ids if isinstance(kb_id, int) or str(kb_id).isdigit()]
+    if not normalized_ids:
+        return []
+
+    query_embedding = (await embed_chunks([query]))[0]
+    rows = await conn.fetch(
+        """
+        SELECT c.id, c.kb_id, c.document_id, c.chunk_index, c.content,
+               d.filename, d.file_type,
+               (c.embedding <=> $2::vector) AS distance
+        FROM kb_chunks c
+        JOIN kb_documents d ON d.id = c.document_id
+        WHERE c.kb_id = ANY($1::INT[])
+        ORDER BY c.embedding <=> $2::vector ASC
+        LIMIT $3
+        """,
+        normalized_ids,
+        _vector_literal(query_embedding),
+        max(1, top_k) * 4,
+    )
+
+    scored: list[dict[str, Any]] = []
+    for row in rows:
+        lexical = _lexical_overlap_score(query, row["content"] or "")
+        distance = float(row["distance"] or 1.0)
+        semantic = max(0.0, 1.0 - distance)
+        final_score = semantic * 0.8 + lexical * 0.2
+        scored.append(
+            {
+                "chunk_id": row["id"],
+                "kb_id": row["kb_id"],
+                "document_id": row["document_id"],
+                "chunk_index": row["chunk_index"],
+                "filename": row["filename"],
+                "file_type": row["file_type"],
+                "content": row["content"],
+                "distance": distance,
+                "semantic_score": semantic,
+                "lexical_score": lexical,
+                "score": final_score,
+                "citation": f"{row['filename']}#chunk-{row['chunk_index']}",
+            }
+        )
+
+    return sorted(scored, key=lambda item: float(item["score"]), reverse=True)[: max(1, top_k)]

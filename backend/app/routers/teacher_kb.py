@@ -371,6 +371,187 @@ async def list_kb_documents(request: Request, kb_id: int):
     }
 
 
+@router.get("/{kb_id:int}/assignments")
+async def list_kb_assignments(request: Request, kb_id: int):
+    rate_limit_response = await enforce_user_rate_limit(
+        request,
+        endpoint_key=f"{request.method}:{request.url.path}",
+    )
+    if rate_limit_response is not None:
+        return rate_limit_response
+
+    token = request.session.get("access_token")
+    if not token:
+        return JSONResponse(status_code=401, content={"error": "Not authenticated"})
+    role_response = _require_teacher_or_admin(request)
+    if role_response is not None:
+        return role_response
+
+    tutor_user_id = _get_tutor_user_id(request)
+    if tutor_user_id is None:
+        return JSONResponse(status_code=401, content={"error": "Tutor user not synced"})
+
+    db_pool = getattr(request.app.state, "db_pool", None)
+    if db_pool is None:
+        return JSONResponse(status_code=503, content={"error": "Database not configured"})
+
+    try:
+        async with db_pool.acquire() as conn:
+            kb_row = await conn.fetchrow(
+                "SELECT id FROM knowledge_bases WHERE id = $1 AND owner_id = $2",
+                kb_id,
+                tutor_user_id,
+            )
+            if not kb_row:
+                return JSONResponse(status_code=404, content={"error": "Knowledge base not found"})
+
+            rows = await conn.fetch(
+                """
+                SELECT c.id, c.name, c.subject, c.grade_level, c.invite_code,
+                       COUNT(DISTINCT e.id) AS roster_count
+                FROM kb_class_assignments a
+                JOIN classes c ON c.id = a.class_id
+                LEFT JOIN class_enrollments e ON e.class_id = c.id AND e.status = 'active'
+                WHERE a.kb_id = $1 AND c.teacher_id = $2
+                GROUP BY c.id
+                ORDER BY c.name ASC
+                """,
+                kb_id,
+                tutor_user_id,
+            )
+    except Exception as exc:
+        return JSONResponse(status_code=500, content={"error": "Failed to fetch KB assignments", "details": str(exc)})
+
+    return {
+        "classes": [
+            {
+                "id": row["id"],
+                "name": row["name"],
+                "subject": row["subject"],
+                "grade_level": row["grade_level"],
+                "invite_code": row["invite_code"],
+                "roster_count": int(row["roster_count"] or 0),
+            }
+            for row in rows
+        ]
+    }
+
+
+@router.post("/{kb_id:int}/assignments")
+async def assign_kb_to_class(request: Request, kb_id: int):
+    rate_limit_response = await enforce_user_rate_limit(
+        request,
+        endpoint_key=f"{request.method}:{request.url.path}",
+    )
+    if rate_limit_response is not None:
+        return rate_limit_response
+
+    token = request.session.get("access_token")
+    if not token:
+        return JSONResponse(status_code=401, content={"error": "Not authenticated"})
+    role_response = _require_teacher_or_admin(request)
+    if role_response is not None:
+        return role_response
+
+    tutor_user_id = _get_tutor_user_id(request)
+    if tutor_user_id is None:
+        return JSONResponse(status_code=401, content={"error": "Tutor user not synced"})
+
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+    class_id_raw = body.get("class_id")
+    try:
+        class_id = int(class_id_raw)
+    except (TypeError, ValueError):
+        return JSONResponse(status_code=400, content={"error": "class_id must be an integer"})
+
+    db_pool = getattr(request.app.state, "db_pool", None)
+    if db_pool is None:
+        return JSONResponse(status_code=503, content={"error": "Database not configured"})
+
+    try:
+        async with db_pool.acquire() as conn:
+            kb_row = await conn.fetchrow(
+                "SELECT id FROM knowledge_bases WHERE id = $1 AND owner_id = $2",
+                kb_id,
+                tutor_user_id,
+            )
+            if not kb_row:
+                return JSONResponse(status_code=404, content={"error": "Knowledge base not found"})
+            class_row = await conn.fetchrow(
+                "SELECT id FROM classes WHERE id = $1 AND teacher_id = $2",
+                class_id,
+                tutor_user_id,
+            )
+            if not class_row:
+                return JSONResponse(status_code=404, content={"error": "Class not found"})
+
+            await conn.execute(
+                """
+                INSERT INTO kb_class_assignments (kb_id, class_id)
+                VALUES ($1, $2)
+                ON CONFLICT (kb_id, class_id) DO NOTHING
+                """,
+                kb_id,
+                class_id,
+            )
+    except Exception as exc:
+        return JSONResponse(status_code=500, content={"error": "Failed to assign KB to class", "details": str(exc)})
+
+    return {"ok": True, "kb_id": kb_id, "class_id": class_id}
+
+
+@router.delete("/{kb_id:int}/assignments/{class_id:int}")
+async def remove_kb_assignment(request: Request, kb_id: int, class_id: int):
+    rate_limit_response = await enforce_user_rate_limit(
+        request,
+        endpoint_key=f"{request.method}:{request.url.path}",
+    )
+    if rate_limit_response is not None:
+        return rate_limit_response
+
+    token = request.session.get("access_token")
+    if not token:
+        return JSONResponse(status_code=401, content={"error": "Not authenticated"})
+    role_response = _require_teacher_or_admin(request)
+    if role_response is not None:
+        return role_response
+
+    tutor_user_id = _get_tutor_user_id(request)
+    if tutor_user_id is None:
+        return JSONResponse(status_code=401, content={"error": "Tutor user not synced"})
+
+    db_pool = getattr(request.app.state, "db_pool", None)
+    if db_pool is None:
+        return JSONResponse(status_code=503, content={"error": "Database not configured"})
+
+    try:
+        async with db_pool.acquire() as conn:
+            result = await conn.execute(
+                """
+                DELETE FROM kb_class_assignments a
+                USING knowledge_bases kb, classes c
+                WHERE a.kb_id = $1
+                  AND a.class_id = $2
+                  AND kb.id = a.kb_id
+                  AND c.id = a.class_id
+                  AND kb.owner_id = $3
+                  AND c.teacher_id = $3
+                """,
+                kb_id,
+                class_id,
+                tutor_user_id,
+            )
+    except Exception as exc:
+        return JSONResponse(status_code=500, content={"error": "Failed to remove KB assignment", "details": str(exc)})
+
+    if not result.endswith("1"):
+        return JSONResponse(status_code=404, content={"error": "Assignment not found"})
+    return {"ok": True, "kb_id": kb_id, "class_id": class_id}
+
+
 @router.post("/{kb_id:int}/documents/{document_id:int}/process")
 async def process_kb_document(request: Request, kb_id: int, document_id: int):
     rate_limit_response = await enforce_user_rate_limit(

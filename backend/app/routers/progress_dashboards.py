@@ -185,9 +185,14 @@ async def teacher_dashboard(request: Request, class_id: int):
                     },
                     "summary": {
                         "student_count": 0,
+                        "active_students": 0,
                         "avg_mastery": 0.0,
                         "quiz_accuracy": 0.0,
                         "active_misconceptions": 0,
+                        "total_sessions": 0,
+                        "total_messages": 0,
+                        "kb_messages": 0,
+                        "assigned_kb_count": 0,
                     },
                     "students": [],
                 }
@@ -223,26 +228,84 @@ async def teacher_dashboard(request: Request, class_id: int):
                 """,
                 student_ids,
             )
+            session_rows = await conn.fetch(
+                """
+                SELECT user_id AS student_id,
+                       COUNT(*) AS total_sessions,
+                       MAX(COALESCE(ended_at, started_at, created_at)) AS last_activity_at
+                FROM tutor_sessions
+                WHERE user_id = ANY($1::INT[])
+                  AND class_id = $2
+                GROUP BY user_id
+                """,
+                student_ids,
+                class_id,
+            )
+            message_rows = await conn.fetch(
+                """
+                SELECT s.user_id AS student_id,
+                       COUNT(m.id) AS total_messages,
+                       COALESCE(SUM(CASE WHEN m.kb_id IS NOT NULL THEN 1 ELSE 0 END), 0) AS kb_messages,
+                       MAX(m.created_at) AS last_message_at
+                FROM tutor_sessions s
+                JOIN tutor_messages m ON m.session_id = s.id
+                WHERE s.user_id = ANY($1::INT[])
+                  AND s.class_id = $2
+                GROUP BY s.user_id
+                """,
+                student_ids,
+                class_id,
+            )
+            kb_count_row = await conn.fetchrow(
+                "SELECT COUNT(*) AS assigned_kb_count FROM kb_class_assignments WHERE class_id = $1",
+                class_id,
+            )
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": "Failed to build teacher dashboard", "details": str(e)})
 
     mastery_map = {int(r["student_id"]): float(r["avg_mastery"] or 0.0) for r in mastery_rows}
     quiz_map = {int(r["student_id"]): (int(r["total_quiz"] or 0), int(r["correct_quiz"] or 0)) for r in quiz_rows}
     misconception_map = {int(r["student_id"]): int(r["active_misconceptions"] or 0) for r in misconception_rows}
+    session_map = {
+        int(r["student_id"]): {
+            "total_sessions": int(r["total_sessions"] or 0),
+            "last_activity_at": r["last_activity_at"].isoformat() if r["last_activity_at"] else None,
+        }
+        for r in session_rows
+    }
+    message_map = {
+        int(r["student_id"]): {
+            "total_messages": int(r["total_messages"] or 0),
+            "kb_messages": int(r["kb_messages"] or 0),
+            "last_message_at": r["last_message_at"].isoformat() if r["last_message_at"] else None,
+        }
+        for r in message_rows
+    }
 
     students_payload: list[dict[str, object]] = []
     total_accuracy_sum = 0.0
     total_mastery_sum = 0.0
     total_misconceptions = 0
+    total_sessions = 0
+    total_messages = 0
+    total_kb_messages = 0
+    active_students = 0
     for row in roster:
         sid = int(row["student_id"])
         total_quiz, correct_quiz = quiz_map.get(sid, (0, 0))
         accuracy = (correct_quiz / total_quiz) if total_quiz > 0 else 0.0
         avg_mastery = mastery_map.get(sid, 0.0)
         active_mis = misconception_map.get(sid, 0)
+        session_info = session_map.get(sid, {"total_sessions": 0, "last_activity_at": None})
+        message_info = message_map.get(sid, {"total_messages": 0, "kb_messages": 0, "last_message_at": None})
         total_accuracy_sum += accuracy
         total_mastery_sum += avg_mastery
         total_misconceptions += active_mis
+        total_sessions += int(session_info["total_sessions"])
+        total_messages += int(message_info["total_messages"])
+        total_kb_messages += int(message_info["kb_messages"])
+        if int(session_info["total_sessions"]) > 0 or int(message_info["total_messages"]) > 0:
+            active_students += 1
         students_payload.append(
             {
                 "student_id": sid,
@@ -250,6 +313,10 @@ async def teacher_dashboard(request: Request, class_id: int):
                 "avg_mastery": round(avg_mastery, 2),
                 "quiz_accuracy": round(accuracy, 4),
                 "active_misconceptions": active_mis,
+                "total_sessions": int(session_info["total_sessions"]),
+                "total_messages": int(message_info["total_messages"]),
+                "kb_messages": int(message_info["kb_messages"]),
+                "last_activity_at": message_info["last_message_at"] or session_info["last_activity_at"],
             }
         )
 
@@ -263,9 +330,14 @@ async def teacher_dashboard(request: Request, class_id: int):
         },
         "summary": {
             "student_count": student_count,
+            "active_students": active_students,
             "avg_mastery": round(total_mastery_sum / student_count, 2) if student_count > 0 else 0.0,
             "quiz_accuracy": round(total_accuracy_sum / student_count, 4) if student_count > 0 else 0.0,
             "active_misconceptions": total_misconceptions,
+            "total_sessions": total_sessions,
+            "total_messages": total_messages,
+            "kb_messages": total_kb_messages,
+            "assigned_kb_count": int(kb_count_row["assigned_kb_count"] or 0) if kb_count_row else 0,
         },
         "students": students_payload,
     }
