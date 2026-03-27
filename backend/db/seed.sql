@@ -164,3 +164,213 @@ WHERE NOT EXISTS (
 );
 
 COMMIT;
+
+BEGIN;
+
+INSERT INTO tutor_users (root_user_id, role, display_name, grade_level, preferred_language)
+SELECT v.root_user_id, v.role, v.display_name, v.grade_level, 'en'
+FROM (
+    VALUES
+        (101, 'student', 'Student Demo', 8),
+        (102, 'teacher', 'Teacher Demo', NULL),
+        (104, 'admin', 'Admin Demo', NULL),
+        (201, 'student', 'Ava Newton', 8),
+        (202, 'student', 'Leo Faraday', 8)
+) AS v(root_user_id, role, display_name, grade_level)
+WHERE NOT EXISTS (
+    SELECT 1 FROM tutor_users u WHERE u.root_user_id = v.root_user_id
+);
+
+INSERT INTO classes (teacher_id, name, subject, grade_level, invite_code, persona_id, settings_json)
+SELECT t.id, 'Grade 8 Physics A', 'Physics', 8, 'PHY8A', p.id, '{"teacher_persona_overlay":"Use evidence-based explanations, then finish each response with one retrieval check."}'::jsonb
+FROM tutor_users t
+JOIN tutor_personas p ON p.slug = 'reza'
+WHERE t.root_user_id = 102
+  AND NOT EXISTS (
+      SELECT 1
+      FROM classes c
+      WHERE c.teacher_id = t.id
+        AND c.name = 'Grade 8 Physics A'
+  );
+
+INSERT INTO teacher_student_links (teacher_id, student_id, status, source, notes_json)
+SELECT teacher.id, student.id, 'active', 'seed', '{}'::jsonb
+FROM tutor_users teacher
+JOIN tutor_users student ON student.root_user_id IN (101, 201, 202)
+WHERE teacher.root_user_id = 102
+  AND NOT EXISTS (
+      SELECT 1
+      FROM teacher_student_links l
+      WHERE l.teacher_id = teacher.id
+        AND l.student_id = student.id
+  );
+
+INSERT INTO class_enrollments (class_id, student_id, status)
+SELECT c.id, s.id, 'active'
+FROM classes c
+JOIN tutor_users teacher ON teacher.id = c.teacher_id AND teacher.root_user_id = 102
+JOIN tutor_users s ON s.root_user_id IN (101, 201)
+WHERE c.name = 'Grade 8 Physics A'
+  AND NOT EXISTS (
+      SELECT 1
+      FROM class_enrollments e
+      WHERE e.class_id = c.id
+        AND e.student_id = s.id
+  );
+
+INSERT INTO teacher_join_codes (teacher_id, code, status, expires_at, metadata_json)
+SELECT t.id, 'TEACHPHY8', 'active', NOW() + INTERVAL '30 days', '{}'::jsonb
+FROM tutor_users t
+WHERE t.root_user_id = 102
+  AND NOT EXISTS (
+      SELECT 1
+      FROM teacher_join_codes jc
+      WHERE jc.teacher_id = t.id
+        AND jc.code = 'TEACHPHY8'
+  );
+
+INSERT INTO teacher_join_requests (teacher_id, student_id, join_code_id, class_id, status, request_message)
+SELECT teacher.id, student.id, code.id, c.id, 'pending', 'I would like to join the physics class.'
+FROM tutor_users teacher
+JOIN tutor_users student ON student.root_user_id = 202
+JOIN teacher_join_codes code ON code.teacher_id = teacher.id AND code.code = 'TEACHPHY8'
+JOIN classes c ON c.teacher_id = teacher.id AND c.name = 'Grade 8 Physics A'
+WHERE teacher.root_user_id = 102
+  AND NOT EXISTS (
+      SELECT 1
+      FROM teacher_join_requests r
+      WHERE r.teacher_id = teacher.id
+        AND r.student_id = student.id
+        AND r.class_id = c.id
+  );
+
+INSERT INTO knowledge_bases (owner_id, name, description, subject, grade_level, visibility, status)
+SELECT t.id, 'Newton Laws Unit', 'Class notes and worked examples for motion and force.', 'Physics', 8, 'class', 'active'
+FROM tutor_users t
+WHERE t.root_user_id = 102
+  AND NOT EXISTS (
+      SELECT 1 FROM knowledge_bases kb WHERE kb.owner_id = t.id AND kb.name = 'Newton Laws Unit'
+  );
+
+INSERT INTO kb_class_assignments (kb_id, class_id)
+SELECT kb.id, c.id
+FROM knowledge_bases kb
+JOIN tutor_users t ON t.id = kb.owner_id AND t.root_user_id = 102
+JOIN classes c ON c.teacher_id = t.id AND c.name = 'Grade 8 Physics A'
+WHERE kb.name = 'Newton Laws Unit'
+  AND NOT EXISTS (
+      SELECT 1 FROM kb_class_assignments a WHERE a.kb_id = kb.id AND a.class_id = c.id
+  );
+
+INSERT INTO student_mastery (student_id, subject, topic, mastery_level, reasoning_quality, last_assessed_at)
+SELECT s.id, 'Physics', v.topic, v.mastery_level, v.reasoning_quality, NOW()
+FROM tutor_users s
+JOIN (
+    VALUES
+        (101, 'Newton''s 2nd Law', 2, 2),
+        (101, 'Free-Body Diagrams', 3, 3),
+        (201, 'Newton''s 2nd Law', 4, 4),
+        (201, 'Momentum', 3, 3),
+        (202, 'Force And Motion', 1, 2)
+) AS v(root_user_id, topic, mastery_level, reasoning_quality)
+    ON v.root_user_id = s.root_user_id
+WHERE NOT EXISTS (
+    SELECT 1 FROM student_mastery sm WHERE sm.student_id = s.id AND sm.subject = 'Physics' AND sm.topic = v.topic
+);
+
+INSERT INTO misconception_log (student_id, subject, topic, misconception_type, description, detected_at)
+SELECT s.id, 'Physics', v.topic, v.kind, v.description, NOW()
+FROM tutor_users s
+JOIN (
+    VALUES
+        (101, 'Newton''s 2nd Law', 'formula-confusion', 'Confuses force with mass when rearranging F = ma.'),
+        (202, 'Force And Motion', 'directionality', 'Treats velocity and acceleration as always pointing in the same direction.')
+) AS v(root_user_id, topic, kind, description)
+    ON v.root_user_id = s.root_user_id
+WHERE NOT EXISTS (
+    SELECT 1 FROM misconception_log m WHERE m.student_id = s.id AND m.topic = v.topic AND m.misconception_type = v.kind
+);
+
+INSERT INTO adaptive_quiz_attempts (user_id, subject, topic, difficulty, question_text, correct_answer, selected_answer, is_correct, status, submitted_at)
+SELECT s.id, 'Physics', v.topic, 2, v.question_text, v.correct_answer, v.selected_answer, v.is_correct, 'graded', NOW()
+FROM tutor_users s
+JOIN (
+    VALUES
+        (101, 'Newton''s 2nd Law', 'What happens to acceleration if force doubles and mass stays the same?', 'It doubles', 'It stays the same', FALSE),
+        (101, 'Free-Body Diagrams', 'A balanced force diagram shows what net force?', 'Zero', 'Zero', TRUE),
+        (201, 'Momentum', 'Momentum depends on mass and what else?', 'Velocity', 'Velocity', TRUE)
+    ) AS v(root_user_id, topic, question_text, correct_answer, selected_answer, is_correct)
+    ON v.root_user_id = s.root_user_id
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM adaptive_quiz_attempts q
+    WHERE q.user_id = s.id
+      AND q.topic = v.topic
+      AND q.question_text = v.question_text
+);
+
+INSERT INTO tutor_sessions (user_id, persona_id, class_id, subject, topic, mode, status, tokens_used, model_used, started_at)
+SELECT s.id, p.id, c.id, 'Physics', v.topic, 'teach_me', 'completed', v.tokens_used, 'gpt-4o-mini', NOW() - v.offset_interval
+FROM tutor_users s
+JOIN (
+    VALUES
+        (101, 'Newton''s 2nd Law', 10, INTERVAL '2 days'),
+        (201, 'Momentum', 14, INTERVAL '1 day')
+    ) AS v(root_user_id, topic, tokens_used, offset_interval)
+    ON v.root_user_id = s.root_user_id
+JOIN tutor_personas p ON p.slug = 'reza'
+JOIN tutor_users teacher ON teacher.root_user_id = 102
+JOIN classes c ON c.teacher_id = teacher.id AND c.name = 'Grade 8 Physics A'
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM tutor_sessions ts
+    WHERE ts.user_id = s.id
+      AND ts.class_id = c.id
+      AND ts.topic = v.topic
+);
+
+INSERT INTO tutor_messages (session_id, kb_id, role, content, mode, tokens_used, model_used, created_at)
+SELECT ts.id, kb.id, v.role, v.content, 'chat', 40, 'gpt-4o-mini', NOW()
+FROM tutor_sessions ts
+JOIN tutor_users s ON s.id = ts.user_id
+JOIN knowledge_bases kb ON kb.name = 'Newton Laws Unit'
+JOIN (
+    VALUES
+        ('user', 'I do not understand why acceleration changes when force changes.'),
+        ('assistant', 'Start with F = ma. If mass stays fixed and force gets bigger, acceleration must also get bigger.')
+    ) AS v(role, content) ON TRUE
+WHERE s.root_user_id = 101
+  AND ts.topic = 'Newton''s 2nd Law'
+  AND NOT EXISTS (
+      SELECT 1 FROM tutor_messages m WHERE m.session_id = ts.id AND m.content = v.content
+  );
+
+INSERT INTO assessments (teacher_id, title, type, subject, grade_level, standards_json, time_limit_minutes)
+SELECT t.id, 'Physics Checkpoint 1', 'quiz', 'Physics', 8, '[]'::jsonb, 15
+FROM tutor_users t
+WHERE t.root_user_id = 102
+  AND NOT EXISTS (
+      SELECT 1 FROM assessments a WHERE a.teacher_id = t.id AND a.title = 'Physics Checkpoint 1'
+  );
+
+INSERT INTO assessment_questions (assessment_id, question_type, content, correct_answer, sort_order)
+SELECT a.id, 'short-answer', 'Explain what it means when net force equals zero.', 'The forces are balanced so acceleration is zero.', 1
+FROM assessments a
+JOIN tutor_users t ON t.id = a.teacher_id AND t.root_user_id = 102
+WHERE a.title = 'Physics Checkpoint 1'
+  AND NOT EXISTS (
+      SELECT 1 FROM assessment_questions q WHERE q.assessment_id = a.id AND q.content = 'Explain what it means when net force equals zero.'
+  );
+
+INSERT INTO teacher_reports (teacher_id, class_id, student_id, report_type, title, status, body_json)
+SELECT t.id, c.id, s.id, 'summary', 'Physics Progress Draft', 'draft',
+       '{"suggestions":["Review force-mass-acceleration relationships with one worked example.","Ask the student to narrate each step before solving independently."]}'::jsonb
+FROM tutor_users t
+JOIN classes c ON c.teacher_id = t.id AND c.name = 'Grade 8 Physics A'
+JOIN tutor_users s ON s.root_user_id = 101
+WHERE t.root_user_id = 102
+  AND NOT EXISTS (
+      SELECT 1 FROM teacher_reports r WHERE r.teacher_id = t.id AND r.title = 'Physics Progress Draft'
+  );
+
+COMMIT;

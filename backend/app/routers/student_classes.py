@@ -131,3 +131,94 @@ async def list_student_classes(request: Request):
             for row in class_rows
         ]
     }
+
+
+@router.post("/join")
+async def join_class_with_invite(request: Request):
+    rate_limit_response = await enforce_user_rate_limit(request, endpoint_key=f"{request.method}:{request.url.path}")
+    if rate_limit_response is not None:
+        return rate_limit_response
+    if not request.session.get("access_token"):
+        return JSONResponse(status_code=401, content={"error": "Not authenticated"})
+
+    decision = evaluate_access(request.session.get("user"), ["student", "admin"])
+    if not decision.allowed:
+        return JSONResponse(status_code=403, content={"error": "Student or admin role required", "access": decision.as_dict()})
+
+    tutor_user_id = _get_tutor_user_id(request)
+    if tutor_user_id is None:
+        return JSONResponse(status_code=401, content={"error": "Tutor user not synced"})
+
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+
+    invite_code = str(body.get("invite_code") or "").strip().upper()
+    if not invite_code:
+        return JSONResponse(status_code=400, content={"error": "invite_code is required"})
+
+    db_pool = getattr(request.app.state, "db_pool", None)
+    if db_pool is None:
+        return JSONResponse(status_code=503, content={"error": "Database not configured"})
+
+    try:
+        async with db_pool.acquire() as conn:
+            class_row = await conn.fetchrow(
+                """
+                SELECT id, teacher_id, name, subject, grade_level, invite_code
+                FROM classes
+                WHERE invite_code = $1
+                """,
+                invite_code,
+            )
+            if not class_row:
+                return JSONResponse(status_code=404, content={"error": "Invite code not found"})
+
+            student_row = await conn.fetchrow(
+                "SELECT id, role FROM tutor_users WHERE id = $1",
+                tutor_user_id,
+            )
+            if not student_row or str(student_row["role"]).lower() != "student":
+                return JSONResponse(status_code=400, content={"error": "Only student users can join classes"})
+
+            enrollment = await conn.fetchrow(
+                """
+                INSERT INTO class_enrollments (class_id, student_id, status)
+                VALUES ($1, $2, 'active')
+                ON CONFLICT (class_id, student_id)
+                DO UPDATE SET status = 'active'
+                RETURNING id, class_id, student_id, enrolled_at, status
+                """,
+                class_row["id"],
+                tutor_user_id,
+            )
+            await conn.execute(
+                """
+                INSERT INTO teacher_student_links (teacher_id, student_id, status, source, notes_json)
+                VALUES ($1, $2, 'active', 'class-join', '{}'::jsonb)
+                ON CONFLICT (teacher_id, student_id)
+                DO UPDATE SET status = 'active', source = 'class-join'
+                """,
+                class_row["teacher_id"],
+                tutor_user_id,
+            )
+    except Exception as exc:
+        return JSONResponse(status_code=500, content={"error": "Failed to join class", "details": str(exc)})
+
+    return {
+        "class": {
+            "id": class_row["id"],
+            "name": class_row["name"],
+            "subject": class_row["subject"],
+            "grade_level": class_row["grade_level"],
+            "invite_code": class_row["invite_code"],
+        },
+        "enrollment": {
+            "id": enrollment["id"],
+            "class_id": enrollment["class_id"],
+            "student_id": enrollment["student_id"],
+            "status": enrollment["status"],
+            "enrolled_at": enrollment["enrolled_at"].isoformat() if enrollment["enrolled_at"] else None,
+        },
+    }

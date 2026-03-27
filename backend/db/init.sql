@@ -93,6 +93,41 @@ CREATE TABLE IF NOT EXISTS class_enrollments (
     UNIQUE(class_id, student_id)
 );
 
+CREATE TABLE IF NOT EXISTS teacher_student_links (
+    id                  SERIAL PRIMARY KEY,
+    teacher_id          INTEGER NOT NULL REFERENCES tutor_users(id) ON DELETE CASCADE,
+    student_id          INTEGER NOT NULL REFERENCES tutor_users(id) ON DELETE CASCADE,
+    status              VARCHAR(20) NOT NULL DEFAULT 'active',
+    source              VARCHAR(50) DEFAULT 'manual',
+    notes_json          JSONB,
+    created_at          TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE(teacher_id, student_id)
+);
+
+CREATE TABLE IF NOT EXISTS teacher_join_codes (
+    id                  SERIAL PRIMARY KEY,
+    teacher_id          INTEGER NOT NULL REFERENCES tutor_users(id) ON DELETE CASCADE,
+    code                VARCHAR(24) NOT NULL UNIQUE,
+    status              VARCHAR(20) NOT NULL DEFAULT 'active',
+    expires_at          TIMESTAMPTZ,
+    metadata_json       JSONB,
+    created_at          TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS teacher_join_requests (
+    id                  SERIAL PRIMARY KEY,
+    teacher_id          INTEGER NOT NULL REFERENCES tutor_users(id) ON DELETE CASCADE,
+    student_id          INTEGER NOT NULL REFERENCES tutor_users(id) ON DELETE CASCADE,
+    join_code_id        INTEGER REFERENCES teacher_join_codes(id) ON DELETE SET NULL,
+    class_id            INTEGER REFERENCES classes(id) ON DELETE SET NULL,
+    status              VARCHAR(20) NOT NULL DEFAULT 'pending',
+    request_message     TEXT,
+    reviewed_by         INTEGER REFERENCES tutor_users(id) ON DELETE SET NULL,
+    requested_at        TIMESTAMPTZ DEFAULT NOW(),
+    reviewed_at         TIMESTAMPTZ,
+    UNIQUE(teacher_id, student_id, class_id)
+);
+
 DO $$
 BEGIN
     IF NOT EXISTS (
@@ -299,6 +334,19 @@ CREATE TABLE IF NOT EXISTS assessment_attempts (
     completed_at        TIMESTAMPTZ
 );
 
+CREATE TABLE IF NOT EXISTS teacher_reports (
+    id                  SERIAL PRIMARY KEY,
+    teacher_id          INTEGER NOT NULL REFERENCES tutor_users(id) ON DELETE CASCADE,
+    class_id            INTEGER REFERENCES classes(id) ON DELETE SET NULL,
+    student_id          INTEGER REFERENCES tutor_users(id) ON DELETE SET NULL,
+    report_type         VARCHAR(50) NOT NULL,
+    title               VARCHAR(255) NOT NULL,
+    status              VARCHAR(20) NOT NULL DEFAULT 'draft',
+    body_json           JSONB NOT NULL DEFAULT '{}'::jsonb,
+    created_at          TIMESTAMPTZ DEFAULT NOW(),
+    updated_at          TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- Gamification tables
 CREATE TABLE IF NOT EXISTS student_xp (
     id                  SERIAL PRIMARY KEY,
@@ -489,6 +537,11 @@ CREATE INDEX IF NOT EXISTS idx_chunks_embedding ON kb_chunks USING hnsw (embeddi
 CREATE INDEX IF NOT EXISTS idx_classes_teacher ON classes(teacher_id);
 CREATE INDEX IF NOT EXISTS idx_enrollments_class ON class_enrollments(class_id);
 CREATE INDEX IF NOT EXISTS idx_enrollments_student ON class_enrollments(student_id);
+CREATE INDEX IF NOT EXISTS idx_teacher_links_teacher ON teacher_student_links(teacher_id);
+CREATE INDEX IF NOT EXISTS idx_teacher_links_student ON teacher_student_links(student_id);
+CREATE INDEX IF NOT EXISTS idx_teacher_join_codes_teacher ON teacher_join_codes(teacher_id);
+CREATE INDEX IF NOT EXISTS idx_teacher_join_requests_teacher ON teacher_join_requests(teacher_id, status);
+CREATE INDEX IF NOT EXISTS idx_teacher_join_requests_student ON teacher_join_requests(student_id, status);
 CREATE INDEX IF NOT EXISTS idx_tutor_sessions_class ON tutor_sessions(class_id);
 CREATE INDEX IF NOT EXISTS idx_tutor_messages_kb ON tutor_messages(kb_id);
 CREATE INDEX IF NOT EXISTS idx_mastery_student ON student_mastery(student_id);
@@ -498,6 +551,7 @@ CREATE INDEX IF NOT EXISTS idx_hint_progressions_session ON hint_progressions(se
 CREATE INDEX IF NOT EXISTS idx_adaptive_quiz_user ON adaptive_quiz_attempts(user_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_adaptive_quiz_session ON adaptive_quiz_attempts(session_id);
 CREATE INDEX IF NOT EXISTS idx_assessment_attempts_student ON assessment_attempts(student_id);
+CREATE INDEX IF NOT EXISTS idx_teacher_reports_teacher ON teacher_reports(teacher_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_xp_transactions_student ON xp_transactions(student_id);
 CREATE INDEX IF NOT EXISTS idx_flashcard_decks_student ON flashcard_decks(student_id);
 CREATE INDEX IF NOT EXISTS idx_flashcards_deck ON flashcards(deck_id);

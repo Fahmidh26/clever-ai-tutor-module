@@ -26,8 +26,13 @@ from app.routers.quizzes import router as quizzes_router
 from app.routers.modes import router as modes_router
 from app.routers.sessions import router as sessions_router
 from app.routers.student_classes import router as student_classes_router
+from app.routers.teacher_assessments import router as teacher_assessments_router
 from app.routers.teacher_classes import router as teacher_classes_router
 from app.routers.teacher_kb import router as teacher_kb_router
+from app.routers.teacher_monitoring import router as teacher_monitoring_router
+from app.routers.teacher_personas import router as teacher_personas_router
+from app.routers.teacher_reports import router as teacher_reports_router
+from app.routers.teacher_roster import router as teacher_roster_router
 from app.services.rate_limiter import close_rate_limiter, init_rate_limiter
 
 configure_logging()
@@ -74,8 +79,13 @@ app.include_router(mastery_router)
 app.include_router(misconceptions_router)
 app.include_router(progress_dashboards_router)
 app.include_router(quizzes_router)
+app.include_router(teacher_assessments_router)
 app.include_router(teacher_classes_router)
 app.include_router(teacher_kb_router)
+app.include_router(teacher_monitoring_router)
+app.include_router(teacher_personas_router)
+app.include_router(teacher_reports_router)
+app.include_router(teacher_roster_router)
 app.include_router(proxy_router)
 app.include_router(health_router)
 

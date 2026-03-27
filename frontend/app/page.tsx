@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useAuthContext } from "@/components/auth/auth-context";
 import { MessageRenderer } from "@/components/chat/message-renderer";
 import { ProtectedRoute } from "@/components/auth/protected-route";
+import { TeacherControlCenter } from "@/components/teacher/teacher-control-center";
 import { Button } from "@/components/ui/button";
 import { createApiClient } from "@/lib/api-client";
 import { useChatStore } from "@/stores/chat-store";
@@ -1500,6 +1501,8 @@ export default function HomePage() {
                 ) : null}
               </div>
             </section>
+
+            {isTeacherRole ? <TeacherControlCenter /> : null}
 
             <header className="header">
               <div>

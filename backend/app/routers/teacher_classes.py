@@ -246,6 +246,11 @@ async def get_class_roster(request: Request, class_id: int):
     }
 
 
+@router.get("/{class_id:int}/roster")
+async def get_class_roster_alias(request: Request, class_id: int):
+    return await get_class_roster(request, class_id)
+
+
 @router.post("/{class_id:int}/enroll")
 async def enroll_student(request: Request, class_id: int):
     rate_limit_response = await enforce_user_rate_limit(request, endpoint_key=f"{request.method}:{request.url.path}")
@@ -310,6 +315,16 @@ async def enroll_student(request: Request, class_id: int):
                 class_id,
                 student_id,
             )
+            await conn.execute(
+                """
+                INSERT INTO teacher_student_links (teacher_id, student_id, status, source, notes_json)
+                VALUES ($1, $2, 'active', 'teacher-enrollment', '{}'::jsonb)
+                ON CONFLICT (teacher_id, student_id)
+                DO UPDATE SET status = 'active', source = 'teacher-enrollment'
+                """,
+                tutor_user_id,
+                student_id,
+            )
     except Exception as exc:
         return JSONResponse(status_code=500, content={"error": "Failed to enroll student", "details": str(exc)})
 
@@ -368,3 +383,47 @@ async def remove_enrollment(request: Request, class_id: int, enrollment_id: int)
         return JSONResponse(status_code=404, content={"error": "Enrollment not found"})
     return {"ok": True, "class_id": class_id, "enrollment_id": enrollment_id}
 
+
+@router.post("/{class_id:int}/invite")
+async def rotate_class_invite(request: Request, class_id: int):
+    rate_limit_response = await enforce_user_rate_limit(request, endpoint_key=f"{request.method}:{request.url.path}")
+    if rate_limit_response is not None:
+        return rate_limit_response
+
+    token = request.session.get("access_token")
+    if not token:
+        return JSONResponse(status_code=401, content={"error": "Not authenticated"})
+
+    role_response = _require_teacher_or_admin(request)
+    if role_response is not None:
+        return role_response
+
+    tutor_user_id = _get_tutor_user_id(request)
+    if tutor_user_id is None:
+        return JSONResponse(status_code=401, content={"error": "Tutor user not synced"})
+
+    db_pool = getattr(request.app.state, "db_pool", None)
+    if db_pool is None:
+        return JSONResponse(status_code=503, content={"error": "Database not configured"})
+
+    invite_code = _new_invite_code()
+    try:
+        async with db_pool.acquire() as conn:
+            row = await conn.fetchrow(
+                """
+                UPDATE classes
+                SET invite_code = $3
+                WHERE id = $1 AND teacher_id = $2
+                RETURNING id, invite_code
+                """,
+                class_id,
+                tutor_user_id,
+                invite_code,
+            )
+    except Exception as exc:
+        return JSONResponse(status_code=500, content={"error": "Failed to rotate invite code", "details": str(exc)})
+
+    if not row:
+        return JSONResponse(status_code=404, content={"error": "Class not found"})
+
+    return {"class_id": row["id"], "invite_code": row["invite_code"]}

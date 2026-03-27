@@ -9,6 +9,7 @@
 
 - Teacher section architecture and workflows: [PHASE_2_TEACHER_SECTION_PLAN.md](./PHASE_2_TEACHER_SECTION_PLAN.md)
 - Teacher implementation tracker: [PHASE_2_TEACHER_TRACKER.md](./PHASE_2_TEACHER_TRACKER.md)
+- Teacher-only seeded validation flow: [TEACHER_TESTING_GUIDE.md](./TEACHER_TESTING_GUIDE.md)
 
 ## 1. Core Principle
 

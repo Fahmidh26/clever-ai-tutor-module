@@ -42,17 +42,17 @@ No teacher task is complete until role-boundary testing is also verified.
 | Student lands in student workspace inside the same app shell | `Done` | `/api/me`, frontend RBAC gating | Browser smoke | Student remains self-scoped |
 | Parent role remains scaffolded in the same shell | `Planned` | parent plan later | Route/API smoke later | Do not split to another app |
 | Admin retains global role access inside the same shell | `Done` | RBAC checks | Browser/API smoke | Admin is the only global role |
-| Teacher cannot browse unrelated students globally | `Planned` | roster handshake APIs | RBAC API tests | Must stay explicit in future implementation |
+| Teacher cannot browse unrelated students globally | `Done` | roster handshake APIs | RBAC API tests | Teacher analytics/replay now scope through links or teacher-owned classes |
 
 ## 3.2 Teacher Roster + Join Handshake
 
 | Item | Status | Dependencies | Validation | Notes |
 |---|---|---|---|---|
-| Define teacher roster as separate from class roster | `Planned` | schema and route design | Spec/doc review | Needed before class placement rules |
-| Teacher join code / invite flow | `Planned` | roster schema | API + browser | Supports explicit teacher-student linkage |
-| Pending join request approval flow | `Planned` | join request model | API + browser | Teacher approval gates visibility |
-| Auto-link teacher when student joins by class code | `Planned` | class join flow | API + browser | Hybrid join model |
-| Unassigned linked-student queue | `Planned` | teacher roster model | Browser + dashboard | Student linked but not yet in a class |
+| Define teacher roster as separate from class roster | `Done` | schema and route design | API + doc review | Implemented via `teacher_student_links` and `/api/teacher/roster` |
+| Teacher join code / invite flow | `Done` | roster schema | API + browser | `POST /api/teacher/join-codes` |
+| Pending join request approval flow | `Done` | join request model | API + browser | Approve/reject endpoints implemented |
+| Auto-link teacher when student joins by class code | `Done` | class join flow | API + browser | `POST /api/tutor/classes/join` ensures teacher link |
+| Unassigned linked-student queue | `Done` | teacher roster model | Browser + dashboard | Exposed in teacher control center |
 
 ## 3.3 Class Management
 
@@ -60,9 +60,9 @@ No teacher task is complete until role-boundary testing is also verified.
 |---|---|---|---|---|
 | Teacher create/list/select class | `Done` | `classes`, `/api/teacher/classes` | Browser + API | Existing class manager flow |
 | Manual enrollment from teacher-managed list | `Done` | `class_enrollments` | Browser + API | Currently by student id |
-| Class invite code scaffold | `Planned` | class invite schema | API + browser | Needed for self-join |
+| Class invite code scaffold | `Done` | class invite schema | API + browser | Invite rotation endpoint and student join flow added |
 | Bulk import scaffold | `Planned` | roster pipeline | Browser + file contract | Defer execution details |
-| Teacher class cockpit as primary workspace | `Planned` | dashboard composition | Browser | Preferred UX direction |
+| Teacher class cockpit as primary workspace | `Done` | dashboard composition | Browser | Teacher Control Center added inside app shell |
 
 ## 3.4 Knowledge Base + Assignment
 
@@ -73,7 +73,7 @@ No teacher task is complete until role-boundary testing is also verified.
 | KB-to-class assignment | `Done` | `kb_class_assignments` | Browser + API | Existing assignment workflow |
 | Student sees class-assigned materials | `Done` | student classes API, KB assignment | Browser | Exposed in `My Class Context` |
 | KB-backed chat usage appears in teacher metrics | `Done` | message KB linkage | API + browser | Included in teacher summary |
-| Teacher "test your tutor" KB preview | `Planned` | preview chat UX | Browser | Recommended next refinement |
+| Teacher "test your tutor" KB preview | `Done` | preview chat UX | Browser | Persona preview plus KB-backed class policy validation now available in teacher shell |
 
 ## 3.5 Persona / Tutor Policy
 
@@ -81,8 +81,8 @@ No teacher task is complete until role-boundary testing is also verified.
 |---|---|---|---|---|
 | Explain personas as tutor styles, not classroom teachers | `Done` | frontend copy | Browser | Already surfaced in UI |
 | Persona selection in student tutoring flow | `Done` | `/api/experts` | Browser | Existing |
-| Teacher-assigned persona defaults per class | `Planned` | persona policy routes/schema | API + browser | Important next teacher control |
-| Persona preview / teacher overlay instructions | `Planned` | teacher persona management | API + browser | Co-pilot/teaching policy bridge |
+| Teacher-assigned persona defaults per class | `Done` | persona policy routes/schema | API + browser | `/api/teacher/personas/classes/{id}` |
+| Persona preview / teacher overlay instructions | `Done` | teacher persona management | API + browser | Preview endpoint and class overlay instructions implemented |
 
 ## 3.6 Monitoring + Session Replay
 
@@ -90,18 +90,25 @@ No teacher task is complete until role-boundary testing is also verified.
 |---|---|---|---|---|
 | Teacher class summary metrics in dashboard | `Done` | progress router | Browser + API | Includes sessions/messages/KB counts |
 | Student summary remains student-owned view | `Done` | student progress router | Browser | Same app shell, different scope |
-| Active/inactive student queue | `Planned` | analytics thresholds | API + browser | Define threshold rules |
-| Session replay viewer | `Planned` | read-only session detail access | API + browser | High-value teacher feature |
-| Evidence-backed at-risk queue | `Planned` | analytics + rubric | API + browser | Needed before parent handoff |
+| Active/inactive student queue | `Done` | analytics thresholds | API + browser | Included in analytics + struggling queue |
+| Session replay viewer | `Done` | read-only session detail access | API + browser | `/api/teacher/session-replay/{id}` plus teacher UI |
+| Evidence-backed at-risk queue | `Done` | analytics + rubric | API + browser | `/api/teacher/analytics/struggling` |
 
 ## 3.7 Reports + Co-Pilot
 
 | Item | Status | Dependencies | Validation | Notes |
 |---|---|---|---|---|
-| Class report object definition | `Planned` | reporting contract | API contract tests | Supports exports and parent handoff |
-| Student summary object for teacher | `Planned` | analytics contract | API contract tests | Evidence-backed only |
-| Parent summary draft scaffold | `Planned` | reporting contract | API + browser | Teacher-reviewed drafts only |
-| Worksheet / intervention co-pilot drafts | `Planned` | teacher copilot endpoints | API + browser | Draft-only, no auto-mutation |
+| Class report object definition | `Done` | reporting contract | API contract tests | Stored in `teacher_reports` |
+| Student summary object for teacher | `Done` | analytics contract | API contract tests | Student analytics endpoint added |
+| Parent summary draft scaffold | `Done` | reporting contract | API + browser | Draft reports only |
+| Worksheet / intervention co-pilot drafts | `Done` | teacher copilot endpoints | API + browser | Suggestion + worksheet draft endpoints added |
+
+## 3.8.1 Assessments
+
+| Item | Status | Dependencies | Validation | Notes |
+|---|---|---|---|---|
+| Teacher assessment list/create/detail | `Done` | `assessments`, `assessment_questions` | API + browser | `/api/teacher/assessments*` |
+| Teacher question authoring | `Done` | assessment routes | API + browser | Simple question bank flow implemented |
 
 ## 3.8 Testing Coverage
 
@@ -110,8 +117,8 @@ No teacher task is complete until role-boundary testing is also verified.
 | Static validation workflow documented in `AGENTS.md` | `Done` | agent rules update | Doc review | lint, compile, link sanity |
 | API validation workflow documented in `AGENTS.md` | `Done` | agent rules update | Doc review | RBAC + teacher flow checks |
 | Browser validation workflow documented in `AGENTS.md` | `Done` | agent rules update | Doc review | Mandatory for teacher changes |
-| Teacher dashboard Playwright smoke test | `Blocked` | mocked API routes | `npm run e2e:list` passes; browser run currently blocked by existing auth-fetch harness issue | Spec scaffold added |
-| RBAC role-routing Playwright smoke test | `Blocked` | mocked API routes | `npm run e2e:list` passes; browser run currently blocked by existing auth-fetch harness issue | Spec scaffold added |
+| Teacher dashboard Playwright smoke test | `Blocked` | mocked API routes | `npm run e2e:list` passes; browser run still blocked by local auth fetch harness issue in current frontend test setup | Spec exists but current mocked-browser run does not reach authenticated shell |
+| RBAC role-routing Playwright smoke test | `Blocked` | mocked API routes | `npm run e2e:list` passes; browser run still blocked by local auth fetch harness issue in current frontend test setup | Spec exists but current mocked-browser run does not reach authenticated shell |
 | Real backend teacher E2E sequence | `Planned` | stable seeded workflow | Full e2e run | Add when invite flow stabilizes |
 
 ## 3.9 Documentation Alignment
@@ -154,19 +161,16 @@ No teacher task is complete until role-boundary testing is also verified.
 Implemented now:
 
 - single app shell with role-driven UX
-- teacher class management
+- teacher class management and class invite rotation
+- teacher roster links, join codes, join requests, and unassigned queue
 - KB management and class assignment
-- student class context and assigned materials
+- student class context, class self-join, and auto-link handshake
 - class-aware sessions and KB-backed chat linkage
-- richer teacher dashboard metrics
-- tutor persona copy clarified in the UI
+- richer teacher dashboard metrics, student drill-down, struggling queue, and session replay
+- class-level persona policy with preview + overlay instructions
+- draft-only co-pilot suggestions, worksheet drafts, and stored report drafts
+- teacher assessment authoring basics
 
-Planned next:
+Remaining validation gap:
 
-- teacher roster handshake
-- teacher/class invite codes
-- unassigned student queue
-- class-level persona policy
-- teacher session replay
-- evidence-backed at-risk queue
-- parent summary draft outputs
+- mocked-browser Playwright auth harness still does not enter the authenticated shell in current local setup, so browser automation is not fully green yet

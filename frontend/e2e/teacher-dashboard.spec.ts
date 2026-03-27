@@ -12,7 +12,7 @@ function json(body: unknown) {
 }
 
 async function mockJsonRoute(page: Page, path: string, body: unknown) {
-  await page.context().route(`${apiBase}${path}`, async (route) => {
+  await page.context().route(`**${path}`, async (route) => {
     await route.fulfill(json(body));
   });
 }

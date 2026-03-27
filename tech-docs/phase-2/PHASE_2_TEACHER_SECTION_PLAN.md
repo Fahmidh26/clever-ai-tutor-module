@@ -446,3 +446,21 @@ Planned teacher route groups:
 - marketplace
 - LMS sync execution
 - school-wide analytics beyond teacher/admin scope separation
+
+---
+
+## 11. Implementation Notes
+
+Implemented in repo now:
+
+- `/api/teacher/roster`, `/api/teacher/join-codes`, `/api/teacher/join-requests`
+- `/api/tutor/classes/join` for student class self-join with auto-link
+- `/api/teacher/personas` with class-level policy assignment and preview
+- `/api/teacher/analytics/*`, `/api/teacher/session-replay/*`, `/api/teacher/monitoring`
+- `/api/teacher/copilot/*`, `/api/teacher/reports`, `/api/teacher/communications`
+- `/api/teacher/assessments*`
+- frontend `Teacher Control Center` inside the same app shell
+
+Testing reference:
+
+- see `tech-docs/phase-2/TEACHER_TESTING_GUIDE.md` for exact accounts, seeded data, invite codes, and teacher-only validation order

@@ -56,11 +56,12 @@ Frontend calls `/api/experts` and `/api/expert-chat` (local). Proxy blocked for 
 - [x] Teacher implementation tracker created
 - [x] Agent testing workflow updated for teacher/RBAC validation
 - [x] Browser smoke coverage added for teacher dashboard and role routing
-- [ ] Teacher roster handshake and invite-code model implementation
-- [ ] Teacher class cockpit refinement
-- [ ] Class-level persona policy
-- [ ] Session replay and at-risk monitoring
-- [ ] Parent handoff summary objects
+- [x] Teacher roster handshake and invite-code model implementation
+- [x] Teacher class cockpit refinement
+- [x] Class-level persona policy
+- [x] Session replay and at-risk monitoring
+- [x] Parent handoff summary objects
+- [x] Teacher testing guide with seeded data and validation flow
 
 ---
 

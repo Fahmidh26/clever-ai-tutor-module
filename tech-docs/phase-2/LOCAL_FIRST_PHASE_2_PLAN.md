@@ -18,6 +18,12 @@ This phase starts **after** the tutor app can run locally with:
 
 The goal of this phase is to build product features normally, using the tutor app as the source of truth for feature behavior, data persistence, and UI workflows.
 
+Teacher follow-up implementation and testing references:
+
+- `tech-docs/phase-2/PHASE_2_TEACHER_SECTION_PLAN.md`
+- `tech-docs/phase-2/PHASE_2_TEACHER_TRACKER.md`
+- `tech-docs/phase-2/TEACHER_TESTING_GUIDE.md`
+
 This phase is where the app becomes genuinely usable for:
 
 - student learning flows
