@@ -4,6 +4,13 @@ Last updated: 2026-03-24
 
 This document is the practical guide for understanding login, roles, and feature access in this repo.
 
+Canonical role packs:
+
+- Student: `tech-docs/phase-2/PHASE_2_STUDENT_SECTION_PLAN.md`
+- Teacher: `tech-docs/phase-2/PHASE_2_TEACHER_SECTION_PLAN.md`
+- Admin: `tech-docs/phase-2/PHASE_2_ADMIN_SECTION_PLAN.md`
+- Parent: `tech-docs/phase-2/PHASE_2_PARENT_SECTION_PLAN.md`
+
 ## 1) Start Here (If You Are Confused)
 
 Do these 4 checks first:
@@ -92,6 +99,11 @@ Typical request path:
 - Use tutoring endpoints and student dashboard
 - Teacher-only APIs remain blocked by RBAC
 
+Detailed student references:
+
+- `tech-docs/phase-2/STUDENT_WORKFLOW_DIAGRAM.md`
+- `tech-docs/phase-2/STUDENT_TESTING_GUIDE.md`
+
 ## 7) Teacher/Admin Flow (What Happens)
 
 Teacher/admin capabilities:
@@ -101,7 +113,29 @@ Teacher/admin capabilities:
 
 RBAC checks allow `teacher` or `admin` for teacher routes.
 
-## 8) Mermaid Diagram: End-to-End
+Detailed teacher references:
+
+- `tech-docs/phase-2/TEACHER_WORKFLOW_DIAGRAM.md`
+- `tech-docs/phase-2/TEACHER_TESTING_GUIDE.md`
+
+Detailed admin references:
+
+- `tech-docs/phase-2/ADMIN_WORKFLOW_DIAGRAM.md`
+- `tech-docs/phase-2/ADMIN_TESTING_GUIDE.md`
+
+## 8) Parent Flow (What Happens)
+
+Parent-visible current capabilities:
+
+- local role resolution and shell gating
+- future linked-child dashboard and reports remain scaffolded
+
+Detailed parent references:
+
+- `tech-docs/phase-2/PARENT_WORKFLOW_DIAGRAM.md`
+- `tech-docs/phase-2/PARENT_TESTING_GUIDE.md`
+
+## 9) Mermaid Diagram: End-to-End
 
 ```mermaid
 flowchart TD
@@ -121,7 +155,7 @@ flowchart TD
   K -->|parent| N[Parent flows when implemented]
 ```
 
-## 9) How To Verify Your Current Role Quickly
+## 10) How To Verify Your Current Role Quickly
 
 Use Postgres and inspect `tutor_users`:
 
@@ -134,7 +168,7 @@ LIMIT 20;
 
 Current behavior (updated): if your local tutor role is higher-priority (for example `teacher` or `admin`), login sync keeps it unless the provider explicitly sends an equal/higher valid tutor role.
 
-## 10) Recommended Role Strategy (So Team Stops Getting Stuck)
+## 11) Recommended Role Strategy (So Team Stops Getting Stuck)
 
 Pick one strategy and document it in both repos.
 
@@ -146,7 +180,7 @@ Recommended now:
 
 Without this policy, teacher access will be inconsistent.
 
-## 11) Practical Next Steps (Order)
+## 12) Practical Next Steps (Order)
 
 1. Finalize role mapping policy (above) with team.
 2. Implement/adjust sync logic so local teacher role is preserved as intended.
@@ -156,7 +190,7 @@ Without this policy, teacher access will be inconsistent.
    - account B -> teacher/admin
 5. Update this doc and checklist after behavior is confirmed.
 
-## 12) Endpoint Map (Quick Reference)
+## 13) Endpoint Map (Quick Reference)
 
 Auth/session:
 - `GET /oauth/login`

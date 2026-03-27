@@ -7,9 +7,18 @@
 
 ## Planning References
 
+- Student section architecture and workflows: [PHASE_2_STUDENT_SECTION_PLAN.md](./PHASE_2_STUDENT_SECTION_PLAN.md)
+- Student implementation tracker: [PHASE_2_STUDENT_TRACKER.md](./PHASE_2_STUDENT_TRACKER.md)
+- Student-only seeded validation flow: [STUDENT_TESTING_GUIDE.md](./STUDENT_TESTING_GUIDE.md)
 - Teacher section architecture and workflows: [PHASE_2_TEACHER_SECTION_PLAN.md](./PHASE_2_TEACHER_SECTION_PLAN.md)
 - Teacher implementation tracker: [PHASE_2_TEACHER_TRACKER.md](./PHASE_2_TEACHER_TRACKER.md)
 - Teacher-only seeded validation flow: [TEACHER_TESTING_GUIDE.md](./TEACHER_TESTING_GUIDE.md)
+- Admin section architecture and workflows: [PHASE_2_ADMIN_SECTION_PLAN.md](./PHASE_2_ADMIN_SECTION_PLAN.md)
+- Admin implementation tracker: [PHASE_2_ADMIN_TRACKER.md](./PHASE_2_ADMIN_TRACKER.md)
+- Admin validation flow: [ADMIN_TESTING_GUIDE.md](./ADMIN_TESTING_GUIDE.md)
+- Parent section architecture and workflows: [PHASE_2_PARENT_SECTION_PLAN.md](./PHASE_2_PARENT_SECTION_PLAN.md)
+- Parent implementation tracker: [PHASE_2_PARENT_TRACKER.md](./PHASE_2_PARENT_TRACKER.md)
+- Parent validation flow: [PARENT_TESTING_GUIDE.md](./PARENT_TESTING_GUIDE.md)
 
 ## 1. Core Principle
 
@@ -186,6 +195,18 @@ flowchart LR
 - assigned class materials
 - class-level activity summary
 - student-level progress summary
+
+### Parent reads later
+
+- linked-child summaries only
+- parent-facing reports and handoff summaries
+- child support signals without teacher-global analytics
+
+### Admin reads globally
+
+- all role and class relationships
+- cross-class instructional asset state
+- global analytics and governance anomalies
 
 ---
 
@@ -404,6 +425,12 @@ Teacher planning follow-up:
 - use [PHASE_2_TEACHER_SECTION_PLAN.md](./PHASE_2_TEACHER_SECTION_PLAN.md) for the granular teacher workflows, role-scope model, and student-profile handoff points
 - use [PHASE_2_TEACHER_TRACKER.md](./PHASE_2_TEACHER_TRACKER.md) for execution order, status, and validation requirements
 
+Other role follow-up references:
+
+- use [PHASE_2_STUDENT_SECTION_PLAN.md](./PHASE_2_STUDENT_SECTION_PLAN.md) and [PHASE_2_STUDENT_TRACKER.md](./PHASE_2_STUDENT_TRACKER.md) for student ownership, class context, and self-view progress rules
+- use [PHASE_2_ADMIN_SECTION_PLAN.md](./PHASE_2_ADMIN_SECTION_PLAN.md) and [PHASE_2_ADMIN_TRACKER.md](./PHASE_2_ADMIN_TRACKER.md) for the global super-role model and governance scope
+- use [PHASE_2_PARENT_SECTION_PLAN.md](./PHASE_2_PARENT_SECTION_PLAN.md) and [PHASE_2_PARENT_TRACKER.md](./PHASE_2_PARENT_TRACKER.md) for linked-child scope, parent summaries, and planned parent surfaces
+
 ---
 
 ## 10. Remaining Non-Goals For This Phase
@@ -411,7 +438,6 @@ Teacher planning follow-up:
 These may still be deferred:
 
 - parent-specific UX
-- student self-join by invite code
 - class-scoped assignments/homework products
 - parent dashboard
 - advanced teacher analytics beyond current class metrics

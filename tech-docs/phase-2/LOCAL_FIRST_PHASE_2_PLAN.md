@@ -18,11 +18,20 @@ This phase starts **after** the tutor app can run locally with:
 
 The goal of this phase is to build product features normally, using the tutor app as the source of truth for feature behavior, data persistence, and UI workflows.
 
-Teacher follow-up implementation and testing references:
+Role follow-up implementation and testing references:
 
+- `tech-docs/phase-2/PHASE_2_STUDENT_SECTION_PLAN.md`
+- `tech-docs/phase-2/PHASE_2_STUDENT_TRACKER.md`
+- `tech-docs/phase-2/STUDENT_TESTING_GUIDE.md`
 - `tech-docs/phase-2/PHASE_2_TEACHER_SECTION_PLAN.md`
 - `tech-docs/phase-2/PHASE_2_TEACHER_TRACKER.md`
 - `tech-docs/phase-2/TEACHER_TESTING_GUIDE.md`
+- `tech-docs/phase-2/PHASE_2_ADMIN_SECTION_PLAN.md`
+- `tech-docs/phase-2/PHASE_2_ADMIN_TRACKER.md`
+- `tech-docs/phase-2/ADMIN_TESTING_GUIDE.md`
+- `tech-docs/phase-2/PHASE_2_PARENT_SECTION_PLAN.md`
+- `tech-docs/phase-2/PHASE_2_PARENT_TRACKER.md`
+- `tech-docs/phase-2/PARENT_TESTING_GUIDE.md`
 
 This phase is where the app becomes genuinely usable for:
 
@@ -97,6 +106,21 @@ For teacher-specific implementation planning inside the same RBAC-driven app she
 
 - [PHASE_2_TEACHER_SECTION_PLAN.md](./PHASE_2_TEACHER_SECTION_PLAN.md)
 - [PHASE_2_TEACHER_TRACKER.md](./PHASE_2_TEACHER_TRACKER.md)
+
+For the student self-view and learner-owned activity model, use:
+
+- [PHASE_2_STUDENT_SECTION_PLAN.md](./PHASE_2_STUDENT_SECTION_PLAN.md)
+- [PHASE_2_STUDENT_TRACKER.md](./PHASE_2_STUDENT_TRACKER.md)
+
+For admin global-governance planning inside the same app shell, use:
+
+- [PHASE_2_ADMIN_SECTION_PLAN.md](./PHASE_2_ADMIN_SECTION_PLAN.md)
+- [PHASE_2_ADMIN_TRACKER.md](./PHASE_2_ADMIN_TRACKER.md)
+
+For parent linked-child planning and future support surfaces, use:
+
+- [PHASE_2_PARENT_SECTION_PLAN.md](./PHASE_2_PARENT_SECTION_PLAN.md)
+- [PHASE_2_PARENT_TRACKER.md](./PHASE_2_PARENT_TRACKER.md)
 
 ---
 

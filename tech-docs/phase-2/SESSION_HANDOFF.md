@@ -5,8 +5,8 @@ Use this file when starting a new chat/session so work continues exactly where i
 ## Quick Resume Prompt (Copy/Paste)
 
 Continue this project from `tech-docs/phase-2/AI_TUTOR_PROGRESS_CHECKLIST.md` and `tech-docs/phase-1/WORKLOG.md`.
-**Master rules**: Read `AGENTS.md` in project root first — it contains all conventions, guidelines, and architecture rules.
-**Architecture**: Read `tech-docs/phase-1/ARCHITECTURE.md` — main site = auth/billing/credits only; experts/chat/sessions = local.
+**Master rules**: Read `AGENTS.md` in project root first. It contains all conventions, guidelines, and architecture rules.
+**Architecture**: Read `tech-docs/phase-1/ARCHITECTURE.md`. Main site = auth/billing/credits only; experts/chat/sessions = local.
 Current roadmap source: `tech-docs/phase-1/AI_TUTOR_MODULE.md`.
 Phase 3 functional phase specs: `tech-docs/phase-3/PHASE_3_OVERVIEW.md`.
 Main site (auth/billing/credits only): `C:\AISITENEW`.
@@ -16,21 +16,21 @@ After each task: implement, validate, and update checklist + worklog.
 
 ## Current Status Snapshot
 
-- Completed: Phase 1 (Foundation, Auth, Core Engine, RAG, UI/UX) — ~93%
-- Completed: Phase 2 (Intelligence Layer — hints, quiz, flashcards, mastery, misconceptions, dashboards) — 100%
-- Current: Grand Phase 3 — Advanced Features — 0% (7 functional phases)
-- Pending from Phase 1: `1.1.1` Python project init (pyproject.toml)
+- Completed: Phase 1 (Foundation, Auth, Core Engine, RAG, UI/UX) - ~93%
+- Completed: Phase 2 (Intelligence Layer - hints, quiz, flashcards, mastery, misconceptions, dashboards) - 100%
+- Current: Grand Phase 3 - Advanced Features - 0% (7 functional phases)
+- Pending from Phase 1: `1.1.1` Python project init (`pyproject.toml`)
 - Suggested next: Start FP 3.1 (Gamification) at task `3.1.1` (XP system)
 
 ## Phase 3 Functional Phases (in recommended order)
 
-1. **FP 3.1** Gamification & Streak Systems — `tech-docs/phase-3/PHASE_3.1_GAMIFICATION.md`
-2. **FP 3.2** Parent Dashboard & Co-Learning — `tech-docs/phase-3/PHASE_3.2_PARENT_DASHBOARD.md`
-3. **FP 3.3** Whiteboard, Code Sandbox, Math Editor — `tech-docs/phase-3/PHASE_3.3_INTERACTIVE_TOOLS.md`
-4. **FP 3.4** Audio Lessons, Mind Maps, Memory Score — `tech-docs/phase-3/PHASE_3.4_AUDIO_MINDMAPS_MEMORY.md`
-5. **FP 3.5** Educational Gaming Engine — `tech-docs/phase-3/PHASE_3.5_GAMING_ENGINE.md`
-6. **FP 3.6** Test Prep Framework — `tech-docs/phase-3/PHASE_3.6_TEST_PREP.md`
-7. **FP 3.7** Compliance, Accessibility, i18n — `tech-docs/phase-3/PHASE_3.7_COMPLIANCE_A11Y_I18N.md`
+1. **FP 3.1** Gamification & Streak Systems - `tech-docs/phase-3/PHASE_3.1_GAMIFICATION.md`
+2. **FP 3.2** Parent Dashboard & Co-Learning - `tech-docs/phase-3/PHASE_3.2_PARENT_DASHBOARD.md`
+3. **FP 3.3** Whiteboard, Code Sandbox, Math Editor - `tech-docs/phase-3/PHASE_3.3_INTERACTIVE_TOOLS.md`
+4. **FP 3.4** Audio Lessons, Mind Maps, Memory Score - `tech-docs/phase-3/PHASE_3.4_AUDIO_MINDMAPS_MEMORY.md`
+5. **FP 3.5** Educational Gaming Engine - `tech-docs/phase-3/PHASE_3.5_GAMING_ENGINE.md`
+6. **FP 3.6** Test Prep Framework - `tech-docs/phase-3/PHASE_3.6_TEST_PREP.md`
+7. **FP 3.7** Compliance, Accessibility, i18n - `tech-docs/phase-3/PHASE_3.7_COMPLIANCE_A11Y_I18N.md`
 
 ## Rules For Continuation
 
@@ -49,16 +49,20 @@ After each task: implement, validate, and update checklist + worklog.
 ## Documentation Map
 
 ```
-AGENTS.md                                    ← Master rules (root)
-tech-docs/phase-1/ARCHITECTURE.md            ← Core architecture
-tech-docs/phase-1/AI_TUTOR_MODULE.md         ← Master specification
-tech-docs/phase-1/AI_TUTOR_PLAN.md           ← Original roadmap
-tech-docs/phase-1/AI_TUTOR_TESTING_GUIDE.md  ← Testing reference
-tech-docs/phase-1/WORKLOG.md                 ← Development history
-tech-docs/phase-2/AI_TUTOR_PROGRESS_CHECKLIST.md ← Progress tracker
-tech-docs/phase-2/USER_FLOWS_DIAGRAMS.md     ← UX flow reference
-tech-docs/phase-3/PHASE_3_OVERVIEW.md        ← Phase 3 summary
-tech-docs/phase-3/PHASE_3.X_*.md             ← Functional phase specs
+AGENTS.md
+tech-docs/phase-1/ARCHITECTURE.md
+tech-docs/phase-1/AI_TUTOR_MODULE.md
+tech-docs/phase-1/AI_TUTOR_PLAN.md
+tech-docs/phase-1/AI_TUTOR_TESTING_GUIDE.md
+tech-docs/phase-1/WORKLOG.md
+tech-docs/phase-2/AI_TUTOR_PROGRESS_CHECKLIST.md
+tech-docs/phase-2/PHASE_2_STUDENT_SECTION_PLAN.md
+tech-docs/phase-2/PHASE_2_TEACHER_SECTION_PLAN.md
+tech-docs/phase-2/PHASE_2_ADMIN_SECTION_PLAN.md
+tech-docs/phase-2/PHASE_2_PARENT_SECTION_PLAN.md
+tech-docs/phase-2/USER_FLOWS_DIAGRAMS.md
+tech-docs/phase-3/PHASE_3_OVERVIEW.md
+tech-docs/phase-3/PHASE_3.X_*.md
 ```
 
 ## Optional Detailed Resume Prompt
