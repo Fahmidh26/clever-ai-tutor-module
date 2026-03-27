@@ -27,4 +27,12 @@ async def list_modes(request: Request):
     if not token:
         return JSONResponse(status_code=401, content={"error": "Not authenticated"})
 
-    return {"modes": MODE_DEFINITIONS}
+    return {
+        "modes": [
+            {
+                **mode,
+                "label": mode.get("name"),
+            }
+            for mode in MODE_DEFINITIONS
+        ]
+    }

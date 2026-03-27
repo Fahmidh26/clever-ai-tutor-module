@@ -222,7 +222,13 @@ async def generate_quiz_question(request: Request):
             "id": row["id"],
             "difficulty": row["difficulty"],
             "question": row["question_text"],
-            "options": row["options_json"] if isinstance(row["options_json"], list) else [],
+            "options": (
+                row["options_json"]
+                if isinstance(row["options_json"], list)
+                else json.loads(row["options_json"])
+                if isinstance(row["options_json"], str)
+                else []
+            ),
             "created_at": row["created_at"].isoformat() if row["created_at"] else None,
         },
         "execution_attempts": question.execution_attempts,

@@ -62,6 +62,7 @@ Frontend calls `/api/experts` and `/api/expert-chat` (local). Proxy blocked for 
 - [x] Session replay and at-risk monitoring
 - [x] Parent handoff summary objects
 - [x] Teacher testing guide with seeded data and validation flow
+- [x] Student real-backend browser validation flow with seeded local-dev login
 
 ## Multi-Role Phase 2 Documentation
 
@@ -339,6 +340,7 @@ Phase 1.3 provider subtask status (to implement locally in tutor):
 - 2026-03-12: Implemented student + teacher progress dashboards with backend APIs (`GET /api/tutor/progress/student`, `GET /api/tutor/progress/teacher?class_id=...`) and frontend dashboard panels for student metrics and teacher class rollups.
 - 2026-03-12: Phase 2 core marked complete (hint progression, adaptive quiz, explain-my-answer, flashcards/spaced repetition, mastery tracking, misconception detection, progress dashboards).
 - 2026-03-27: Added full Phase 2 role documentation packs for student, admin, and parent (`section plan`, `tracker`, `workflow diagram`, `testing guide`) and updated shared Phase 2 docs to cross-link all four role packs consistently.
+- 2026-03-27: Completed the student testing workstream `3.8 -> Real backend student E2E sequence` by adding `frontend/e2e/student-real-backend.spec.ts` and fixing local-dev blockers in chat/rate-limit/modes/quiz contracts so the seeded student browser flow passes against the real backend.
 
 > Update this file daily by checking completed tasks and adjusting percentage estimates.
 

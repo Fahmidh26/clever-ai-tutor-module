@@ -765,3 +765,25 @@ Notes:
 - **Session mode switch**: `PATCH /api/tutor/sessions/{id}/mode` — set session mode
 - **Mode-aware chat**: Chat endpoints accept `mode` and `hint_level`; inject mode-specific prompt instructions
 - **Hint mode**: 3-level hint progression (nudge → direction → approach) via `hint_level` param
+## 2026-03-27 - Student real-backend E2E workstream completed
+
+- Added real seeded-browser coverage: `frontend/e2e/student-real-backend.spec.ts`
+  - logs in with `student@local.dev`
+  - verifies `My Class Context`
+  - opens seeded session history
+  - creates a fresh session and sends a tutor message
+  - runs quiz generation/submission
+  - verifies student dashboard, mastery, and misconception surfaces
+- Fixed local student-chat blockers in backend:
+  - `backend/app/routers/chat.py`
+    - repaired broken `_get_tutor_user_id()` session lookup
+    - added heuristic chat fallback when no provider key is configured
+    - made class-KB retrieval fail open when embeddings are unavailable in local-dev mode
+- Hardened local validation/runtime dependencies:
+  - `backend/app/services/rate_limiter.py` now fails open when Redis is configured but unreachable, and disables the Redis client after the first connection failure
+  - `backend/app/routers/modes.py` now returns `label` alongside `name` so the frontend mode selector receives the contract it expects
+  - `backend/app/routers/quizzes.py` now normalizes `options_json` into a real string array for the frontend quiz workflow
+- Validation run for this workstream:
+  - `cmd /c npm run lint` in `frontend`
+  - `python -m compileall backend/app`
+  - `cmd /c npm run e2e -- student-real-backend.spec.ts`

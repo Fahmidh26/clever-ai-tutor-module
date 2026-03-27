@@ -11,16 +11,17 @@ Current roadmap source: `tech-docs/phase-1/AI_TUTOR_MODULE.md`.
 Phase 3 functional phase specs: `tech-docs/phase-3/PHASE_3_OVERVIEW.md`.
 Main site (auth/billing/credits only): `C:\AISITENEW`.
 Run one task at a time in order.
-Start from: `<PUT_NEXT_TASK_ID_HERE>` (for example: `3.1.1`).
+Start from: `Phase 2 student follow-up: role-routing Playwright auth harness stabilization`, then move to admin route foundations.
 After each task: implement, validate, and update checklist + worklog.
 
 ## Current Status Snapshot
 
 - Completed: Phase 1 (Foundation, Auth, Core Engine, RAG, UI/UX) - ~93%
 - Completed: Phase 2 (Intelligence Layer - hints, quiz, flashcards, mastery, misconceptions, dashboards) - 100%
+- Completed: student real-backend validation workstream (`PHASE_2_STUDENT_TRACKER.md -> 3.8 Real backend student E2E sequence`)
 - Current: Grand Phase 3 - Advanced Features - 0% (7 functional phases)
 - Pending from Phase 1: `1.1.1` Python project init (`pyproject.toml`)
-- Suggested next: Start FP 3.1 (Gamification) at task `3.1.1` (XP system)
+- Suggested next: finish remaining student validation/auth-harness gaps, then continue admin global workspace foundations inside the same RBAC shell
 
 ## Phase 3 Functional Phases (in recommended order)
 

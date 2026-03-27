@@ -1,0 +1,108 @@
+2026-03-27 16:43:33.413 +06 [1312] LOG:  starting PostgreSQL 16.2, compiled by Visual C++ build 1937, 64-bit
+2026-03-27 16:43:33.418 +06 [1312] LOG:  listening on IPv6 address "::1", port 5433
+2026-03-27 16:43:33.418 +06 [1312] LOG:  listening on IPv4 address "127.0.0.1", port 5433
+2026-03-27 16:43:33.458 +06 [13104] LOG:  database system was shut down at 2026-03-27 16:43:29 +06
+2026-03-27 16:43:33.473 +06 [1312] LOG:  database system is ready to accept connections
+2026-03-27 16:43:45.950 +06 [18616] ERROR:  relation "knowledge_bases" does not exist
+2026-03-27 16:43:45.950 +06 [18616] STATEMENT:  CREATE TABLE IF NOT EXISTS tutor_messages (
+	    id                  SERIAL PRIMARY KEY,
+	    session_id          INTEGER NOT NULL REFERENCES tutor_sessions(id) ON DELETE CASCADE,
+	    kb_id               INTEGER REFERENCES knowledge_bases(id) ON DELETE SET NULL,
+	    role                VARCHAR(20) NOT NULL,
+	    content             TEXT NOT NULL,
+	    mode                VARCHAR(20) DEFAULT 'chat',
+	    hint_level          SMALLINT,
+	    tokens_used         INTEGER DEFAULT 0,
+	    model_used          VARCHAR(100),
+	    feedback            VARCHAR(10),
+	    reasoning_quality_score SMALLINT,
+	    created_at          TIMESTAMPTZ DEFAULT NOW()
+	);
+2026-03-27 16:43:46.203 +06 [18616] ERROR:  relation "tutor_messages" does not exist
+2026-03-27 16:43:46.203 +06 [18616] STATEMENT:  CREATE INDEX IF NOT EXISTS idx_messages_session ON tutor_messages(session_id);
+2026-03-27 16:43:46.234 +06 [18616] ERROR:  relation "tutor_messages" does not exist
+2026-03-27 16:43:46.234 +06 [18616] STATEMENT:  CREATE INDEX IF NOT EXISTS idx_tutor_messages_kb ON tutor_messages(kb_id);
+2026-03-27 16:43:46.465 +06 [1548] ERROR:  relation "tutor_messages" does not exist at character 13
+2026-03-27 16:43:46.465 +06 [1548] STATEMENT:  INSERT INTO tutor_messages (session_id, kb_id, role, content, mode, tokens_used, model_used, created_at)
+	SELECT ts.id, kb.id, v.role, v.content, 'chat', 40, 'gpt-4o-mini', NOW()
+	FROM tutor_sessions ts
+	JOIN tutor_users s ON s.id = ts.user_id
+	JOIN knowledge_bases kb ON kb.name = 'Newton Laws Unit'
+	JOIN (
+	    VALUES
+	        ('user', 'I do not understand why acceleration changes when force changes.'),
+	        ('assistant', 'Start with F = ma. If mass stays fixed and force gets bigger, acceleration must also get bigger.')
+	    ) AS v(role, content) ON TRUE
+	WHERE s.root_user_id = 101
+	  AND ts.topic = 'Newton''s 2nd Law'
+	  AND NOT EXISTS (
+	      SELECT 1 FROM tutor_messages m WHERE m.session_id = ts.id AND m.content = v.content
+	  );
+2026-03-27 16:43:46.466 +06 [1548] ERROR:  current transaction is aborted, commands ignored until end of transaction block
+2026-03-27 16:43:46.466 +06 [1548] STATEMENT:  INSERT INTO assessments (teacher_id, title, type, subject, grade_level, standards_json, time_limit_minutes)
+	SELECT t.id, 'Physics Checkpoint 1', 'quiz', 'Physics', 8, '[]'::jsonb, 15
+	FROM tutor_users t
+	WHERE t.root_user_id = 102
+	  AND NOT EXISTS (
+	      SELECT 1 FROM assessments a WHERE a.teacher_id = t.id AND a.title = 'Physics Checkpoint 1'
+	  );
+2026-03-27 16:43:46.466 +06 [1548] ERROR:  current transaction is aborted, commands ignored until end of transaction block
+2026-03-27 16:43:46.466 +06 [1548] STATEMENT:  INSERT INTO assessment_questions (assessment_id, question_type, content, correct_answer, sort_order)
+	SELECT a.id, 'short-answer', 'Explain what it means when net force equals zero.', 'The forces are balanced so acceleration is zero.', 1
+	FROM assessments a
+	JOIN tutor_users t ON t.id = a.teacher_id AND t.root_user_id = 102
+	WHERE a.title = 'Physics Checkpoint 1'
+	  AND NOT EXISTS (
+	      SELECT 1 FROM assessment_questions q WHERE q.assessment_id = a.id AND q.content = 'Explain what it means when net force equals zero.'
+	  );
+2026-03-27 16:43:46.466 +06 [1548] ERROR:  current transaction is aborted, commands ignored until end of transaction block
+2026-03-27 16:43:46.466 +06 [1548] STATEMENT:  INSERT INTO teacher_reports (teacher_id, class_id, student_id, report_type, title, status, body_json)
+	SELECT t.id, c.id, s.id, 'summary', 'Physics Progress Draft', 'draft',
+	       '{"suggestions":["Review force-mass-acceleration relationships with one worked example.","Ask the student to narrate each step before solving independently."]}'::jsonb
+	FROM tutor_users t
+	JOIN classes c ON c.teacher_id = t.id AND c.name = 'Grade 8 Physics A'
+	JOIN tutor_users s ON s.root_user_id = 101
+	WHERE t.root_user_id = 102
+	  AND NOT EXISTS (
+	      SELECT 1 FROM teacher_reports r WHERE r.teacher_id = t.id AND r.title = 'Physics Progress Draft'
+	  );
+2026-03-27 16:45:49.750 +06 [15168] LOG:  could not receive data from client: An existing connection was forcibly closed by the remote host.
+	
+2026-03-27 16:47:13.378 +06 [15816] LOG:  could not receive data from client: An existing connection was forcibly closed by the remote host.
+	
+2026-03-27 16:48:33.456 +06 [14416] LOG:  checkpoint starting: time
+2026-03-27 16:49:22.901 +06 [18136] LOG:  could not receive data from client: An existing connection was forcibly closed by the remote host.
+	
+2026-03-27 16:49:22.901 +06 [7500] LOG:  could not receive data from client: An existing connection was forcibly closed by the remote host.
+	
+2026-03-27 16:49:22.901 +06 [9252] LOG:  could not receive data from client: An existing connection was forcibly closed by the remote host.
+	
+2026-03-27 16:50:52.041 +06 [14416] LOG:  checkpoint complete: wrote 1282 buffers (7.8%); 0 WAL file(s) added, 0 removed, 0 recycled; write=137.986 s, sync=0.585 s, total=138.586 s; sync files=559, longest=0.006 s, average=0.002 s; distance=6341 kB, estimate=6341 kB; lsn=0/1BA2810, redo lsn=0/1B9F590
+2026-03-27 16:51:37.504 +06 [7524] LOG:  could not receive data from client: An existing connection was forcibly closed by the remote host.
+	
+2026-03-27 16:51:37.504 +06 [300] LOG:  could not receive data from client: An existing connection was forcibly closed by the remote host.
+	
+2026-03-27 16:51:37.504 +06 [1820] LOG:  could not receive data from client: An existing connection was forcibly closed by the remote host.
+	
+2026-03-27 16:53:33.065 +06 [14416] LOG:  checkpoint starting: time
+2026-03-27 16:53:34.722 +06 [14416] LOG:  checkpoint complete: wrote 16 buffers (0.1%); 0 WAL file(s) added, 0 removed, 0 recycled; write=1.628 s, sync=0.021 s, total=1.657 s; sync files=16, longest=0.002 s, average=0.002 s; distance=16 kB, estimate=5708 kB; lsn=0/1BA38E0, redo lsn=0/1BA38A8
+2026-03-27 16:58:05.472 +06 [8912] LOG:  could not receive data from client: An existing connection was forcibly closed by the remote host.
+	
+2026-03-27 16:58:05.472 +06 [708] LOG:  could not receive data from client: An existing connection was forcibly closed by the remote host.
+	
+2026-03-27 16:58:05.472 +06 [12572] LOG:  could not receive data from client: An existing connection was forcibly closed by the remote host.
+	
+2026-03-27 16:58:33.732 +06 [14416] LOG:  checkpoint starting: time
+2026-03-27 16:58:35.933 +06 [14416] LOG:  checkpoint complete: wrote 21 buffers (0.1%); 0 WAL file(s) added, 0 removed, 0 recycled; write=2.158 s, sync=0.030 s, total=2.202 s; sync files=21, longest=0.006 s, average=0.002 s; distance=24 kB, estimate=5140 kB; lsn=0/1BA9B20, redo lsn=0/1BA9AB0
+2026-03-27 17:03:33.939 +06 [14416] LOG:  checkpoint starting: time
+2026-03-27 17:03:36.140 +06 [14416] LOG:  checkpoint complete: wrote 21 buffers (0.1%); 0 WAL file(s) added, 0 removed, 0 recycled; write=2.158 s, sync=0.030 s, total=2.202 s; sync files=21, longest=0.006 s, average=0.002 s; distance=32 kB, estimate=4629 kB; lsn=0/1BB1BF8, redo lsn=0/1BB1BC0
+2026-03-27 17:05:39.977 +06 [1312] LOG:  received fast shutdown request
+2026-03-27 17:05:39.979 +06 [1312] LOG:  aborting any active transactions
+2026-03-27 17:05:39.980 +06 [11252] FATAL:  terminating connection due to administrator command
+2026-03-27 17:05:39.980 +06 [3788] FATAL:  terminating connection due to administrator command
+2026-03-27 17:05:39.980 +06 [3148] FATAL:  terminating connection due to administrator command
+2026-03-27 17:05:39.987 +06 [1312] LOG:  background worker "logical replication launcher" (PID 6296) exited with exit code 1
+2026-03-27 17:05:39.989 +06 [14416] LOG:  shutting down
+2026-03-27 17:05:39.990 +06 [14416] LOG:  checkpoint starting: shutdown immediate
+2026-03-27 17:05:40.005 +06 [14416] LOG:  checkpoint complete: wrote 0 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.001 s, sync=0.001 s, total=0.017 s; sync files=0, longest=0.000 s, average=0.000 s; distance=0 kB, estimate=4166 kB; lsn=0/1BB1CA8, redo lsn=0/1BB1CA8
+2026-03-27 17:05:40.014 +06 [1312] LOG:  database system is shut down

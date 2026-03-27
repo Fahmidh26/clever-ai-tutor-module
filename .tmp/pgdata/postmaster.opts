@@ -1,0 +1,1 @@
+C:/Program Files/PostgreSQL/16/bin/postgres.exe "-D" "D:/USA/clever-ai-tutor/.tmp/pgdata" "-p" "5433"

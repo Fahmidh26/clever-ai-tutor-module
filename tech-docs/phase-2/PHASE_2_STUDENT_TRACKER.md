@@ -111,7 +111,7 @@ No student task is complete until role-boundary testing is also verified.
 | Browser validation workflow documented in `AGENTS.md` | `Done` | agent rules update | Doc review | Mandatory for student changes |
 | Tutor workspace Playwright smoke test | `Done` | existing mocked coverage | `npm run e2e:list` and repo spec presence | `frontend/e2e/tutor-workspace.spec.ts` exists |
 | Role-routing Playwright smoke test for student gating | `Blocked` | mocked auth harness | `npm run e2e:list` passes; browser auth harness still blocks authenticated shell in current local setup | Same limitation as teacher smoke |
-| Real backend student E2E sequence | `Planned` | seeded local workflow | Full e2e run | Use seeded local login as baseline |
+| Real backend student E2E sequence | `Done` | seeded local workflow | `cmd /c npm run e2e -- student-real-backend.spec.ts` | Added real local-dev login/browser pass covering class context, session/chat, quiz, and student dashboard |
 
 ## 3.9 Documentation Alignment
 

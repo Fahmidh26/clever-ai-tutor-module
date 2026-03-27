@@ -1,0 +1,490 @@
+{"request_id": "e47ac58cfb9341c980fb8d5f9c92f2d6", "method": "GET", "path": "/health", "status_code": 200, "duration_ms": 2.57, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T10:58:11.573067Z"}
+INFO:     127.0.0.1:56996 - "GET /health HTTP/1.1" 200 OK
+{"request_id": "ecd6dba3bcae41a7969220b9f4b367b2", "method": "GET", "path": "/health", "status_code": 200, "duration_ms": 1.07, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T10:58:24.348456Z"}
+INFO:     127.0.0.1:57031 - "GET /health HTTP/1.1" 200 OK
+{"request_id": "0c7ec6866ed84d9f9f99147aaa38299d", "method": "GET", "path": "/api/local-auth/accounts", "status_code": 200, "duration_ms": 1.13, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T10:58:24.363598Z"}
+INFO:     127.0.0.1:57031 - "GET /api/local-auth/accounts HTTP/1.1" 200 OK
+{"request_id": "852d0d7f0c064ea7838e67275e116c4c", "method": "GET", "path": "/api/local-auth/accounts", "status_code": 200, "duration_ms": 1.3, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T10:58:25.307472Z"}
+INFO:     127.0.0.1:57043 - "GET /api/local-auth/accounts HTTP/1.1" 200 OK
+{"request_id": "2845e07576cd4e99a03db5dca94e259a", "method": "GET", "path": "/api/me", "status_code": 401, "duration_ms": 6.37, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T10:58:25.312473Z"}
+INFO:     127.0.0.1:57044 - "GET /api/me HTTP/1.1" 401 Unauthorized
+{"request_id": "b419467bb91a4140a2f111c9ab01a0b6", "method": "GET", "path": "/api/local-auth/accounts", "status_code": 200, "duration_ms": 0.47, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T10:58:25.328472Z"}
+INFO:     127.0.0.1:57044 - "GET /api/local-auth/accounts HTTP/1.1" 200 OK
+{"request_id": "b4cdcab332ba45a2a6c3b9a3eb51bdc1", "method": "OPTIONS", "path": "/api/local-auth/login", "status_code": 200, "duration_ms": 0.27, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T10:58:26.153730Z"}
+INFO:     127.0.0.1:57048 - "OPTIONS /api/local-auth/login HTTP/1.1" 200 OK
+DEBUG: provider_user keys: ['id', 'root_user_id', 'email', 'name', 'display_name', 'role', 'preferred_language', 'auth_source', 'grade_level']
+DEBUG: root_user_id extracted: 101
+{"request_id": "aeb3f723fe49482185ff31fa4075b43c", "method": "POST", "path": "/api/local-auth/login", "status_code": 200, "duration_ms": 6.57, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T10:58:26.162455Z"}
+INFO:     127.0.0.1:57044 - "POST /api/local-auth/login HTTP/1.1" 200 OK
+{"request_id": "76c48d1045754c7581dddd307a87b179", "method": "GET", "path": "/api/me", "status_code": 200, "duration_ms": 4069.92, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T10:58:30.236300Z"}
+INFO:     127.0.0.1:57044 - "GET /api/me HTTP/1.1" 200 OK
+{"request_id": "34228a0364b5402eaa98ee94e37b577b", "method": "GET", "path": "/api/tutor/modes", "status_code": 200, "duration_ms": 2.02, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T10:58:30.365790Z"}
+INFO:     127.0.0.1:57045 - "GET /api/tutor/modes HTTP/1.1" 200 OK
+{"request_id": "ca634ca58c1b4564948f639845c0328a", "method": "GET", "path": "/api/experts", "status_code": 200, "duration_ms": 13.43, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T10:58:30.374793Z"}
+INFO:     127.0.0.1:57044 - "GET /api/experts?domain=expert-chat HTTP/1.1" 200 OK
+{"request_id": "b4a8a49f9552442bbaa82e242280979e", "method": "GET", "path": "/api/tutor/flashcards/decks", "status_code": 200, "duration_ms": 8.62, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T10:58:30.386289Z"}
+INFO:     127.0.0.1:57044 - "GET /api/tutor/flashcards/decks HTTP/1.1" 200 OK
+{"request_id": "e3967f59831c4f60875de64de1678b14", "method": "GET", "path": "/api/tutor/flashcards/review", "status_code": 200, "duration_ms": 2.92, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T10:58:30.391790Z"}
+INFO:     127.0.0.1:57044 - "GET /api/tutor/flashcards/review?limit=20 HTTP/1.1" 200 OK
+{"request_id": "6c81ea2bad1742e6942b84443cd4b6c2", "method": "GET", "path": "/api/tutor/mastery", "status_code": 200, "duration_ms": 5.87, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T10:58:30.400287Z"}
+INFO:     127.0.0.1:57044 - "GET /api/tutor/mastery?limit=50 HTTP/1.1" 200 OK
+{"request_id": "ff97aabbb7764ec09472aa2a9537c8b6", "method": "GET", "path": "/api/tutor/misconceptions", "status_code": 200, "duration_ms": 5.31, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T10:58:30.407787Z"}
+INFO:     127.0.0.1:57044 - "GET /api/tutor/misconceptions?include_resolved=false&limit=50 HTTP/1.1" 200 OK
+{"request_id": "8d80b395702b4591bcb0a5afa4f04eff", "method": "GET", "path": "/api/tutor/sessions", "status_code": 200, "duration_ms": 47.11, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T10:58:30.415287Z"}
+INFO:     127.0.0.1:57045 - "GET /api/tutor/sessions?limit=50 HTTP/1.1" 200 OK
+{"request_id": "3f0211d36fde44fbb7127501771a7117", "method": "GET", "path": "/api/tutor/progress/student", "status_code": 200, "duration_ms": 15.13, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T10:58:30.425788Z"}
+INFO:     127.0.0.1:57044 - "GET /api/tutor/progress/student HTTP/1.1" 200 OK
+{"request_id": "fa6529a29f30478f9d8562c680007d24", "method": "GET", "path": "/api/tutor/modes", "status_code": 200, "duration_ms": 0.94, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T10:58:30.428792Z"}
+INFO:     127.0.0.1:57044 - "GET /api/tutor/modes HTTP/1.1" 200 OK
+{"request_id": "3bb472fac8704388bf4f2317d756d984", "method": "GET", "path": "/api/experts", "status_code": 200, "duration_ms": 2.31, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T10:58:30.433288Z"}
+INFO:     127.0.0.1:57044 - "GET /api/experts?domain=expert-chat HTTP/1.1" 200 OK
+{"request_id": "dafb9f6a5efe45a3b89897ffba9bec9c", "method": "GET", "path": "/api/tutor/flashcards/decks", "status_code": 200, "duration_ms": 2.06, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T10:58:30.437786Z"}
+INFO:     127.0.0.1:57044 - "GET /api/tutor/flashcards/decks HTTP/1.1" 200 OK
+{"request_id": "b8cba67306d54eaa83d60b594bb405d4", "method": "GET", "path": "/api/tutor/flashcards/review", "status_code": 200, "duration_ms": 1.63, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T10:58:30.441289Z"}
+INFO:     127.0.0.1:57044 - "GET /api/tutor/flashcards/review?limit=20 HTTP/1.1" 200 OK
+{"request_id": "f12f84aa377f4742a3c317e4a0d6f2ed", "method": "GET", "path": "/api/tutor/mastery", "status_code": 200, "duration_ms": 3.6, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T10:58:30.447287Z"}
+INFO:     127.0.0.1:57044 - "GET /api/tutor/mastery?limit=50 HTTP/1.1" 200 OK
+{"request_id": "c30f01f358ef4759a1f44bb71a8a5c77", "method": "GET", "path": "/api/tutor/misconceptions", "status_code": 200, "duration_ms": 2.06, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T10:58:30.451288Z"}
+INFO:     127.0.0.1:57044 - "GET /api/tutor/misconceptions?include_resolved=false&limit=50 HTTP/1.1" 200 OK
+{"request_id": "d39d7198b0b44f66b8ff1be284625999", "method": "GET", "path": "/api/tutor/classes", "status_code": 200, "duration_ms": 36.6, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T10:58:30.455787Z"}
+INFO:     127.0.0.1:57045 - "GET /api/tutor/classes HTTP/1.1" 200 OK
+{"request_id": "c0316d8277a548198c093333f6127f35", "method": "GET", "path": "/api/tutor/sessions", "status_code": 200, "duration_ms": 5.35, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T10:58:30.459786Z"}
+INFO:     127.0.0.1:57044 - "GET /api/tutor/sessions?limit=50 HTTP/1.1" 200 OK
+{"request_id": "172545d7523e4ffeb3bb2f18ec49b530", "method": "GET", "path": "/api/tutor/progress/student", "status_code": 200, "duration_ms": 5.64, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T10:58:30.463789Z"}
+INFO:     127.0.0.1:57045 - "GET /api/tutor/progress/student HTTP/1.1" 200 OK
+{"request_id": "729eeb6c0c964c238097d767e6f034e0", "method": "GET", "path": "/api/tutor/classes", "status_code": 200, "duration_ms": 3.8, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T10:58:30.465289Z"}
+INFO:     127.0.0.1:57044 - "GET /api/tutor/classes HTTP/1.1" 200 OK
+{"request_id": "c10a50276a4c47a682b70d298ce5daef", "method": "GET", "path": "/api/tutor/classes", "status_code": 200, "duration_ms": 2.33, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T10:58:30.469786Z"}
+INFO:     127.0.0.1:57045 - "GET /api/tutor/classes HTTP/1.1" 200 OK
+{"request_id": "b4e70740f04d4aa686c65673ee70d008", "method": "GET", "path": "/api/tutor/classes", "status_code": 200, "duration_ms": 2.44, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T10:58:30.474289Z"}
+INFO:     127.0.0.1:57044 - "GET /api/tutor/classes HTTP/1.1" 200 OK
+{"request_id": "237ae922b1b04a7fb840e7838bfe64b6", "method": "GET", "path": "/api/tutor/sessions/16", "status_code": 200, "duration_ms": 5.73, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T10:58:30.507286Z"}
+INFO:     127.0.0.1:57044 - "GET /api/tutor/sessions/16 HTTP/1.1" 200 OK
+{"request_id": "b002314ff7f741d79d041fd62bd52516", "method": "GET", "path": "/health", "status_code": 200, "duration_ms": 1.21, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T10:59:21.577127Z"}
+INFO:     127.0.0.1:57148 - "GET /health HTTP/1.1" 200 OK
+{"request_id": "059faed40da74a02aa47d04dd4dceb90", "method": "GET", "path": "/api/local-auth/accounts", "status_code": 200, "duration_ms": 0.39, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T10:59:21.585127Z"}
+INFO:     127.0.0.1:57148 - "GET /api/local-auth/accounts HTTP/1.1" 200 OK
+{"request_id": "a838063d285d43f8adc7af3790649235", "method": "GET", "path": "/api/local-auth/accounts", "status_code": 200, "duration_ms": 0.86, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T10:59:22.845022Z"}
+INFO:     127.0.0.1:57162 - "GET /api/local-auth/accounts HTTP/1.1" 200 OK
+{"request_id": "3644ba0951dc4298bee3bfd2ec864338", "method": "GET", "path": "/api/me", "status_code": 401, "duration_ms": 6.29, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T10:59:22.850749Z"}
+INFO:     127.0.0.1:57163 - "GET /api/me HTTP/1.1" 401 Unauthorized
+{"request_id": "b0421f32268043cbac0177a8a672dee5", "method": "GET", "path": "/api/local-auth/accounts", "status_code": 200, "duration_ms": 0.64, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T10:59:22.864259Z"}
+INFO:     127.0.0.1:57163 - "GET /api/local-auth/accounts HTTP/1.1" 200 OK
+{"request_id": "e62f92aa8a964b43b76bdfbe06aa597c", "method": "OPTIONS", "path": "/api/local-auth/login", "status_code": 200, "duration_ms": 0.25, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T10:59:23.707541Z"}
+INFO:     127.0.0.1:57167 - "OPTIONS /api/local-auth/login HTTP/1.1" 200 OK
+DEBUG: provider_user keys: ['id', 'root_user_id', 'email', 'name', 'display_name', 'role', 'preferred_language', 'auth_source', 'grade_level']
+DEBUG: root_user_id extracted: 101
+{"request_id": "1225582472fc441cacf38ad42eb68c5f", "method": "POST", "path": "/api/local-auth/login", "status_code": 200, "duration_ms": 4.24, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T10:59:23.718546Z"}
+INFO:     127.0.0.1:57163 - "POST /api/local-auth/login HTTP/1.1" 200 OK
+{"request_id": "2d407503176a43f78841d3ab044d6ae4", "method": "GET", "path": "/api/me", "status_code": 200, "duration_ms": 0.58, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T10:59:23.722894Z"}
+INFO:     127.0.0.1:57163 - "GET /api/me HTTP/1.1" 200 OK
+{"request_id": "db9bbd9a8e834b51a966e7c233a62610", "method": "GET", "path": "/api/tutor/modes", "status_code": 200, "duration_ms": 2.78, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T10:59:23.851399Z"}
+INFO:     127.0.0.1:57162 - "GET /api/tutor/modes HTTP/1.1" 200 OK
+{"request_id": "8f1e184d672a4587bce1fae7a54f8773", "method": "GET", "path": "/api/experts", "status_code": 200, "duration_ms": 6.71, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T10:59:23.854396Z"}
+INFO:     127.0.0.1:57163 - "GET /api/experts?domain=expert-chat HTTP/1.1" 200 OK
+{"request_id": "9e5653006e70457f9bf02a7a59f2ac10", "method": "GET", "path": "/api/tutor/sessions", "status_code": 200, "duration_ms": 11.56, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T10:59:23.861397Z"}
+INFO:     127.0.0.1:57164 - "GET /api/tutor/sessions?limit=50 HTTP/1.1" 200 OK
+{"request_id": "bf085c0f032c464593d70d62d343e2d3", "method": "GET", "path": "/api/tutor/flashcards/decks", "status_code": 200, "duration_ms": 8.36, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T10:59:23.862897Z"}
+INFO:     127.0.0.1:57162 - "GET /api/tutor/flashcards/decks HTTP/1.1" 200 OK
+{"request_id": "97444ddd9d0b4d3b857db3a53ca48a5a", "method": "GET", "path": "/api/tutor/misconceptions", "status_code": 200, "duration_ms": 1.92, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T10:59:23.866895Z"}
+INFO:     127.0.0.1:57162 - "GET /api/tutor/misconceptions?include_resolved=false&limit=50 HTTP/1.1" 200 OK
+{"request_id": "7a7aab9558264b47aff1835e531a4a07", "method": "GET", "path": "/api/tutor/mastery", "status_code": 200, "duration_ms": 10.14, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T10:59:23.874913Z"}
+INFO:     127.0.0.1:57164 - "GET /api/tutor/mastery?limit=50 HTTP/1.1" 200 OK
+{"request_id": "9bb8d890172748f7b27e4b1ef9199fc3", "method": "GET", "path": "/api/tutor/progress/student", "status_code": 200, "duration_ms": 12.59, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T10:59:23.883398Z"}
+INFO:     127.0.0.1:57162 - "GET /api/tutor/progress/student HTTP/1.1" 200 OK
+{"request_id": "7637c4cdd11744c8ab24cea15bdd07d5", "method": "GET", "path": "/api/tutor/classes", "status_code": 200, "duration_ms": 7.42, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T10:59:23.887899Z"}
+INFO:     127.0.0.1:57164 - "GET /api/tutor/classes HTTP/1.1" 200 OK
+{"request_id": "bf299f84c7ed4d79a4fee1fe4a302952", "method": "GET", "path": "/api/tutor/modes", "status_code": 200, "duration_ms": 1.25, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T10:59:23.892397Z"}
+INFO:     127.0.0.1:57164 - "GET /api/tutor/modes HTTP/1.1" 200 OK
+{"request_id": "e31682d172fb4a84937524b7061edb2a", "method": "GET", "path": "/api/experts", "status_code": 200, "duration_ms": 5.37, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T10:59:23.894898Z"}
+INFO:     127.0.0.1:57162 - "GET /api/experts?domain=expert-chat HTTP/1.1" 200 OK
+{"request_id": "4da413ed49184cac9e931825a37913c9", "method": "GET", "path": "/api/tutor/flashcards/decks", "status_code": 200, "duration_ms": 3.64, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T10:59:23.902896Z"}
+INFO:     127.0.0.1:57162 - "GET /api/tutor/flashcards/decks HTTP/1.1" 200 OK
+{"request_id": "642baeb0858f4a77bdf028f3393aa69f", "method": "GET", "path": "/api/tutor/sessions", "status_code": 200, "duration_ms": 7.3, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T10:59:23.903898Z"}
+INFO:     127.0.0.1:57164 - "GET /api/tutor/sessions?limit=50 HTTP/1.1" 200 OK
+{"request_id": "1ca396b0e7fc4a109773bf5124f5096f", "method": "GET", "path": "/api/tutor/flashcards/review", "status_code": 200, "duration_ms": 53.25, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T10:59:23.910899Z"}
+INFO:     127.0.0.1:57163 - "GET /api/tutor/flashcards/review?limit=20 HTTP/1.1" 200 OK
+{"request_id": "1b9cc3d29d434c9c939daf124b0c79e6", "method": "GET", "path": "/api/tutor/mastery", "status_code": 200, "duration_ms": 5.09, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T10:59:23.912397Z"}
+INFO:     127.0.0.1:57164 - "GET /api/tutor/mastery?limit=50 HTTP/1.1" 200 OK
+{"request_id": "dc6819b9a21f496398d729409e95a60f", "method": "GET", "path": "/api/tutor/misconceptions", "status_code": 200, "duration_ms": 12.13, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T10:59:23.919402Z"}
+INFO:     127.0.0.1:57162 - "GET /api/tutor/misconceptions?include_resolved=false&limit=50 HTTP/1.1" 200 OK
+{"request_id": "c7fd473a544d441a96e8524a65f30d30", "method": "GET", "path": "/api/tutor/classes", "status_code": 200, "duration_ms": 9.89, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T10:59:23.925899Z"}
+INFO:     127.0.0.1:57164 - "GET /api/tutor/classes HTTP/1.1" 200 OK
+{"request_id": "ba54b90bca16449b802e46f1d65954fa", "method": "GET", "path": "/api/tutor/flashcards/review", "status_code": 200, "duration_ms": 5.29, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T10:59:23.928395Z"}
+INFO:     127.0.0.1:57162 - "GET /api/tutor/flashcards/review?limit=20 HTTP/1.1" 200 OK
+{"request_id": "14ae6a19c8b0450babb5ea475e54416d", "method": "GET", "path": "/api/tutor/progress/student", "status_code": 200, "duration_ms": 14.91, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T10:59:23.929398Z"}
+INFO:     127.0.0.1:57163 - "GET /api/tutor/progress/student HTTP/1.1" 200 OK
+{"request_id": "fd97aeb0f4c64e25a570172b40465fb5", "method": "GET", "path": "/api/tutor/sessions/16", "status_code": 200, "duration_ms": 7.42, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T10:59:23.944894Z"}
+INFO:     127.0.0.1:57163 - "GET /api/tutor/sessions/16 HTTP/1.1" 200 OK
+{"request_id": "2cf316d2023b42ba901d127e25481044", "method": "GET", "path": "/api/tutor/classes", "status_code": 200, "duration_ms": 21.51, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T10:59:23.951893Z"}
+INFO:     127.0.0.1:57164 - "GET /api/tutor/classes HTTP/1.1" 200 OK
+{"request_id": "31e6d1cdfa8c43dd9a659f725fcf5560", "method": "GET", "path": "/api/tutor/classes", "status_code": 200, "duration_ms": 3.37, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T10:59:23.957394Z"}
+INFO:     127.0.0.1:57163 - "GET /api/tutor/classes HTTP/1.1" 200 OK
+{"request_id": "2b8a54115fff4bccbf2ba0fb56a62e98", "method": "GET", "path": "/health", "status_code": 200, "duration_ms": 2.93, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:00:50.780964Z"}
+INFO:     127.0.0.1:57313 - "GET /health HTTP/1.1" 200 OK
+{"request_id": "86923b70e08d43c8b615ff4e32bcedf6", "method": "GET", "path": "/api/local-auth/accounts", "status_code": 200, "duration_ms": 0.79, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:00:50.799467Z"}
+INFO:     127.0.0.1:57313 - "GET /api/local-auth/accounts HTTP/1.1" 200 OK
+{"request_id": "647f5fa550614914934959008406e343", "method": "GET", "path": "/api/local-auth/accounts", "status_code": 200, "duration_ms": 1.03, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:00:52.712119Z"}
+INFO:     127.0.0.1:57340 - "GET /api/local-auth/accounts HTTP/1.1" 200 OK
+{"request_id": "3e480b42c1dc4f47ab92746eff0ffccf", "method": "GET", "path": "/api/me", "status_code": 401, "duration_ms": 6.21, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:00:52.717607Z"}
+INFO:     127.0.0.1:57341 - "GET /api/me HTTP/1.1" 401 Unauthorized
+{"request_id": "b00de2bbba0a491a96a2aff1a1970f6d", "method": "GET", "path": "/api/local-auth/accounts", "status_code": 200, "duration_ms": 0.64, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:00:52.742610Z"}
+INFO:     127.0.0.1:57341 - "GET /api/local-auth/accounts HTTP/1.1" 200 OK
+{"request_id": "eb85179eb6a94904bcd09ab8efb39fd5", "method": "OPTIONS", "path": "/api/local-auth/login", "status_code": 200, "duration_ms": 0.32, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:00:53.576142Z"}
+INFO:     127.0.0.1:57346 - "OPTIONS /api/local-auth/login HTTP/1.1" 200 OK
+DEBUG: provider_user keys: ['id', 'root_user_id', 'email', 'name', 'display_name', 'role', 'preferred_language', 'auth_source', 'grade_level']
+DEBUG: root_user_id extracted: 101
+{"request_id": "3b15341684db4158b881e2f5061b3412", "method": "POST", "path": "/api/local-auth/login", "status_code": 200, "duration_ms": 2.54, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:00:53.581148Z"}
+INFO:     127.0.0.1:57341 - "POST /api/local-auth/login HTTP/1.1" 200 OK
+{"request_id": "596abcd5489d4783a39d528098219fd2", "method": "GET", "path": "/api/me", "status_code": 200, "duration_ms": 0.57, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:00:53.585641Z"}
+INFO:     127.0.0.1:57341 - "GET /api/me HTTP/1.1" 200 OK
+{"request_id": "9d22d8ff90504fc18e57fe138ce4e169", "method": "GET", "path": "/api/tutor/modes", "status_code": 200, "duration_ms": 2.29, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:00:53.727139Z"}
+INFO:     127.0.0.1:57340 - "GET /api/tutor/modes HTTP/1.1" 200 OK
+{"request_id": "776a5297f3554e1494dc42b280138ce1", "method": "GET", "path": "/api/experts", "status_code": 200, "duration_ms": 6.45, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:00:53.730143Z"}
+INFO:     127.0.0.1:57341 - "GET /api/experts?domain=expert-chat HTTP/1.1" 200 OK
+{"request_id": "bc7ac1ff6dca4bfeb0d659635ab09480", "method": "GET", "path": "/api/tutor/flashcards/decks", "status_code": 200, "duration_ms": 4.81, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:00:53.734646Z"}
+INFO:     127.0.0.1:57340 - "GET /api/tutor/flashcards/decks HTTP/1.1" 200 OK
+{"request_id": "cb40c6422bc94e85aa565624af7af665", "method": "GET", "path": "/api/tutor/sessions", "status_code": 200, "duration_ms": 14.4, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:00:53.740141Z"}
+INFO:     127.0.0.1:57342 - "GET /api/tutor/sessions?limit=50 HTTP/1.1" 200 OK
+{"request_id": "b53cbaae50d843ddb18f7f9a2a084208", "method": "GET", "path": "/api/tutor/flashcards/review", "status_code": 200, "duration_ms": 11.63, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:00:53.746142Z"}
+INFO:     127.0.0.1:57341 - "GET /api/tutor/flashcards/review?limit=20 HTTP/1.1" 200 OK
+{"request_id": "7d623ea712b049adb45072cad321df4c", "method": "GET", "path": "/api/tutor/misconceptions", "status_code": 200, "duration_ms": 7.89, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:00:53.756145Z"}
+INFO:     127.0.0.1:57342 - "GET /api/tutor/misconceptions?include_resolved=false&limit=50 HTTP/1.1" 200 OK
+{"request_id": "d834fa5af0ee4cfda1bb159965b29e15", "method": "GET", "path": "/api/tutor/mastery", "status_code": 200, "duration_ms": 18.04, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:00:53.758145Z"}
+INFO:     127.0.0.1:57340 - "GET /api/tutor/mastery?limit=50 HTTP/1.1" 200 OK
+{"request_id": "32607cb1fc9d46d791b297eb69b67db6", "method": "GET", "path": "/api/experts", "status_code": 200, "duration_ms": 3.36, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:00:53.765648Z"}
+INFO:     127.0.0.1:57340 - "GET /api/experts?domain=expert-chat HTTP/1.1" 200 OK
+{"request_id": "f4801fe5d4234c968cddebbf98ee0a4d", "method": "GET", "path": "/api/tutor/modes", "status_code": 200, "duration_ms": 1.57, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:00:53.770141Z"}
+INFO:     127.0.0.1:57340 - "GET /api/tutor/modes HTTP/1.1" 200 OK
+{"request_id": "fc52fff88f8c408ebcf691eb3f248518", "method": "GET", "path": "/api/tutor/progress/student", "status_code": 200, "duration_ms": 23.85, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:00:53.776146Z"}
+INFO:     127.0.0.1:57341 - "GET /api/tutor/progress/student HTTP/1.1" 200 OK
+{"request_id": "3e1a606236c44764b6a05cdf1eebef4c", "method": "GET", "path": "/api/tutor/flashcards/decks", "status_code": 200, "duration_ms": 6.19, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:00:53.779644Z"}
+INFO:     127.0.0.1:57340 - "GET /api/tutor/flashcards/decks HTTP/1.1" 200 OK
+{"request_id": "708bdd4e7d8f4e418ead847455d3facb", "method": "GET", "path": "/api/tutor/sessions", "status_code": 200, "duration_ms": 9.44, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:00:53.789151Z"}
+INFO:     127.0.0.1:57341 - "GET /api/tutor/sessions?limit=50 HTTP/1.1" 200 OK
+{"request_id": "acbfd972eca9418bb4df1c7a87f4a96c", "method": "GET", "path": "/api/tutor/flashcards/review", "status_code": 200, "duration_ms": 6.6, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:00:53.791143Z"}
+INFO:     127.0.0.1:57340 - "GET /api/tutor/flashcards/review?limit=20 HTTP/1.1" 200 OK
+{"request_id": "f7ddc09b5d954e0a97dbf68d736ddc53", "method": "GET", "path": "/api/tutor/misconceptions", "status_code": 200, "duration_ms": 3.62, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:00:53.796649Z"}
+INFO:     127.0.0.1:57341 - "GET /api/tutor/misconceptions?include_resolved=false&limit=50 HTTP/1.1" 200 OK
+{"request_id": "319adb7b9983416f8224ce16ce0760e6", "method": "GET", "path": "/api/tutor/mastery", "status_code": 200, "duration_ms": 4.2, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:00:53.798644Z"}
+INFO:     127.0.0.1:57340 - "GET /api/tutor/mastery?limit=50 HTTP/1.1" 200 OK
+{"request_id": "a93f2dad2e0e4a668bb671e361c05796", "method": "GET", "path": "/api/tutor/progress/student", "status_code": 200, "duration_ms": 3.91, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:00:53.804145Z"}
+INFO:     127.0.0.1:57341 - "GET /api/tutor/progress/student HTTP/1.1" 200 OK
+{"request_id": "2100ce106f414facb65a1ac382c46189", "method": "GET", "path": "/api/tutor/classes", "status_code": 200, "duration_ms": 47.46, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:00:53.808141Z"}
+INFO:     127.0.0.1:57342 - "GET /api/tutor/classes HTTP/1.1" 200 OK
+{"request_id": "c75378c719de437a9dc5f9946bb1d67a", "method": "GET", "path": "/api/tutor/classes", "status_code": 200, "duration_ms": 4.35, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:00:53.814140Z"}
+INFO:     127.0.0.1:57341 - "GET /api/tutor/classes HTTP/1.1" 200 OK
+{"request_id": "cc1fd55e195644f093b2e815d41e2311", "method": "GET", "path": "/api/tutor/sessions/16", "status_code": 200, "duration_ms": 6.18, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:00:53.819139Z"}
+INFO:     127.0.0.1:57342 - "GET /api/tutor/sessions/16 HTTP/1.1" 200 OK
+{"request_id": "74e544163ca34772949be673d9d22639", "method": "GET", "path": "/api/tutor/classes", "status_code": 200, "duration_ms": 4.19, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:00:53.820645Z"}
+INFO:     127.0.0.1:57340 - "GET /api/tutor/classes HTTP/1.1" 200 OK
+{"request_id": "b74eb80c3d61479d8db94144b72d00b4", "method": "GET", "path": "/api/tutor/classes", "status_code": 200, "duration_ms": 2.49, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:00:53.824643Z"}
+INFO:     127.0.0.1:57342 - "GET /api/tutor/classes HTTP/1.1" 200 OK
+{"request_id": "b524e5e40a5e41c886a3188eb2ca48c2", "method": "OPTIONS", "path": "/api/tutor/sessions", "status_code": 200, "duration_ms": 0.22, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:00:54.519463Z"}
+INFO:     127.0.0.1:57346 - "OPTIONS /api/tutor/sessions HTTP/1.1" 200 OK
+{"request_id": "17625a9b9ee740aeae22bdad18832913", "method": "POST", "path": "/api/tutor/sessions", "status_code": 200, "duration_ms": 5.99, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:00:54.531961Z"}
+INFO:     127.0.0.1:57342 - "POST /api/tutor/sessions HTTP/1.1" 200 OK
+{"request_id": "c5546648e62249098302ed36912d48e6", "method": "GET", "path": "/api/tutor/sessions", "status_code": 200, "duration_ms": 4.17, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:00:54.552966Z"}
+INFO:     127.0.0.1:57342 - "GET /api/tutor/sessions?limit=50 HTTP/1.1" 200 OK
+{"request_id": "8555ba71fc884b1ea61628ec5f2cdcd7", "method": "GET", "path": "/api/tutor/sessions/17", "status_code": 200, "duration_ms": 2.48, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:00:54.575962Z"}
+INFO:     127.0.0.1:57342 - "GET /api/tutor/sessions/17 HTTP/1.1" 200 OK
+{"request_id": "f309e29f86a44069ab96e14aaebf2c62", "method": "OPTIONS", "path": "/api/expert-chat/stream", "status_code": 200, "duration_ms": 0.28, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:00:54.591961Z"}
+INFO:     127.0.0.1:57346 - "OPTIONS /api/expert-chat/stream HTTP/1.1" 200 OK
+{"request_id": "014982b3941b4b4bac3f4d7333cec87c", "method": "POST", "path": "/api/expert-chat/stream", "status_code": 200, "duration_ms": 6.18, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:00:54.600460Z"}
+INFO:     127.0.0.1:57342 - "POST /api/expert-chat/stream HTTP/1.1" 200 OK
+{"request_id": "50c3884e97c84ee8baaefe3a77ec0398", "method": "GET", "path": "/api/tutor/sessions", "status_code": 200, "duration_ms": 3.24, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:00:57.215006Z"}
+INFO:     127.0.0.1:57342 - "GET /api/tutor/sessions?limit=50 HTTP/1.1" 200 OK
+{"request_id": "71eecc2960c24ded866ea8f53c82d661", "method": "POST", "path": "/api/tutor/sessions", "status_code": 200, "duration_ms": 3.51, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:00:57.589512Z"}
+INFO:     127.0.0.1:57342 - "POST /api/tutor/sessions HTTP/1.1" 200 OK
+{"request_id": "cef615413a0141f9bc7c6b2bb1170831", "method": "GET", "path": "/api/tutor/sessions", "status_code": 200, "duration_ms": 4.69, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:00:57.624508Z"}
+INFO:     127.0.0.1:57342 - "GET /api/tutor/sessions?limit=50 HTTP/1.1" 200 OK
+{"request_id": "d2acee6b49d741f3b4a55a637b34823f", "method": "GET", "path": "/api/tutor/sessions/18", "status_code": 200, "duration_ms": 2.99, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:00:57.653508Z"}
+INFO:     127.0.0.1:57342 - "GET /api/tutor/sessions/18 HTTP/1.1" 200 OK
+{"request_id": "4d073cda88e84b1d808e2a0e28d6731d", "method": "OPTIONS", "path": "/api/tutor/quiz/generate", "status_code": 200, "duration_ms": 0.29, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:00:57.672509Z"}
+INFO:     127.0.0.1:57346 - "OPTIONS /api/tutor/quiz/generate HTTP/1.1" 200 OK
+{"request_id": "0ee078d7b26f44019cb2f8b2155ae9a3", "method": "POST", "path": "/api/tutor/quiz/generate", "status_code": 200, "duration_ms": 9.92, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:00:57.684505Z"}
+INFO:     127.0.0.1:57342 - "POST /api/tutor/quiz/generate HTTP/1.1" 200 OK
+{"request_id": "fe7a73ed8a7e4df88c991f6941e54fa6", "method": "GET", "path": "/api/tutor/sessions", "status_code": 200, "duration_ms": 2.58, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:00:57.728503Z"}
+INFO:     127.0.0.1:57342 - "GET /api/tutor/sessions?limit=50 HTTP/1.1" 200 OK
+{"request_id": "b6420cf082e24addb948be8a73d1dfc3", "method": "GET", "path": "/health", "status_code": 200, "duration_ms": 1.65, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:15.156164Z"}
+INFO:     127.0.0.1:57620 - "GET /health HTTP/1.1" 200 OK
+{"request_id": "7756775f222148d9ac5e75c181cdd5bd", "method": "GET", "path": "/api/local-auth/accounts", "status_code": 200, "duration_ms": 0.53, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:15.165158Z"}
+INFO:     127.0.0.1:57620 - "GET /api/local-auth/accounts HTTP/1.1" 200 OK
+{"request_id": "20b3f4a9ef9b47a38684e09c742248ed", "method": "GET", "path": "/api/local-auth/accounts", "status_code": 200, "duration_ms": 0.7, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:16.515287Z"}
+INFO:     127.0.0.1:57642 - "GET /api/local-auth/accounts HTTP/1.1" 200 OK
+{"request_id": "d69c6d14c07749e89315eb9e8f44a8d0", "method": "GET", "path": "/api/me", "status_code": 401, "duration_ms": 1.29, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:16.516233Z"}
+INFO:     127.0.0.1:57643 - "GET /api/me HTTP/1.1" 401 Unauthorized
+{"request_id": "b69d1b8e46c1421784fdc1c5eeb3f7b5", "method": "GET", "path": "/api/local-auth/accounts", "status_code": 200, "duration_ms": 0.67, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:16.536746Z"}
+INFO:     127.0.0.1:57643 - "GET /api/local-auth/accounts HTTP/1.1" 200 OK
+{"request_id": "baaaf79d6ff041c28c50020455ab47f7", "method": "OPTIONS", "path": "/api/local-auth/login", "status_code": 200, "duration_ms": 0.22, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:17.363476Z"}
+INFO:     127.0.0.1:57651 - "OPTIONS /api/local-auth/login HTTP/1.1" 200 OK
+DEBUG: provider_user keys: ['id', 'root_user_id', 'email', 'name', 'display_name', 'role', 'preferred_language', 'auth_source', 'grade_level']
+DEBUG: root_user_id extracted: 101
+{"request_id": "1462fa9854ce4683a42058949fab585b", "method": "POST", "path": "/api/local-auth/login", "status_code": 200, "duration_ms": 3.04, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:17.368476Z"}
+INFO:     127.0.0.1:57643 - "POST /api/local-auth/login HTTP/1.1" 200 OK
+{"request_id": "f1dd37f68942422a83a86cc1bdc75638", "method": "GET", "path": "/api/me", "status_code": 200, "duration_ms": 0.71, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:17.373474Z"}
+INFO:     127.0.0.1:57643 - "GET /api/me HTTP/1.1" 200 OK
+{"request_id": "3ccb68394c614c6ba3154a24d7af6826", "method": "GET", "path": "/api/tutor/modes", "status_code": 200, "duration_ms": 3.07, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:17.517482Z"}
+INFO:     127.0.0.1:57642 - "GET /api/tutor/modes HTTP/1.1" 200 OK
+{"request_id": "0e302283c13a4393896efc8ea7f590a2", "method": "GET", "path": "/api/experts", "status_code": 200, "duration_ms": 8.69, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:17.520978Z"}
+INFO:     127.0.0.1:57643 - "GET /api/experts?domain=expert-chat HTTP/1.1" 200 OK
+{"request_id": "86272983e31246c39ec1da1d6d03c77d", "method": "GET", "path": "/api/tutor/sessions", "status_code": 200, "duration_ms": 11.4, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:17.526489Z"}
+INFO:     127.0.0.1:57645 - "GET /api/tutor/sessions?limit=50 HTTP/1.1" 200 OK
+{"request_id": "1b901ccab61844b5a6530fd34eace7fd", "method": "GET", "path": "/api/tutor/flashcards/decks", "status_code": 200, "duration_ms": 9.33, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:17.529983Z"}
+INFO:     127.0.0.1:57642 - "GET /api/tutor/flashcards/decks HTTP/1.1" 200 OK
+{"request_id": "37022c90ff434f5c9dceda9a3435ea03", "method": "GET", "path": "/api/tutor/flashcards/review", "status_code": 200, "duration_ms": 9.58, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:17.535479Z"}
+INFO:     127.0.0.1:57643 - "GET /api/tutor/flashcards/review?limit=20 HTTP/1.1" 200 OK
+{"request_id": "e575ed7829774c918cd55799724f81ec", "method": "GET", "path": "/api/tutor/mastery", "status_code": 200, "duration_ms": 14.29, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:17.544479Z"}
+INFO:     127.0.0.1:57645 - "GET /api/tutor/mastery?limit=50 HTTP/1.1" 200 OK
+{"request_id": "51bbe54380f2404fbddd852cf2b393eb", "method": "GET", "path": "/api/tutor/misconceptions", "status_code": 200, "duration_ms": 9.96, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:17.547483Z"}
+INFO:     127.0.0.1:57642 - "GET /api/tutor/misconceptions?include_resolved=false&limit=50 HTTP/1.1" 200 OK
+{"request_id": "e67488a1704b4d58922aa593de9ac2fd", "method": "GET", "path": "/api/tutor/classes", "status_code": 200, "duration_ms": 7.87, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:17.554981Z"}
+INFO:     127.0.0.1:57645 - "GET /api/tutor/classes HTTP/1.1" 200 OK
+{"request_id": "ef4f63f1ddd047a785fadd3b6450dd73", "method": "GET", "path": "/api/experts", "status_code": 200, "duration_ms": 5.14, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:17.556477Z"}
+INFO:     127.0.0.1:57642 - "GET /api/experts?domain=expert-chat HTTP/1.1" 200 OK
+{"request_id": "a7b58a6fa7d5490ca8268277c636752d", "method": "GET", "path": "/api/tutor/modes", "status_code": 200, "duration_ms": 2.67, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:17.561978Z"}
+INFO:     127.0.0.1:57645 - "GET /api/tutor/modes HTTP/1.1" 200 OK
+{"request_id": "ace405aa3b7a4dfbb9bda0ff07439271", "method": "GET", "path": "/api/tutor/progress/student", "status_code": 200, "duration_ms": 27.52, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:17.568977Z"}
+INFO:     127.0.0.1:57643 - "GET /api/tutor/progress/student HTTP/1.1" 200 OK
+{"request_id": "2fd2eaa1e5584557b1ea11ed6723d4c5", "method": "GET", "path": "/api/tutor/sessions", "status_code": 200, "duration_ms": 11.7, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:17.571479Z"}
+INFO:     127.0.0.1:57642 - "GET /api/tutor/sessions?limit=50 HTTP/1.1" 200 OK
+{"request_id": "eb93504740f14c1393edeb9d89a4fd5d", "method": "GET", "path": "/api/tutor/flashcards/decks", "status_code": 200, "duration_ms": 14.49, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:17.579979Z"}
+INFO:     127.0.0.1:57645 - "GET /api/tutor/flashcards/decks HTTP/1.1" 200 OK
+{"request_id": "96d7350abfe5488ba6d65ac18e06625f", "method": "GET", "path": "/api/tutor/flashcards/review", "status_code": 200, "duration_ms": 7.28, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:17.582480Z"}
+INFO:     127.0.0.1:57643 - "GET /api/tutor/flashcards/review?limit=20 HTTP/1.1" 200 OK
+{"request_id": "b831e65e47664005940b9cf52099ba32", "method": "GET", "path": "/api/tutor/mastery", "status_code": 200, "duration_ms": 7.08, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:17.584981Z"}
+INFO:     127.0.0.1:57642 - "GET /api/tutor/mastery?limit=50 HTTP/1.1" 200 OK
+{"request_id": "23f34dfbeaa54db09fc874e2618eda70", "method": "GET", "path": "/api/tutor/misconceptions", "status_code": 200, "duration_ms": 7.29, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:17.589984Z"}
+INFO:     127.0.0.1:57645 - "GET /api/tutor/misconceptions?include_resolved=false&limit=50 HTTP/1.1" 200 OK
+{"request_id": "185ba17aa0a84b34806ad3ee4bcdb89e", "method": "GET", "path": "/api/tutor/classes", "status_code": 200, "duration_ms": 6.0, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:17.592983Z"}
+INFO:     127.0.0.1:57643 - "GET /api/tutor/classes HTTP/1.1" 200 OK
+{"request_id": "4516f635c24f4a70be8ad7963ca3b8db", "method": "GET", "path": "/api/tutor/progress/student", "status_code": 200, "duration_ms": 12.05, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:17.599982Z"}
+INFO:     127.0.0.1:57642 - "GET /api/tutor/progress/student HTTP/1.1" 200 OK
+{"request_id": "60bbddb332a64762bdd09019027d5e6e", "method": "GET", "path": "/api/tutor/sessions/18", "status_code": 200, "duration_ms": 7.21, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:17.600985Z"}
+INFO:     127.0.0.1:57645 - "GET /api/tutor/sessions/18 HTTP/1.1" 200 OK
+{"request_id": "53bb14147a514a9496153f3626ef2a98", "method": "GET", "path": "/api/tutor/classes", "status_code": 200, "duration_ms": 7.79, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:17.603480Z"}
+INFO:     127.0.0.1:57643 - "GET /api/tutor/classes HTTP/1.1" 200 OK
+{"request_id": "e290b95944f14e40926056ddda033026", "method": "GET", "path": "/api/tutor/classes", "status_code": 200, "duration_ms": 3.33, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:17.609483Z"}
+INFO:     127.0.0.1:57645 - "GET /api/tutor/classes HTTP/1.1" 200 OK
+{"request_id": "d7a0fae7e1cf4b2680505bc3525cebf9", "method": "OPTIONS", "path": "/api/tutor/sessions", "status_code": 200, "duration_ms": 0.3, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:18.270288Z"}
+INFO:     127.0.0.1:57651 - "OPTIONS /api/tutor/sessions HTTP/1.1" 200 OK
+{"request_id": "260aa2fb980146a1ba9ce905f1b77ee4", "method": "POST", "path": "/api/tutor/sessions", "status_code": 200, "duration_ms": 4.92, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:18.277784Z"}
+INFO:     127.0.0.1:57645 - "POST /api/tutor/sessions HTTP/1.1" 200 OK
+{"request_id": "b87fa1a330d84a4787ba5b04412d10aa", "method": "GET", "path": "/api/tutor/sessions", "status_code": 200, "duration_ms": 3.71, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:18.302284Z"}
+INFO:     127.0.0.1:57645 - "GET /api/tutor/sessions?limit=50 HTTP/1.1" 200 OK
+{"request_id": "7212357d120a407bb4ad99ad9cfb8c44", "method": "GET", "path": "/api/tutor/sessions/19", "status_code": 200, "duration_ms": 2.04, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:18.330784Z"}
+INFO:     127.0.0.1:57645 - "GET /api/tutor/sessions/19 HTTP/1.1" 200 OK
+{"request_id": "1d75df98ffb44f9ba1de4d3b504305a8", "method": "OPTIONS", "path": "/api/expert-chat/stream", "status_code": 200, "duration_ms": 0.22, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:18.349785Z"}
+INFO:     127.0.0.1:57651 - "OPTIONS /api/expert-chat/stream HTTP/1.1" 200 OK
+{"request_id": "2254d7be922b48e19347c4bd4a764695", "method": "POST", "path": "/api/expert-chat/stream", "status_code": 200, "duration_ms": 4.02, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:18.355783Z"}
+INFO:     127.0.0.1:57645 - "POST /api/expert-chat/stream HTTP/1.1" 200 OK
+{"request_id": "e0a84ae4667a44c4851905a458148c94", "method": "GET", "path": "/api/tutor/sessions", "status_code": 200, "duration_ms": 2.86, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:20.913746Z"}
+INFO:     127.0.0.1:57645 - "GET /api/tutor/sessions?limit=50 HTTP/1.1" 200 OK
+{"request_id": "33eb77b0e01a4aa3bcbde943482c6bb4", "method": "POST", "path": "/api/tutor/sessions", "status_code": 200, "duration_ms": 3.38, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:21.334915Z"}
+INFO:     127.0.0.1:57645 - "POST /api/tutor/sessions HTTP/1.1" 200 OK
+{"request_id": "e7efc4d21a17478b8db2bcf9bd1cc4b5", "method": "GET", "path": "/api/tutor/sessions", "status_code": 200, "duration_ms": 3.41, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:21.358915Z"}
+INFO:     127.0.0.1:57645 - "GET /api/tutor/sessions?limit=50 HTTP/1.1" 200 OK
+{"request_id": "294a665f9f2547f88abafc2644e760e8", "method": "GET", "path": "/api/tutor/sessions/20", "status_code": 200, "duration_ms": 2.9, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:21.381929Z"}
+INFO:     127.0.0.1:57645 - "GET /api/tutor/sessions/20 HTTP/1.1" 200 OK
+{"request_id": "974e94a74e924c86957e28e02526e011", "method": "OPTIONS", "path": "/api/tutor/quiz/generate", "status_code": 200, "duration_ms": 0.21, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:21.398916Z"}
+INFO:     127.0.0.1:57651 - "OPTIONS /api/tutor/quiz/generate HTTP/1.1" 200 OK
+{"request_id": "552d15b0cb834b84ad47de0d6c07ef4a", "method": "POST", "path": "/api/tutor/quiz/generate", "status_code": 200, "duration_ms": 6.5, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:21.407915Z"}
+INFO:     127.0.0.1:57645 - "POST /api/tutor/quiz/generate HTTP/1.1" 200 OK
+{"request_id": "5af4bd622e76458883896ad43bb9db3f", "method": "GET", "path": "/api/tutor/sessions", "status_code": 200, "duration_ms": 2.41, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:21.454915Z"}
+INFO:     127.0.0.1:57645 - "GET /api/tutor/sessions?limit=50 HTTP/1.1" 200 OK
+{"request_id": "26b8648106524a8991879de90fcdd805", "method": "OPTIONS", "path": "/api/tutor/quiz/9/submit", "status_code": 200, "duration_ms": 0.27, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:21.581418Z"}
+INFO:     127.0.0.1:57651 - "OPTIONS /api/tutor/quiz/9/submit HTTP/1.1" 200 OK
+{"request_id": "6592bab4b0ca49da83e785d6111ff218", "method": "POST", "path": "/api/tutor/quiz/9/submit", "status_code": 200, "duration_ms": 3.84, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:21.587415Z"}
+INFO:     127.0.0.1:57645 - "POST /api/tutor/quiz/9/submit HTTP/1.1" 200 OK
+{"request_id": "6e2e64ade30f4961b21a4f9f7febd88b", "method": "GET", "path": "/api/tutor/sessions", "status_code": 200, "duration_ms": 2.64, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:21.612415Z"}
+INFO:     127.0.0.1:57645 - "GET /api/tutor/sessions?limit=50 HTTP/1.1" 200 OK
+{"request_id": "42c8c29de8734f3e8a924f8d1705b001", "method": "GET", "path": "/api/tutor/progress/student", "status_code": 200, "duration_ms": 3.34, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:21.701422Z"}
+INFO:     127.0.0.1:57645 - "GET /api/tutor/progress/student HTTP/1.1" 200 OK
+{"request_id": "01e4d312601640f6bb972a0f65285c2c", "method": "GET", "path": "/health", "status_code": 200, "duration_ms": 1.01, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:41.766349Z"}
+INFO:     127.0.0.1:57698 - "GET /health HTTP/1.1" 200 OK
+{"request_id": "2cf731e1f91841c4be00ef68c289434e", "method": "GET", "path": "/api/local-auth/accounts", "status_code": 200, "duration_ms": 0.53, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:41.779922Z"}
+INFO:     127.0.0.1:57698 - "GET /api/local-auth/accounts HTTP/1.1" 200 OK
+{"request_id": "518be8f21d184812a1ceb27154e6381a", "method": "GET", "path": "/api/local-auth/accounts", "status_code": 200, "duration_ms": 0.9, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:43.127888Z"}
+INFO:     127.0.0.1:57713 - "GET /api/local-auth/accounts HTTP/1.1" 200 OK
+{"request_id": "8191f1b0fd104ca9a3fb49a3268e2519", "method": "GET", "path": "/api/me", "status_code": 401, "duration_ms": 6.0, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:43.132935Z"}
+INFO:     127.0.0.1:57714 - "GET /api/me HTTP/1.1" 401 Unauthorized
+{"request_id": "3f6dc99c161e453cb6e682fc1a937420", "method": "GET", "path": "/api/local-auth/accounts", "status_code": 200, "duration_ms": 0.55, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:43.154934Z"}
+INFO:     127.0.0.1:57714 - "GET /api/local-auth/accounts HTTP/1.1" 200 OK
+{"request_id": "60837dd092ae47a2b649af9ec1d13975", "method": "OPTIONS", "path": "/api/local-auth/login", "status_code": 200, "duration_ms": 0.2, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:43.975509Z"}
+INFO:     127.0.0.1:57730 - "OPTIONS /api/local-auth/login HTTP/1.1" 200 OK
+DEBUG: provider_user keys: ['id', 'root_user_id', 'email', 'name', 'display_name', 'role', 'preferred_language', 'auth_source', 'grade_level']
+DEBUG: root_user_id extracted: 101
+{"request_id": "73657ec2379c4e348a0da638d4c821b8", "method": "POST", "path": "/api/local-auth/login", "status_code": 200, "duration_ms": 2.49, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:43.984643Z"}
+INFO:     127.0.0.1:57714 - "POST /api/local-auth/login HTTP/1.1" 200 OK
+{"request_id": "0b28af273963403fb57bbc070bc1a30c", "method": "GET", "path": "/api/me", "status_code": 200, "duration_ms": 0.53, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:43.989132Z"}
+INFO:     127.0.0.1:57714 - "GET /api/me HTTP/1.1" 200 OK
+{"request_id": "caf6152d5b44405582f47f00e9257222", "method": "GET", "path": "/api/tutor/modes", "status_code": 200, "duration_ms": 1.99, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:44.124139Z"}
+INFO:     127.0.0.1:57713 - "GET /api/tutor/modes HTTP/1.1" 200 OK
+{"request_id": "ee8654ae6fc4403ba719f3ca975c77fb", "method": "GET", "path": "/api/experts", "status_code": 200, "duration_ms": 6.23, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:44.127638Z"}
+INFO:     127.0.0.1:57714 - "GET /api/experts?domain=expert-chat HTTP/1.1" 200 OK
+{"request_id": "c3899789446e4ba6b0ffe0fbed679305", "method": "GET", "path": "/api/tutor/sessions", "status_code": 200, "duration_ms": 7.3, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:44.131137Z"}
+INFO:     127.0.0.1:57716 - "GET /api/tutor/sessions?limit=50 HTTP/1.1" 200 OK
+{"request_id": "a724381c17eb45d2b4890ebd2a04d933", "method": "GET", "path": "/api/tutor/flashcards/decks", "status_code": 200, "duration_ms": 6.22, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:44.133636Z"}
+INFO:     127.0.0.1:57713 - "GET /api/tutor/flashcards/decks HTTP/1.1" 200 OK
+{"request_id": "22cb714c78324bad896ea08d1c1c0f76", "method": "GET", "path": "/api/tutor/flashcards/review", "status_code": 200, "duration_ms": 8.27, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:44.139134Z"}
+INFO:     127.0.0.1:57714 - "GET /api/tutor/flashcards/review?limit=20 HTTP/1.1" 200 OK
+{"request_id": "ec08e4444f2149238bb15000ec50e5ba", "method": "GET", "path": "/api/tutor/mastery", "status_code": 200, "duration_ms": 7.71, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:44.143640Z"}
+INFO:     127.0.0.1:57716 - "GET /api/tutor/mastery?limit=50 HTTP/1.1" 200 OK
+{"request_id": "ef296eb7854845d7aec9e8b962339949", "method": "GET", "path": "/api/tutor/misconceptions", "status_code": 200, "duration_ms": 8.83, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:44.146638Z"}
+INFO:     127.0.0.1:57713 - "GET /api/tutor/misconceptions?include_resolved=false&limit=50 HTTP/1.1" 200 OK
+{"request_id": "ebe6d29e81654b86be12a82c4c66bfa0", "method": "GET", "path": "/api/experts", "status_code": 200, "duration_ms": 2.67, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:44.153134Z"}
+INFO:     127.0.0.1:57713 - "GET /api/experts?domain=expert-chat HTTP/1.1" 200 OK
+{"request_id": "3bcae1f852bd460b9921ef76144b2eb8", "method": "GET", "path": "/api/tutor/progress/student", "status_code": 200, "duration_ms": 10.04, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:44.156133Z"}
+INFO:     127.0.0.1:57714 - "GET /api/tutor/progress/student HTTP/1.1" 200 OK
+{"request_id": "b7809cb60c4f4dd3b6db607e9bdbcaee", "method": "GET", "path": "/api/tutor/classes", "status_code": 200, "duration_ms": 8.15, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:44.157636Z"}
+INFO:     127.0.0.1:57716 - "GET /api/tutor/classes HTTP/1.1" 200 OK
+{"request_id": "5d48ae65b04d425483f0ea922e919bfd", "method": "GET", "path": "/api/tutor/modes", "status_code": 200, "duration_ms": 5.65, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:44.161635Z"}
+INFO:     127.0.0.1:57713 - "GET /api/tutor/modes HTTP/1.1" 200 OK
+{"request_id": "fcd762a3edae4207a1f260a986484b6d", "method": "GET", "path": "/api/tutor/flashcards/decks", "status_code": 200, "duration_ms": 4.48, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:44.167634Z"}
+INFO:     127.0.0.1:57716 - "GET /api/tutor/flashcards/decks HTTP/1.1" 200 OK
+{"request_id": "f5a7cc3b0e9e46dba285380648802e51", "method": "GET", "path": "/api/tutor/sessions", "status_code": 200, "duration_ms": 5.53, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:44.168633Z"}
+INFO:     127.0.0.1:57714 - "GET /api/tutor/sessions?limit=50 HTTP/1.1" 200 OK
+{"request_id": "8574de2ff481472e9d0f5118de0cc194", "method": "GET", "path": "/api/tutor/flashcards/review", "status_code": 200, "duration_ms": 5.71, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:44.171138Z"}
+INFO:     127.0.0.1:57713 - "GET /api/tutor/flashcards/review?limit=20 HTTP/1.1" 200 OK
+{"request_id": "04dcf3907f7748efaf106afd0df0aa46", "method": "GET", "path": "/api/tutor/mastery", "status_code": 200, "duration_ms": 5.44, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:44.179133Z"}
+INFO:     127.0.0.1:57716 - "GET /api/tutor/mastery?limit=50 HTTP/1.1" 200 OK
+{"request_id": "5807c4febf94412f9671210d97548beb", "method": "GET", "path": "/api/tutor/misconceptions", "status_code": 200, "duration_ms": 7.34, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:44.181142Z"}
+INFO:     127.0.0.1:57714 - "GET /api/tutor/misconceptions?include_resolved=false&limit=50 HTTP/1.1" 200 OK
+{"request_id": "fb3f0f4e138f446b877862ac46ab67c1", "method": "GET", "path": "/api/tutor/progress/student", "status_code": 200, "duration_ms": 12.7, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:44.188634Z"}
+INFO:     127.0.0.1:57713 - "GET /api/tutor/progress/student HTTP/1.1" 200 OK
+{"request_id": "504da1795e3f48b0882dec08c4d56c54", "method": "GET", "path": "/api/tutor/classes", "status_code": 200, "duration_ms": 5.37, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:44.190636Z"}
+INFO:     127.0.0.1:57716 - "GET /api/tutor/classes HTTP/1.1" 200 OK
+{"request_id": "ffe815fad06b4bc5bb321c2533e21896", "method": "GET", "path": "/api/tutor/classes", "status_code": 200, "duration_ms": 2.4, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:44.195634Z"}
+INFO:     127.0.0.1:57713 - "GET /api/tutor/classes HTTP/1.1" 200 OK
+{"request_id": "725d461e08dd4e6493b05b9f8fc12000", "method": "GET", "path": "/api/tutor/classes", "status_code": 200, "duration_ms": 1.69, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:44.199132Z"}
+INFO:     127.0.0.1:57716 - "GET /api/tutor/classes HTTP/1.1" 200 OK
+{"request_id": "bc3ff34274f845a3931afb3d3f012bcb", "method": "GET", "path": "/api/tutor/sessions/20", "status_code": 200, "duration_ms": 2.22, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:44.206634Z"}
+INFO:     127.0.0.1:57716 - "GET /api/tutor/sessions/20 HTTP/1.1" 200 OK
+{"request_id": "c6ec91d96db74083890eb983506a7397", "method": "OPTIONS", "path": "/api/tutor/sessions", "status_code": 200, "duration_ms": 0.24, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:44.885218Z"}
+INFO:     127.0.0.1:57730 - "OPTIONS /api/tutor/sessions HTTP/1.1" 200 OK
+{"request_id": "71c63c692b064ba3a75b68b3e9144b71", "method": "POST", "path": "/api/tutor/sessions", "status_code": 200, "duration_ms": 3.66, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:44.890721Z"}
+INFO:     127.0.0.1:57716 - "POST /api/tutor/sessions HTTP/1.1" 200 OK
+{"request_id": "c7314248084a43d381b9724251aef2d5", "method": "GET", "path": "/api/tutor/sessions", "status_code": 200, "duration_ms": 2.62, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:44.919217Z"}
+INFO:     127.0.0.1:57716 - "GET /api/tutor/sessions?limit=50 HTTP/1.1" 200 OK
+{"request_id": "ef21068d39c24cea8a0f53b3a3b85dbf", "method": "GET", "path": "/api/tutor/sessions/21", "status_code": 200, "duration_ms": 2.2, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:44.948719Z"}
+INFO:     127.0.0.1:57716 - "GET /api/tutor/sessions/21 HTTP/1.1" 200 OK
+{"request_id": "3725fa9f2b8d402bb8ff0654d796b0f9", "method": "OPTIONS", "path": "/api/expert-chat/stream", "status_code": 200, "duration_ms": 0.23, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:44.965221Z"}
+INFO:     127.0.0.1:57730 - "OPTIONS /api/expert-chat/stream HTTP/1.1" 200 OK
+{"request_id": "e07b1b6485c3479db34ffc603660e1f4", "method": "POST", "path": "/api/expert-chat/stream", "status_code": 200, "duration_ms": 3.44, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:44.971217Z"}
+INFO:     127.0.0.1:57716 - "POST /api/expert-chat/stream HTTP/1.1" 200 OK
+{"request_id": "1d412f4ab38a4af29a0f05d5e132eb7a", "method": "GET", "path": "/api/tutor/sessions", "status_code": 200, "duration_ms": 3.27, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:47.575507Z"}
+INFO:     127.0.0.1:57716 - "GET /api/tutor/sessions?limit=50 HTTP/1.1" 200 OK
+{"request_id": "d93ff6bc03b949e5a465124437a071ee", "method": "POST", "path": "/api/tutor/sessions", "status_code": 200, "duration_ms": 2.61, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:48.001310Z"}
+INFO:     127.0.0.1:57716 - "POST /api/tutor/sessions HTTP/1.1" 200 OK
+{"request_id": "1900eb0ee944410d8773b8f9bfe80d55", "method": "GET", "path": "/api/tutor/sessions", "status_code": 200, "duration_ms": 3.22, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:48.029808Z"}
+INFO:     127.0.0.1:57716 - "GET /api/tutor/sessions?limit=50 HTTP/1.1" 200 OK
+{"request_id": "233d640f958a43f4a4c7ff8db4ab9a89", "method": "GET", "path": "/api/tutor/sessions/22", "status_code": 200, "duration_ms": 1.52, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:48.055315Z"}
+INFO:     127.0.0.1:57716 - "GET /api/tutor/sessions/22 HTTP/1.1" 200 OK
+{"request_id": "c1b759add1464ca0a29098daac4359db", "method": "OPTIONS", "path": "/api/tutor/quiz/generate", "status_code": 200, "duration_ms": 0.2, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:48.076309Z"}
+INFO:     127.0.0.1:57730 - "OPTIONS /api/tutor/quiz/generate HTTP/1.1" 200 OK
+{"request_id": "a101c4ff56bc4fc4b5ebb7b0b2f5c4f7", "method": "POST", "path": "/api/tutor/quiz/generate", "status_code": 200, "duration_ms": 4.75, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:48.082807Z"}
+INFO:     127.0.0.1:57716 - "POST /api/tutor/quiz/generate HTTP/1.1" 200 OK
+{"request_id": "e12b04778c20466ab7415481a5aadc0d", "method": "GET", "path": "/api/tutor/sessions", "status_code": 200, "duration_ms": 4.9, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:48.131307Z"}
+INFO:     127.0.0.1:57716 - "GET /api/tutor/sessions?limit=50 HTTP/1.1" 200 OK
+{"request_id": "8e9e27c466a042b2acb65f66853dcd7b", "method": "OPTIONS", "path": "/api/tutor/quiz/10/submit", "status_code": 200, "duration_ms": 0.25, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:48.231808Z"}
+INFO:     127.0.0.1:57730 - "OPTIONS /api/tutor/quiz/10/submit HTTP/1.1" 200 OK
+{"request_id": "cf195933b153441799a9da4e571caa59", "method": "POST", "path": "/api/tutor/quiz/10/submit", "status_code": 200, "duration_ms": 3.04, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:48.236813Z"}
+INFO:     127.0.0.1:57716 - "POST /api/tutor/quiz/10/submit HTTP/1.1" 200 OK
+{"request_id": "a0824861bb6c46fe8081ac199d080116", "method": "GET", "path": "/api/tutor/sessions", "status_code": 200, "duration_ms": 2.72, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:48.262808Z"}
+INFO:     127.0.0.1:57716 - "GET /api/tutor/sessions?limit=50 HTTP/1.1" 200 OK
+{"request_id": "de7a3bdfabe1498abc6f48f58242f07c", "method": "GET", "path": "/api/tutor/progress/student", "status_code": 200, "duration_ms": 2.66, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:02:48.365813Z"}
+INFO:     127.0.0.1:57716 - "GET /api/tutor/progress/student HTTP/1.1" 200 OK
+{"request_id": "6795c16f97454a33991f04e97558e417", "method": "GET", "path": "/health", "status_code": 200, "duration_ms": 1.09, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:03:06.102200Z"}
+INFO:     127.0.0.1:57790 - "GET /health HTTP/1.1" 200 OK
+{"request_id": "537f1558dfc1405f9fb71d8353166234", "method": "GET", "path": "/api/local-auth/accounts", "status_code": 200, "duration_ms": 0.43, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:03:06.109696Z"}
+INFO:     127.0.0.1:57790 - "GET /api/local-auth/accounts HTTP/1.1" 200 OK
+{"request_id": "a920eac50db8448badafd8c511d4c195", "method": "GET", "path": "/api/local-auth/accounts", "status_code": 200, "duration_ms": 0.91, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:03:07.387531Z"}
+INFO:     127.0.0.1:57804 - "GET /api/local-auth/accounts HTTP/1.1" 200 OK
+{"request_id": "b428abfcf79445ca82d2d1cb9e599f22", "method": "GET", "path": "/api/me", "status_code": 401, "duration_ms": 6.09, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:03:07.393029Z"}
+INFO:     127.0.0.1:57805 - "GET /api/me HTTP/1.1" 401 Unauthorized
+{"request_id": "92fcd27ac13c405f9d729560e4de24f6", "method": "GET", "path": "/api/local-auth/accounts", "status_code": 200, "duration_ms": 0.59, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:03:07.414032Z"}
+INFO:     127.0.0.1:57805 - "GET /api/local-auth/accounts HTTP/1.1" 200 OK
+{"request_id": "a446ceb5e7524daaa296d487d34f4911", "method": "OPTIONS", "path": "/api/local-auth/login", "status_code": 200, "duration_ms": 0.25, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:03:08.236937Z"}
+INFO:     127.0.0.1:57809 - "OPTIONS /api/local-auth/login HTTP/1.1" 200 OK
+DEBUG: provider_user keys: ['id', 'root_user_id', 'email', 'name', 'display_name', 'role', 'preferred_language', 'auth_source', 'grade_level']
+DEBUG: root_user_id extracted: 101
+{"request_id": "a546211c6b5b40458efa5133f812d8de", "method": "POST", "path": "/api/local-auth/login", "status_code": 200, "duration_ms": 2.65, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:03:08.245937Z"}
+INFO:     127.0.0.1:57805 - "POST /api/local-auth/login HTTP/1.1" 200 OK
+{"request_id": "abd10cda24d14018b14f28ea7139b355", "method": "GET", "path": "/api/me", "status_code": 200, "duration_ms": 0.55, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:03:08.250429Z"}
+INFO:     127.0.0.1:57805 - "GET /api/me HTTP/1.1" 200 OK
+{"request_id": "f68ea493dcb345a4bfb6d0a6c340885a", "method": "GET", "path": "/api/tutor/modes", "status_code": 200, "duration_ms": 2.38, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:03:08.383930Z"}
+INFO:     127.0.0.1:57804 - "GET /api/tutor/modes HTTP/1.1" 200 OK
+{"request_id": "3c1abab1ffd645bf8a04a89fd1f940ca", "method": "GET", "path": "/api/experts", "status_code": 200, "duration_ms": 5.88, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:03:08.386431Z"}
+INFO:     127.0.0.1:57805 - "GET /api/experts?domain=expert-chat HTTP/1.1" 200 OK
+{"request_id": "9c5d4ac61a1947459dd7e504f5cde805", "method": "GET", "path": "/api/tutor/sessions", "status_code": 200, "duration_ms": 7.14, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:03:08.389933Z"}
+INFO:     127.0.0.1:57806 - "GET /api/tutor/sessions?limit=50 HTTP/1.1" 200 OK
+{"request_id": "690c8928cb7247f7ac38a4f74e2fdd62", "method": "GET", "path": "/api/tutor/flashcards/decks", "status_code": 200, "duration_ms": 7.34, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:03:08.393432Z"}
+INFO:     127.0.0.1:57804 - "GET /api/tutor/flashcards/decks HTTP/1.1" 200 OK
+{"request_id": "1fe7221a2229443d9f74ada06fc3ac35", "method": "GET", "path": "/api/tutor/flashcards/review", "status_code": 200, "duration_ms": 8.93, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:03:08.398932Z"}
+INFO:     127.0.0.1:57805 - "GET /api/tutor/flashcards/review?limit=20 HTTP/1.1" 200 OK
+{"request_id": "1e1a9cb4e405492d84b0fa6ccf3a439d", "method": "GET", "path": "/api/tutor/mastery", "status_code": 200, "duration_ms": 7.53, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:03:08.403432Z"}
+INFO:     127.0.0.1:57806 - "GET /api/tutor/mastery?limit=50 HTTP/1.1" 200 OK
+{"request_id": "4c4e670448d64bc0865250c7d9a5e97c", "method": "GET", "path": "/api/tutor/misconceptions", "status_code": 200, "duration_ms": 9.58, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:03:08.406930Z"}
+INFO:     127.0.0.1:57804 - "GET /api/tutor/misconceptions?include_resolved=false&limit=50 HTTP/1.1" 200 OK
+{"request_id": "e2cffa7a231b41af9a44de9e678f261b", "method": "GET", "path": "/api/experts", "status_code": 200, "duration_ms": 2.99, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:03:08.413934Z"}
+INFO:     127.0.0.1:57804 - "GET /api/experts?domain=expert-chat HTTP/1.1" 200 OK
+{"request_id": "35bbcd557d6f42529a9f0fc8e9d9e311", "method": "GET", "path": "/api/tutor/progress/student", "status_code": 200, "duration_ms": 14.31, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:03:08.417434Z"}
+INFO:     127.0.0.1:57805 - "GET /api/tutor/progress/student HTTP/1.1" 200 OK
+{"request_id": "837676e31b7640cbb62ed89caa34bcc5", "method": "GET", "path": "/api/tutor/classes", "status_code": 200, "duration_ms": 9.5, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:03:08.418928Z"}
+INFO:     127.0.0.1:57806 - "GET /api/tutor/classes HTTP/1.1" 200 OK
+{"request_id": "d5abcd1c7ba14d8c9ff4e6e758a8e98f", "method": "GET", "path": "/api/tutor/modes", "status_code": 200, "duration_ms": 4.24, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:03:08.421428Z"}
+INFO:     127.0.0.1:57804 - "GET /api/tutor/modes HTTP/1.1" 200 OK
+{"request_id": "c4754b5b278c430f99be2cfcd2fb3451", "method": "GET", "path": "/api/tutor/flashcards/decks", "status_code": 200, "duration_ms": 5.28, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:03:08.428927Z"}
+INFO:     127.0.0.1:57806 - "GET /api/tutor/flashcards/decks HTTP/1.1" 200 OK
+{"request_id": "94d415785a9e402ca14ea3f8a1199955", "method": "GET", "path": "/api/tutor/sessions", "status_code": 200, "duration_ms": 6.66, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:03:08.429927Z"}
+INFO:     127.0.0.1:57805 - "GET /api/tutor/sessions?limit=50 HTTP/1.1" 200 OK
+{"request_id": "4e8d4873a4b14575af66c7878da122db", "method": "GET", "path": "/api/tutor/flashcards/review", "status_code": 200, "duration_ms": 7.52, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:03:08.432931Z"}
+INFO:     127.0.0.1:57804 - "GET /api/tutor/flashcards/review?limit=20 HTTP/1.1" 200 OK
+{"request_id": "2885f495f8d7473ba41b59fc3fa9d777", "method": "GET", "path": "/api/tutor/mastery", "status_code": 200, "duration_ms": 9.41, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:03:08.441928Z"}
+INFO:     127.0.0.1:57806 - "GET /api/tutor/mastery?limit=50 HTTP/1.1" 200 OK
+{"request_id": "5fed0ba6b55e4e6cbaf779c6c41d345e", "method": "GET", "path": "/api/tutor/misconceptions", "status_code": 200, "duration_ms": 6.87, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:03:08.443430Z"}
+INFO:     127.0.0.1:57805 - "GET /api/tutor/misconceptions?include_resolved=false&limit=50 HTTP/1.1" 200 OK
+{"request_id": "c7d5ee737b3d44e1b1b44f5f5f31e21c", "method": "GET", "path": "/api/tutor/progress/student", "status_code": 200, "duration_ms": 7.76, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:03:08.447935Z"}
+INFO:     127.0.0.1:57804 - "GET /api/tutor/progress/student HTTP/1.1" 200 OK
+{"request_id": "f67c14429c7e48dfa8f40bf8ca11477d", "method": "GET", "path": "/api/tutor/classes", "status_code": 200, "duration_ms": 4.21, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:03:08.449933Z"}
+INFO:     127.0.0.1:57806 - "GET /api/tutor/classes HTTP/1.1" 200 OK
+{"request_id": "f606ef85d2e54796910eafd377e4bd2a", "method": "GET", "path": "/api/tutor/classes", "status_code": 200, "duration_ms": 2.79, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:03:08.454933Z"}
+INFO:     127.0.0.1:57804 - "GET /api/tutor/classes HTTP/1.1" 200 OK
+{"request_id": "39299f02990c47129d74b6aa8f00a8b6", "method": "GET", "path": "/api/tutor/classes", "status_code": 200, "duration_ms": 2.68, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:03:08.459927Z"}
+INFO:     127.0.0.1:57806 - "GET /api/tutor/classes HTTP/1.1" 200 OK
+{"request_id": "82ef962a943a42c6a5762bcc4c968287", "method": "GET", "path": "/api/tutor/sessions/22", "status_code": 200, "duration_ms": 1.68, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:03:08.467428Z"}
+INFO:     127.0.0.1:57806 - "GET /api/tutor/sessions/22 HTTP/1.1" 200 OK
+{"request_id": "d98ba890280c49018f8817cb59b2da7c", "method": "OPTIONS", "path": "/api/tutor/sessions", "status_code": 200, "duration_ms": 0.27, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:03:09.131957Z"}
+INFO:     127.0.0.1:57809 - "OPTIONS /api/tutor/sessions HTTP/1.1" 200 OK
+{"request_id": "fa7774c57ccf46ea9a9f7a2622a39b0c", "method": "POST", "path": "/api/tutor/sessions", "status_code": 200, "duration_ms": 3.0, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:03:09.141957Z"}
+INFO:     127.0.0.1:57806 - "POST /api/tutor/sessions HTTP/1.1" 200 OK
+{"request_id": "9ca82f37da1440fea1aaff2b21bd0ddf", "method": "GET", "path": "/api/tutor/sessions", "status_code": 200, "duration_ms": 2.67, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:03:09.162459Z"}
+INFO:     127.0.0.1:57806 - "GET /api/tutor/sessions?limit=50 HTTP/1.1" 200 OK
+{"request_id": "2975e51d30434713ab9f7f192954a64c", "method": "GET", "path": "/api/tutor/sessions/23", "status_code": 200, "duration_ms": 1.83, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:03:09.187457Z"}
+INFO:     127.0.0.1:57806 - "GET /api/tutor/sessions/23 HTTP/1.1" 200 OK
+{"request_id": "5671b378b05647b6b1bdd3f0a332c4ee", "method": "OPTIONS", "path": "/api/expert-chat/stream", "status_code": 200, "duration_ms": 0.23, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:03:09.204963Z"}
+INFO:     127.0.0.1:57809 - "OPTIONS /api/expert-chat/stream HTTP/1.1" 200 OK
+{"request_id": "a01e36f09cc6473ead9f8d1ea080f5a8", "method": "POST", "path": "/api/expert-chat/stream", "status_code": 200, "duration_ms": 4.02, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:03:09.211460Z"}
+INFO:     127.0.0.1:57806 - "POST /api/expert-chat/stream HTTP/1.1" 200 OK
+{"request_id": "a1f1543202de4aac8a0f0ac6b7df0218", "method": "GET", "path": "/api/tutor/sessions", "status_code": 200, "duration_ms": 2.28, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:03:11.750325Z"}
+INFO:     127.0.0.1:57806 - "GET /api/tutor/sessions?limit=50 HTTP/1.1" 200 OK
+{"request_id": "f3a4f074ffdf4801b205b6084819349c", "method": "POST", "path": "/api/tutor/sessions", "status_code": 200, "duration_ms": 7.53, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:03:12.204081Z"}
+INFO:     127.0.0.1:57806 - "POST /api/tutor/sessions HTTP/1.1" 200 OK
+{"request_id": "db4ee25e7a6249438807abd685ad0a35", "method": "GET", "path": "/api/tutor/sessions", "status_code": 200, "duration_ms": 2.68, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:03:12.224080Z"}
+INFO:     127.0.0.1:57806 - "GET /api/tutor/sessions?limit=50 HTTP/1.1" 200 OK
+{"request_id": "8f46088e6f504719aeea9e0300404c4e", "method": "GET", "path": "/api/tutor/sessions/24", "status_code": 200, "duration_ms": 2.01, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:03:12.248582Z"}
+INFO:     127.0.0.1:57806 - "GET /api/tutor/sessions/24 HTTP/1.1" 200 OK
+{"request_id": "490b38f96a714394b1ca4fd1c5d4d5c7", "method": "OPTIONS", "path": "/api/tutor/quiz/generate", "status_code": 200, "duration_ms": 0.31, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:03:12.266583Z"}
+INFO:     127.0.0.1:57809 - "OPTIONS /api/tutor/quiz/generate HTTP/1.1" 200 OK
+{"request_id": "292e40b41caf4261ae1f6dd134b05a7d", "method": "POST", "path": "/api/tutor/quiz/generate", "status_code": 200, "duration_ms": 2.46, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:03:12.271084Z"}
+INFO:     127.0.0.1:57806 - "POST /api/tutor/quiz/generate HTTP/1.1" 200 OK
+{"request_id": "3a19d1a3287041b680ee48f72ea68184", "method": "GET", "path": "/api/tutor/sessions", "status_code": 200, "duration_ms": 2.4, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:03:12.320581Z"}
+INFO:     127.0.0.1:57806 - "GET /api/tutor/sessions?limit=50 HTTP/1.1" 200 OK
+{"request_id": "3627150ed612492fbe95257fe506d923", "method": "OPTIONS", "path": "/api/tutor/quiz/11/submit", "status_code": 200, "duration_ms": 0.22, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:03:12.445679Z"}
+INFO:     127.0.0.1:57809 - "OPTIONS /api/tutor/quiz/11/submit HTTP/1.1" 200 OK
+{"request_id": "b445df58e49048ca80ce073554fc4311", "method": "POST", "path": "/api/tutor/quiz/11/submit", "status_code": 200, "duration_ms": 4.88, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:03:12.453178Z"}
+INFO:     127.0.0.1:57806 - "POST /api/tutor/quiz/11/submit HTTP/1.1" 200 OK
+{"request_id": "02393f63bba8405fa8d2c68e7b351c75", "method": "GET", "path": "/api/tutor/sessions", "status_code": 200, "duration_ms": 3.07, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:03:12.478677Z"}
+INFO:     127.0.0.1:57806 - "GET /api/tutor/sessions?limit=50 HTTP/1.1" 200 OK
+{"request_id": "cc79bb1f4d4a4332bff0807df01280c2", "method": "GET", "path": "/api/tutor/progress/student", "status_code": 200, "duration_ms": 3.23, "event": "request_complete", "level": "info", "timestamp": "2026-03-27T11:03:12.582677Z"}
+INFO:     127.0.0.1:57806 - "GET /api/tutor/progress/student HTTP/1.1" 200 OK

@@ -6,6 +6,7 @@ Optionally persists messages to tutor_messages when session_id is provided.
 from __future__ import annotations
 
 import json
+import math
 
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse, StreamingResponse
@@ -30,6 +31,63 @@ def _get_tutor_user_id(request: Request) -> int | None:
     user = request.session.get("user")
     if not user:
         return None
+    tutor_user = user.get("tutor_user")
+    if not isinstance(tutor_user, dict):
+        return None
+    tid = tutor_user.get("tutor_user_id")
+    if tid is None:
+        return None
+    try:
+        return int(tid)
+    except (TypeError, ValueError):
+        return None
+
+
+def _fallback_token_count(*parts: str | None) -> int:
+    total_chars = sum(len(part or "") for part in parts)
+    return max(1, math.ceil(total_chars / 4))
+
+
+def _fallback_chat_response(
+    *,
+    message: str,
+    mode: str,
+    hint_level: int | None,
+    citations: list[dict[str, object]],
+) -> str:
+    citation_suffix = ""
+    if citations:
+        labels = ", ".join(str(item.get("citation") or f"[{idx + 1}]") for idx, item in enumerate(citations[:2]))
+        citation_suffix = f" Relevant class material: {labels}."
+
+    if mode == "hint":
+        level = hint_level or 1
+        if level <= 1:
+            return (
+                "Start by identifying what the question is asking and list the facts you already know."
+                f"{citation_suffix}"
+            )
+        if level == 2:
+            return (
+                "Choose the core rule that connects the given facts to the target, then match each value to that rule."
+                f"{citation_suffix}"
+            )
+        return (
+            "Break the solution into small steps, solve one step at a time, and check units or signs after each step."
+            f"{citation_suffix}"
+        )
+
+    if mode == "quiz_me":
+        return (
+            "Quick check: explain the main rule in one sentence, then apply it to a simple example before you answer."
+            f"{citation_suffix}"
+        )
+
+    return (
+        f"Let's work through this carefully: {message}\n"
+        "First, identify the goal. Next, connect it to the key concept. Then solve in small verified steps."
+        f"{citation_suffix}"
+    )
 
 
 async def _resolve_rag_context(
@@ -91,16 +149,6 @@ async def _resolve_rag_context(
     citations = await retrieve_multi_kb_context(conn=conn, kb_ids=class_kb_ids, query=message, top_k=4)
     kb_id = int(citations[0]["kb_id"]) if citations else class_kb_ids[0]
     return kb_id, citations, None
-    tutor_user = user.get("tutor_user")
-    if not isinstance(tutor_user, dict):
-        return None
-    tid = tutor_user.get("tutor_user_id")
-    if tid is None:
-        return None
-    try:
-        return int(tid)
-    except (TypeError, ValueError):
-        return None
 
 
 @router.post("/expert-chat")
@@ -172,12 +220,6 @@ async def expert_chat(request: Request):
     else:
         hint_level = 1 if mode == "hint" else None
 
-    if not provider_registry.registered_provider_names():
-        return JSONResponse(
-            status_code=503,
-            content={"error": "No LLM provider configured. Set OPENAI_API_KEY for local chat."},
-        )
-
     base_prompt = "You are a helpful tutor. Be clear, concise, and encouraging."
     if expert_id is not None:
         async with db_pool.acquire() as conn:
@@ -200,14 +242,17 @@ async def expert_chat(request: Request):
             return JSONResponse(status_code=400, content={"error": "kb_id must be an integer"})
 
     if tutor_user_for_kb is not None:
-        async with db_pool.acquire() as conn:
-            resolved_kb_id, rag_citations, rag_error = await _resolve_rag_context(
-                conn=conn,
-                tutor_user_id=tutor_user_for_kb,
-                message=message,
-                requested_kb_id=kb_id,
-                session_class_id=session_class_id,
-            )
+        try:
+            async with db_pool.acquire() as conn:
+                resolved_kb_id, rag_citations, rag_error = await _resolve_rag_context(
+                    conn=conn,
+                    tutor_user_id=tutor_user_for_kb,
+                    message=message,
+                    requested_kb_id=kb_id,
+                    session_class_id=session_class_id,
+                )
+        except Exception:
+            resolved_kb_id, rag_citations, rag_error = None, [], None
         if rag_error:
             return JSONResponse(status_code=404, content={"error": rag_error})
         kb_id = resolved_kb_id
@@ -234,32 +279,48 @@ async def expert_chat(request: Request):
     provider_name = "openai"
     selected_model = settings.openai_default_model
     attempts: list[dict[str, object]] = []
-    try:
-        full_response, selected_model, attempts = await collect_chat_with_strategy(
-            provider_registry=provider_registry,
-            provider_name=provider_name,
-            messages=messages,
-            primary_model=settings.openai_default_model,
-            fallback_models=settings.llm_fallback_models_list,
-            temperature=0.2,
-            max_tokens=1024,
-            timeout_seconds=settings.llm_request_timeout_seconds,
-            retry_attempts=settings.llm_retry_attempts,
-            retry_backoff_seconds=settings.llm_retry_backoff_seconds,
+    using_fallback_provider = not provider_registry.registered_provider_names()
+    if using_fallback_provider:
+        full_response = _fallback_chat_response(
+            message=message,
+            mode=session_mode,
+            hint_level=hint_level,
+            citations=rag_citations,
         )
-    except Exception as e:
-        return JSONResponse(
-            status_code=502,
-            content={
-                "error": "LLM request failed after retries/fallback",
-                "details": str(e),
-                "attempts": attempts,
-            },
-        )
+        selected_model = "fallback_heuristic"
+    else:
+        try:
+            full_response, selected_model, attempts = await collect_chat_with_strategy(
+                provider_registry=provider_registry,
+                provider_name=provider_name,
+                messages=messages,
+                primary_model=settings.openai_default_model,
+                fallback_models=settings.llm_fallback_models_list,
+                temperature=0.2,
+                max_tokens=1024,
+                timeout_seconds=settings.llm_request_timeout_seconds,
+                retry_attempts=settings.llm_retry_attempts,
+                retry_backoff_seconds=settings.llm_retry_backoff_seconds,
+            )
+        except Exception as e:
+            return JSONResponse(
+                status_code=502,
+                content={
+                    "error": "LLM request failed after retries/fallback",
+                    "details": str(e),
+                    "attempts": attempts,
+                },
+            )
     full_response = sanitize_assistant_output(full_response)
 
-    provider = provider_registry.get_provider(provider_name)
-    tokens_used = provider.count_tokens(message) + provider.count_tokens(full_response)
+    provider = None if using_fallback_provider else provider_registry.get_provider(provider_name)
+    if provider is None:
+        user_tokens = _fallback_token_count(message)
+        assistant_tokens = _fallback_token_count(full_response)
+    else:
+        user_tokens = provider.count_tokens(message)
+        assistant_tokens = provider.count_tokens(full_response)
+    tokens_used = user_tokens + assistant_tokens
     try:
         await root_site_client.deduct_credits(
             token,
@@ -284,7 +345,7 @@ async def expert_chat(request: Request):
                     message,
                     session_mode,
                     hint_level,
-                    provider.count_tokens(message),
+                    user_tokens,
                     selected_model,
                 )
                 await conn.execute(
@@ -297,7 +358,7 @@ async def expert_chat(request: Request):
                     full_response,
                     session_mode,
                     hint_level,
-                    provider.count_tokens(full_response),
+                    assistant_tokens,
                     selected_model,
                 )
                 await conn.execute(
@@ -404,12 +465,6 @@ async def expert_chat_stream(request: Request):
     else:
         hint_level = 1 if mode == "hint" else None
 
-    if not provider_registry.registered_provider_names():
-        return JSONResponse(
-            status_code=503,
-            content={"error": "No LLM provider configured. Set OPENAI_API_KEY for local chat."},
-        )
-
     base_prompt = "You are a helpful tutor. Be clear, concise, and encouraging."
     if expert_id is not None:
         async with db_pool.acquire() as conn:
@@ -432,14 +487,17 @@ async def expert_chat_stream(request: Request):
             return JSONResponse(status_code=400, content={"error": "kb_id must be an integer"})
 
     if tutor_user_for_kb is not None:
-        async with db_pool.acquire() as conn:
-            resolved_kb_id, rag_citations, rag_error = await _resolve_rag_context(
-                conn=conn,
-                tutor_user_id=tutor_user_for_kb,
-                message=message,
-                requested_kb_id=kb_id,
-                session_class_id=session_class_id,
-            )
+        try:
+            async with db_pool.acquire() as conn:
+                resolved_kb_id, rag_citations, rag_error = await _resolve_rag_context(
+                    conn=conn,
+                    tutor_user_id=tutor_user_for_kb,
+                    message=message,
+                    requested_kb_id=kb_id,
+                    session_class_id=session_class_id,
+                )
+        except Exception:
+            resolved_kb_id, rag_citations, rag_error = None, [], None
         if rag_error:
             return JSONResponse(status_code=404, content={"error": rag_error})
         kb_id = resolved_kb_id
@@ -464,7 +522,8 @@ async def expert_chat_stream(request: Request):
     messages.append(ChatMessage(role="user", content=message))
 
     provider_name = "openai"
-    provider = provider_registry.get_provider(provider_name)
+    using_fallback_provider = not provider_registry.registered_provider_names()
+    provider = None if using_fallback_provider else provider_registry.get_provider(provider_name)
 
     async def stream_generator():
         full_response = ""
@@ -472,22 +531,30 @@ async def expert_chat_stream(request: Request):
         attempts: list[dict[str, object]] = []
         stream = None
         try:
-            selection = await start_stream_with_strategy(
-                provider_registry=provider_registry,
-                provider_name=provider_name,
-                messages=messages,
-                primary_model=settings.openai_default_model,
-                fallback_models=settings.llm_fallback_models_list,
-                temperature=0.2,
-                max_tokens=1024,
-                timeout_seconds=settings.llm_request_timeout_seconds,
-                retry_attempts=settings.llm_retry_attempts,
-                retry_backoff_seconds=settings.llm_retry_backoff_seconds,
-            )
-            stream = selection.stream
-            selected_model = selection.model
-            attempts = selection.attempts
-
+            if using_fallback_provider:
+                full_response = _fallback_chat_response(
+                    message=message,
+                    mode=session_mode,
+                    hint_level=hint_level,
+                    citations=rag_citations,
+                )
+                selected_model = "fallback_heuristic"
+            else:
+                selection = await start_stream_with_strategy(
+                    provider_registry=provider_registry,
+                    provider_name=provider_name,
+                    messages=messages,
+                    primary_model=settings.openai_default_model,
+                    fallback_models=settings.llm_fallback_models_list,
+                    temperature=0.2,
+                    max_tokens=1024,
+                    timeout_seconds=settings.llm_request_timeout_seconds,
+                    retry_attempts=settings.llm_retry_attempts,
+                    retry_backoff_seconds=settings.llm_retry_backoff_seconds,
+                )
+                stream = selection.stream
+                selected_model = selection.model
+                attempts = selection.attempts
             yield _sse_event(
                 "stream_start",
                 {
@@ -506,16 +573,19 @@ async def expert_chat_stream(request: Request):
                 },
             )
 
-            if selection.first_chunk:
-                full_response += selection.first_chunk
-                yield _sse_event("token", {"content": selection.first_chunk})
+            if using_fallback_provider:
+                yield _sse_event("token", {"content": full_response})
+            else:
+                if selection.first_chunk:
+                    full_response += selection.first_chunk
+                    yield _sse_event("token", {"content": selection.first_chunk})
 
-            async for chunk in stream_remaining_chunks(
-                stream,
-                timeout_seconds=settings.llm_request_timeout_seconds,
-            ):
-                full_response += chunk
-                yield _sse_event("token", {"content": chunk})
+                async for chunk in stream_remaining_chunks(
+                    stream,
+                    timeout_seconds=settings.llm_request_timeout_seconds,
+                ):
+                    full_response += chunk
+                    yield _sse_event("token", {"content": chunk})
         except Exception as e:
             yield _sse_event("error", {"message": str(e), "execution_attempts": attempts})
             return
@@ -529,7 +599,13 @@ async def expert_chat_stream(request: Request):
                         pass
         full_response = sanitize_assistant_output(full_response)
 
-        tokens_used = provider.count_tokens(message) + provider.count_tokens(full_response)
+        if provider is None:
+            user_tokens = _fallback_token_count(message)
+            assistant_tokens = _fallback_token_count(full_response)
+        else:
+            user_tokens = provider.count_tokens(message)
+            assistant_tokens = provider.count_tokens(full_response)
+        tokens_used = user_tokens + assistant_tokens
         try:
             await root_site_client.deduct_credits(
                 token,
@@ -553,7 +629,7 @@ async def expert_chat_stream(request: Request):
                         message,
                         session_mode,
                         hint_level,
-                        provider.count_tokens(message),
+                        user_tokens,
                         selected_model,
                     )
                     await conn.execute(
@@ -566,7 +642,7 @@ async def expert_chat_stream(request: Request):
                         full_response,
                         session_mode,
                         hint_level,
-                        provider.count_tokens(full_response),
+                        assistant_tokens,
                         selected_model,
                     )
                     await conn.execute(

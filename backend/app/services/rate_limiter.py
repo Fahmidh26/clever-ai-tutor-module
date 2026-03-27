@@ -8,6 +8,7 @@ from typing import Any
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from redis.asyncio import Redis
+from redis.exceptions import RedisError
 
 from app.config import settings
 
@@ -94,9 +95,18 @@ async def check_user_rate_limit(
     normalized_endpoint = _normalize_endpoint_key(endpoint_key)
     redis_key = f"rl:user:{user_id}:ep:{normalized_endpoint}:w:{window_id}"
 
-    count = await redis_client.incr(redis_key)
-    if count == 1:
-        await redis_client.expire(redis_key, request_window_seconds + 5)
+    try:
+        count = await redis_client.incr(redis_key)
+        if count == 1:
+            await redis_client.expire(redis_key, request_window_seconds + 5)
+    except RedisError:
+        request.app.state.redis = None
+        return RateLimitDecision(
+            allowed=True,
+            limit=request_limit,
+            remaining=request_limit,
+            reset_after_seconds=request_window_seconds,
+        )
 
     remaining = max(request_limit - count, 0)
     reset_after_seconds = request_window_seconds - (now % request_window_seconds)
